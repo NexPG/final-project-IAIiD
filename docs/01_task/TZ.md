@@ -120,7 +120,8 @@
 
 | Уровень | Метрика | Целевое значение |
 |---|---|---|
-| Модель | Macro-F1 на human-verified test | ≥ 0.80 (минимум 0.75 с обоснованием) |
+| Модель | Macro-F1 на frozen test | ≥ 0.80 (минимум 0.75 с обоснованием) |
+| Модель | 95% bootstrap CI | публикуется |
 | Модель | 95% bootstrap CI для macro-F1 | публикуется, нижняя граница анализируется |
 | Модель | Recall каждого класса | ≥ 0.65 |
 | Маршрутизация | Selective precision при auto-routing | ≥ 0.95 |
@@ -157,11 +158,11 @@
 | № | Этап | Владелец | Ключевой результат | Артефакты | Критерий завершения |
 |---|---|---|---|---|---|
 | 1 | Задача | Вся команда | Понятная задача и границы | TZ, README, таксономия, план данных | Задача, вход и выход согласованы |
-| 2 | Архитектура | Максим Федулаев | Схема и контракт | `docs/architecture.md`, `docs/api.md`, ADR, OpenAPI | Схема читаема, контракт проверяем |
-| 3 | Эксперименты | Владимир Егоров | Сравнение ≥3 вариантов | данные, MLflow, `docs/experiments.md`, model card | Есть вывод по каждому запуску |
-| 4 | Тестирование | Айдар Мугизов | Тесты и найденная проблема | `tests/`, `docs/testing.md`, risk log | Критические сценарии покрыты |
-| 5 | Деплой | Евгений Кононов | Воспроизводимый запуск | Dockerfile, Compose, `docs/deployment.md` | `docker compose up` работает |
-| 6 | Мониторинг | Александр Аксенов | Метрики и алерты | `docs/monitoring.md`, дашборд, alert rules | Есть ≥1 алерт и runbook |
+| 2 | Архитектура | Максим Федулаев | Схема и контракт | `docs/02_architecture/architecture.md`, `docs/02_architecture/api.md`, ADR, OpenAPI | Схема читаема, контракт проверяем |
+| 3 | Эксперименты | Владимир Егоров | Сравнение ≥3 вариантов | данные, MLflow, `docs/03_experiments/experiments.md`, model card | Есть вывод по каждому запуску |
+| 4 | Тестирование | Айдар Мугизов | Тесты и найденная проблема | `tests/`, `docs/04_testing/testing.md`, risk log | Критические сценарии покрыты |
+| 5 | Деплой | Евгений Кононов | Воспроизводимый запуск | Dockerfile, Compose, `docs/05_deployment/deployment.md` | `docker compose up` работает |
+| 6 | Мониторинг | Александр Аксенов | Метрики и алерты | `docs/06_monitoring/monitoring.md`, дашборд, alert rules | Есть ≥1 алерт и runbook |
 
 ### 2.3. Семь этапов жизненного цикла (вебинар 1) и их связь с проектом
 
@@ -186,17 +187,17 @@
 | Требование задания | Где в ТЗ | Артефакт | Как проверяется |
 |---|---|---|---|
 | Задача и бизнес-контекст | §1 | README, TZ | Преподаватель понимает задачу |
-| Архитектура и компоненты | §7 | `docs/architecture.md` | Схема, ADR, 3 узких места |
+| Архитектура и компоненты | §7 | `docs/02_architecture/architecture.md` | Схема, ADR, 3 узких места |
 | Обоснование стека | §7.9 | TZ, architecture | Таблица выборов и альтернатив |
-| ≥3 эксперимента с выводом | §9 | `docs/experiments.md`, MLflow | ≥5 runs, таблица, вывод |
-| Валидация данных и тест-план | §6, §10 | data card, `docs/testing.md` | ≥5 GE checks, тесты |
+| ≥3 эксперимента с выводом | §9 | `docs/03_experiments/experiments.md`, MLflow | ≥5 runs, таблица, вывод |
+| Валидация данных и тест-план | §6, §10 | data card, `docs/04_testing/testing.md` | ≥5 GE checks, тесты |
 | Найденная проблема/риск | §10.7 | risk log, отчёт | Конкретный пример и фикс |
 | Деплой/контейнеризация | §11 | Dockerfile, Compose | `docker compose up`, smoke |
-| Мониторинг и алерт | §12 | `docs/monitoring.md` | 3 уровня метрик, ≥1 алерт |
-| ИИ-ассистенты | §13 | `docs/ai_usage.md` | Задачи, проверка, исправления |
+| Мониторинг и алерт | §12 | `docs/06_monitoring/monitoring.md` | 3 уровня метрик, ≥1 алерт |
+| ИИ-ассистенты | §13 | `docs/08_ai/ai_usage.md` | Задачи, проверка, исправления |
 | Ограничения, drift, этика | §13, §1.4 | отчёт | Честный раздел |
 | README | §18 | `README.md` | Задача, структура, запуск, роли |
-| Отчёт 5–7 страниц | §16 | `docs/report.md` / PDF | 9 пунктов задания |
+| Отчёт 5–7 страниц | §16 | `docs/07_report/report.md` / PDF | 9 пунктов задания |
 | Презентация 10–15 слайдов | §16 | отдельный файл | 5 минут + вопросы |
 | Роли участников | §2 | README, отчёт | 5 имён и зон |
 
@@ -282,26 +283,21 @@
 
 ### 6.1. Решение по языку и объёму
 
-Проект **англоязычный**. Это учебный кейс, и требование «только русский датасет» не является обязательным. Английский выбран потому, что для него есть большой реальный корпус обращений именно музыкального стриминга, а не только синтетика:
+Проект **смешанный по языку**: TWCS и Bitext — английские, synthetic — русский. Все три источника объединяются в один пул:
 
-- **TWCS SpotifyCares** — реальные публичные диалоги поддержки Spotify в Twitter (~38 тыс. обращений бренда в полном TWCS из 2,81 млн твитов). Домен совпадает с задачей, но официальных тематических меток нет.
-- **Bitext Customer Support** — 26 872 чистых англоязычных примера, 27 интентов и 10 категорий. Домен общий (retail/support), поэтому используем как вспомогательный train, а не как основной test.
-- **420 синтетических музыкальных обращений** — seed и пограничные случаи.
-- **Audio Retailer Customer Support Tickets** — 1 000 синтетических тикетов, 6 отделов, MIT. Только внешняя проверка обобщения, не train и не test.
+- **TWCS SpotifyCares** — реальные публичные диалоги поддержки Spotify в Twitter; dev-подкорпус 6 000.
+- **Bitext Customer Support** — 26 872 чистых примера, 27 интентов; сэмпл 8 000.
+- **420 синтетических** — seed и редкие классы.
 
-Русский язык остаётся опциональным расширением на будущее: контракт API допускает `locale`, но финальные метрики считаются на английском.
-
-**Принцип доверия:** train может быть слабо размеченным и содержать синтетику; test — только human-verified примеры из реального домена SpotifyCares. Метрики на синтетике и слабых метках не выдаются за финальные.
+**Принцип:** все источники перемешиваются и делятся 80/20 со стратификацией одновременно по `(source, label)`. Test содержит те же пропорции источников и классов, что и train. Метки — weak/synthetic; это ограничение фиксируется в отчёте.
 
 ### 6.2. Источники, лицензии и роль
 
 | Источник | Объём | Роль | Лицензия / статус | Ограничение |
 |---|---|---|---|---|
-| TWCS SpotifyCares | ~38 тыс. обращений; готовый dev-подкорпус 6 000 | Основной домен, train + human-verified eval | Лицензия TWCS требует уточнения; сырые твиты не коммитим | Нет официальных тем; PII; шум |
-| Bitext Customer Support | 26 872 | Вспомогательный train | CDLA-Sharing-1.0 | Другой домен; маппинг категорий |
-| Синтетические 420 | 420 | Seed и edge cases в train | Собственная генерация | Не в test |
-| Audio Retailer | 1 000 | Внешняя проверка обобщения | MIT | Синтетика, другой бизнес |
-| Human-written музыкальные кейсы | 300–600 | Дополнение редких классов | Собственная разметка | Только после двойной проверки |
+| TWCS SpotifyCares | dev 6 000; в пуле 5 732 | реальный домен | требует уточнения; сырые твиты не коммитим | нет официальных тем; PII; шум |
+| Bitext Customer Support | 26 872; в пуле 7 695 | вспомогательный домен | CDLA-Sharing-1.0 | другой домен; маппинг |
+| Synthetic 420 | 420 | seed и редкие классы | собственная | русский язык, шаблоны |
 
 **Маппинг меток в 7 классов:**
 
@@ -310,42 +306,29 @@
 | `payment` | `billing_payment`, refund-часть `cancellation_refund` | PAYMENT, INVOICE, REFUND, CANCEL |
 | `subscription` | `subscription_plan`, cancellation-часть `cancellation_refund` | SUBSCRIPTION, ORDER (только cancel/change) |
 | `account` | `account_access`, `account_data_privacy` | ACCOUNT, CONTACT |
-| `app` | `playback_technical` | — (дополняем синтетикой и audio-retailer Tech Support) |
+| `app` | `playback_technical` | — (дополняем synthetic) |
 | `recommendations` | `feature_request_feedback` | FEEDBACK |
-| `content` | `content_availability` | — (дополняем human-written) |
+| `content` | `content_availability` | — (дополняем synthetic) |
 | `other` | `ads_free_tier_complaint`, `general_complaint_dissatisfaction`, `other` | ORDER (place/track), DELIVERY, SHIPPING |
 
 Маппинг `cancellation_refund` выполняется по тексту: возврат денег/списание → `payment`, отмена плана → `subscription`. Если сигналов нет — `other` или ручная проверка.
 
 ### 6.3. Целевой объём и split
 
-| Параметр | Минимум | Цель |
-|---|---|---|
-| Train (weak + synthetic + human) | 8 000 | 15 000–20 000 |
-| Validation | не выделяется | CV на train |
-| Test, human-verified SpotifyCares | 350 | 400 |
-| Test на класс в balanced subset | 25 | 30–40 |
-| `other` в train | ≤ 40% | ≤ 35% |
-| Синтетика в train | ≤ 15% | ≤ 10% |
-| Синтетика и weak в test | 0% | 0% |
-| Дубли и near-duplicates между split | 0 | 0 |
-| Доля test от домена TWCS | 20% | 20% |
+| Параметр | Значение |
+|---|---|
+| Train | 11 061 (79.9%) |
+| Test | 2 786 (20.1%) |
+| Стратификация | `(source, label)` одновременно |
+| Группировка | `conversation_id` |
+| Validation | не выделяется, 5-fold CV на train |
+| `other` | 43.3% в train и test (без cap) |
+| Синтетика | 84 в test, 336 в train |
+| Дубли между split | 0 |
 
-**Практическая сборка train:**
+**Сборка:** объединить TWCS + Bitext + synthetic → дедупликация → 80/20 split по стратумам → manifest → validation.
 
-- TWCS SpotifyCares: 80% в train, 20% в frozen test; `other` ограничен 35%, редкие классы сохраняются полностью.
-- Bitext: 6 000–8 000 сбалансированных примеров после маппинга; вес при обучении ниже, чем у TWCS.
-- Синтетика: 420 после аудита; только train.
-- Human-verified SpotifyCares train: 300–500, если команда успевает разметить больше, чем нужно для test.
-- Итого ориентир: 15 000–20 000 train, 400 test. Validation не выделяется: его роль выполняет `StratifiedGroupKFold` CV на train, а порог выбирается по OOF-предсказаниям.
-
-**Редкие классы.** В TWCS `content` и `recommendations` почти отсутствуют: в dev-подкорпусе 6 000 их 22 и 55 соответственно. Поэтому:
-
-1. В train редкие классы дополняются human-written музыкальными кейсами и синтетикой.
-2. В test сначала набираем естественное распределение, затем отдельно формируем **balanced stress subset** по 25–30 примеров на класс.
-3. Метрики на естественном и balanced-подмножествах публикуем раздельно. Если класс меньше 25 примеров, доверительный интервал широкий, и это честно указывается.
-
-Если данных меньше цели, минимальный допустимый вариант — 8 000 train, 350 test. Меньше — только с явным описанием ограничения и риска для оценки.
+**Редкие классы.** `content` и `app` малочисленны; `class_weight=balanced` и macro-F1 используются как основные меры. Отдельный balanced stress subset не создаётся: test уже стратифицирован и содержит редкие классы.
 
 ### 6.4. Схема записи
 
@@ -367,16 +350,13 @@
 | `pii_flags` | list[string] | нет | Типы PII |
 | `notes` | string | нет | Комментарий |
 
-### 6.5. Разметка
+### 6.5. Метки и test
 
-1. Аннотационная инструкция с определениями 7 классов, границами и примерами из TWCS.
-2. Выборка для разметки — только SpotifyCares; сначала дедупликация и маскирование PII.
-3. Два независимых разметчика на 200+ примерах; Cohen's kappa ≥ 0.70.
-4. Расхождения — арбитраж третьим участником; спорные случаи дополняют инструкцию.
-5. Test — human-verified; синтетика и слабые метки запрещены. Отдельный validation не выделяется: его роль выполняет CV на train.
-6. Test замораживается до финальных экспериментов и не используется для подбора.
-7. Разметчик не видит предсказания модели и чужие метки.
-8. Слабая разметка TWCS для train проверяется на аудите 500 примеров: agreement с человеком фиксируется в data card.
+1. Метки источников: TWCS weak, Bitext mapped, synthetic seed.
+2. Все источники объединяются и делятся 80/20 со стратификацией `(source, label)`.
+3. Test — frozen 20%, открывается один раз; метки weak/synthetic, это явно указывается в отчёте.
+4. Validation не выделяется: его роль выполняет 5-fold CV на train.
+5. Test не используется для выбора модели или гиперпараметров.
 
 ### 6.6. Валидация данных (вебинар 6)
 
@@ -393,14 +373,14 @@
 - PII в реальных твитах (handles, email, телефон, URL);
 - язык и mixed-language;
 - совпадение текста между TWCS и Bitext после нормализации;
-- согласованность `label_quality` и `split` (в eval только `human_verified`).
+- согласованность `label_quality` и `split`.
 
 Минимум 5 проверок Great Expectations + pandas-проверки. Дополнительно:
 
 - намеренно испорченная копия данных;
 - отчёт `DataDocs`/JSON;
 - обучение останавливается, если исходные данные не прошли проверки;
-- отчёт о найденных проблемах переносится в `docs/testing.md` и отчёт.
+- отчёт о найденных проблемах переносится в `docs/04_testing/testing.md` и отчёт.
 
 ### 6.7. Приватность и хранение
 
@@ -710,7 +690,7 @@ Multi-class single-label классификация:
 
 - вход: текст (+ subject/channel/locale);
 - выход: распределение по 7 классам;
-- основная метрика: macro-F1 на human-verified test + 95% bootstrap CI;
+- основная метрика: macro-F1 на frozen test + 95% bootstrap CI;
 - выбор модели: mean CV macro-F1 на train;
 - дополнительные: per-class P/R/F1, accuracy, coverage, selective precision, review rate, ECE, latency.
 
@@ -763,7 +743,7 @@ Multi-class single-label классификация:
 
 - Калибровка: `CalibratedClassifierCV` (sigmoid/isotonic) или temperature scaling.
 - Threshold и margin подбираются по OOF-предсказаниям train с политикой selective precision ≥ 0.95 и coverage ≤ 0.90.
-- Текущие значения: threshold 0.85, margin 0.05; после human-verified test пересчитываются.
+- Текущие значения: threshold 0.85, margin 0.05; после изменения test пересчитываются.
 - Если калибровка ухудшает macro-F1, сравнить и обосновать.
 - `automation_enabled=false` — допустимый fallback, но в отчёте нужно объяснить, почему.
 
@@ -820,7 +800,7 @@ Multi-class single-label классификация:
 
 1. `text` не пустой и не null.
 2. `label` входит в 7 классов.
-3. `split` входит в train/validation/test.
+3. `split` входит в train/test.
 4. `id` уникален.
 5. `scenario_id` не пересекает split.
 6. `source` входит в допустимые.
@@ -880,7 +860,7 @@ Multi-class single-label классификация:
 - 20 RPS 5 минут, 80% валидных, 20% edge.
 - p95 ≤ 300/500 мс, 5xx < 1%.
 - CPU/RAM.
-- Результаты в `docs/testing.md`.
+- Результаты в `docs/04_testing/testing.md`.
 
 ### 10.7. Найденная проблема (обязательно)
 
@@ -1130,7 +1110,7 @@ pytest -q
 - вставлять код без review/тестов;
 - указывать неподтверждённые факты.
 
-Журнал: `docs/ai_usage.md`. Колонки: задача, ассистент, что сгенерировано, как проверено, что исправлено.
+Журнал: `docs/08_ai/ai_usage.md`. Колонки: задача, ассистент, что сгенерировано, как проверено, что исправлено.
 
 Протокол проверки:
 
@@ -1185,7 +1165,7 @@ pytest -q
 - описать версионирование;
 - создать ADR.
 
-**Выход:** `docs/architecture.md`, `docs/api.md`, OpenAPI, ADR.
+**Выход:** `docs/02_architecture/architecture.md`, `docs/02_architecture/api.md`, OpenAPI, ADR.
 
 **Проверка:** схема читаема; контракт проверяем; 3 узких места с последствиями; версии API/модели/данных разделены.
 
@@ -1197,7 +1177,7 @@ pytest -q
 
 - пайплайн TWCS/Bitext, очистка, дедупликация;
 - аудит 420 и 500 слабых меток;
-- human-verified test 400;
+- frozen test 20% после 80/20 split;
 - StratifiedGroupKFold CV по `conversation_id`;
 - RandomizedSearchCV по 4 семействам;
 - OOF-порог и margin;
@@ -1207,7 +1187,7 @@ pytest -q
 - error analysis;
 - data card и model card.
 
-**Выход:** `docs/experiments.md`, `artifacts/search_results.json`, MLflow runs, data card, model card.
+**Выход:** `docs/03_experiments/experiments.md`, `artifacts/search_results.json`, MLflow runs, data card, model card.
 
 **Проверка:** ≥3 семейства, ≥5 runs, CV mean/std, test не использован для подбора, CI опубликован, метрики воспроизводимы.
 
@@ -1227,7 +1207,7 @@ pytest -q
 - load smoke;
 - найденная проблема.
 
-**Выход:** `tests/`, `docs/testing.md`, risk log.
+**Выход:** `tests/`, `docs/04_testing/testing.md`, risk log.
 
 **Проверка:** тесты запускаются; критическое покрыто; проблема описана и проверена; local quality gate зелёный (кроме известных падений, которые описаны).
 
@@ -1245,7 +1225,7 @@ pytest -q
 - rollback;
 - README-инструкция.
 
-**Выход:** `docker/`, `docs/deployment.md`, работающий стенд.
+**Выход:** `docker/`, `docs/05_deployment/deployment.md`, работающий стенд.
 
 **Проверка:** `docker compose up` работает; smoke проходит; rollback описан; секреты не в образе.
 
@@ -1265,7 +1245,7 @@ pytest -q
 - демонстрация алерта;
 - документация.
 
-**Выход:** `monitoring/`, `docs/monitoring.md`, дашборд, alert rules.
+**Выход:** `monitoring/`, `docs/06_monitoring/monitoring.md`, дашборд, alert rules.
 
 **Проверка:** метрики видны; алерт срабатывает; runbook понятен; drift-отчёт есть.
 
@@ -1365,12 +1345,12 @@ pytest -q
 
 1. **Подтвердить команду из 5 человек** у преподавателя.
 2. **Подтвердить таксономию 7 классов** и распределение этапов 2–6.
-3. **Собрать данные** — единственный серьёзный пробел:
-   - train 8 000 минимум, цель 15 000–20 000;
-   - 350–400 human-verified test;
-   - `other` ≤ 40%, синтетика ≤ 15% в train;
-   - 2 разметчика, kappa ≥ 0.70.
-4. **Аннотационная инструкция** (1–2 страницы).
+3. **Подготовить данные**:
+   - объединить TWCS + Bitext + synthetic;
+   - 80/20 stratified split по `(source, label)`;
+   - train 11 061, test 2 786;
+   - зафиксировать manifest и data card.
+4. **Проверить стратификацию** и отсутствие утечек.
 5. **Python 3.12 + Docker Desktop** на машинах команды.
 6. **Свободные библиотеки:** FastAPI, scikit-learn, MLflow, Great Expectations, pytest, Prometheus/Grafana — платить не нужно.
 
@@ -1402,7 +1382,7 @@ pytest -q
 - Bitext Customer Support: https://huggingface.co/datasets/bitext/Bitext-customer-support-llm-chatbot-training-dataset
 - Audio Retailer Tickets: https://huggingface.co/datasets/h3en1x/audio-retailer-customer-support-tickets
 - [`docs/stage_audit.md`](stage_audit.md) — аудит текущих черновиков.
-- [`docs/architecture.md`](architecture.md), [`docs/api.md`](api.md), [`docs/experiments.md`](experiments.md), [`docs/testing.md`](testing.md), [`docs/deployment.md`](deployment.md), [`docs/monitoring.md`](monitoring.md), [`docs/ai_usage.md`](ai_usage.md), [`docs/report.md`](report.md).
+- [`docs/02_architecture/architecture.md`](../02_architecture/architecture.md), [`docs/02_architecture/api.md`](../02_architecture/api.md), [`docs/03_experiments/experiments.md`](../03_experiments/experiments.md), [`docs/04_testing/testing.md`](../04_testing/testing.md), [`docs/05_deployment/deployment.md`](../05_deployment/deployment.md), [`docs/06_monitoring/monitoring.md`](../06_monitoring/monitoring.md), [`docs/08_ai/ai_usage.md`](../08_ai/ai_usage.md), [`docs/07_report/report.md`](../07_report/report.md).
 
 ### 19.2. История изменений
 
@@ -1410,5 +1390,5 @@ pytest -q
 |---|---|---|
 | 1.0 | 14.11.2026 | Первая версия TZ |
 | 2.0 | 14.11.2026 | Учтены 16 вебинаров, 5 участников, 7 классов, аудит черновиков, план данных, деплой/мониторинг, отчёт |
-| 2.1 | 14.11.2026 | Утверждены роли этапов 2–6; английская стратегия данных TWCS + Bitext; train 15–20 тыс., human-verified test 400; `data/external/` |
-| 2.2 | 14.11.2026 | Validation заменён на StratifiedGroupKFold CV; RandomizedSearchCV; OOF-порог; bootstrap CI; test 400 |
+| 2.1 | 14.11.2026 | Утверждены роли этапов 2–6; данные TWCS + Bitext + synthetic; 80/20 stratified split; CV/search; `data/external/` |
+| 2.2 | 14.11.2026 | Validation заменён на StratifiedGroupKFold CV; RandomizedSearchCV; OOF-порог; bootstrap CI; 80/20 frozen test |

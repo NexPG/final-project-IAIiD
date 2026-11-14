@@ -55,10 +55,10 @@ def clean_text(text: object) -> str:
 
 
 def normalize_for_dedup(text: str) -> str:
-    """Return a stable key used for exact-duplicate detection."""
-    value = unicodedata.normalize("NFKD", text.lower())
-    value = value.encode("ascii", "ignore").decode("ascii")
-    return NON_ALNUM_RE.sub(" ", value).strip()
+    """Return a stable Unicode-aware key used for exact-duplicate detection."""
+    value = unicodedata.normalize("NFKC", text.casefold())
+    value = re.sub(r"[^\w]+", " ", value, flags=re.UNICODE)
+    return value.strip()
 
 
 def has_letters(text: str) -> bool:

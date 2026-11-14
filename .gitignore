@@ -87,9 +87,6 @@ data/processed/*
 data/feedback/*
 !data/feedback/.gitkeep
 data/manifest.json
-data/annotation/*
-!data/annotation/.gitkeep
-!data/annotation/README.md
 # Raw public corpora must never be committed.
 !data/external/README.md
 /models/

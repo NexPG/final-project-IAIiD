@@ -130,6 +130,17 @@ def _read_any(path: Path) -> pd.DataFrame:
     raise ValueError(f"Unsupported dataset format: {path.suffix}")
 
 
+SYNTHETIC_LABEL_MAP = {
+    "Оплата": "payment",
+    "Подписка": "subscription",
+    "Аккаунт": "account",
+    "Приложение": "app",
+    "Рекомендации": "recommendations",
+    "Контент": "content",
+    "Другое": "other",
+}
+
+
 def load_synthetic(path: Path) -> pd.DataFrame:
     """Load the team's synthetic seed cases (text/label required)."""
     frame = _read_any(path)
@@ -137,7 +148,7 @@ def load_synthetic(path: Path) -> pd.DataFrame:
     rows: list[dict[str, Any]] = []
     for index, row in enumerate(frame.itertuples(index=False)):
         text = clean_text(row.text)
-        label = str(row.label)
+        label = SYNTHETIC_LABEL_MAP.get(str(row.label), str(row.label))
         if not is_usable(text) or label not in LABELS:
             continue
         rows.append(
@@ -150,7 +161,7 @@ def load_synthetic(path: Path) -> pd.DataFrame:
                 "split": "train",
                 "conversation_id": f"synthetic-{index}",
                 "channel": "app",
-                "locale": getattr(row, "locale", "en"),
+                "locale": "ru",
                 "source_label": label,
                 "label_method": "manual_synthetic",
             }

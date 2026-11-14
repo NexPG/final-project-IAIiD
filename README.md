@@ -23,23 +23,7 @@
 | `content` | `content_support` | каталог, права, треки, альбомы, метаданные |
 | `other` | `general_support` | понятные запросы вне тем: партнёрство, пресса |
 
-## Статус
-
-**Этапы идут по gates** — см. [`docs/stages.md`](docs/stages.md). Gate 1–2 закрыты; Gate 3 в работе (CV + RandomizedSearchCV + test один раз); Gates 4–6 базово закрыты. Метрики provisional: test использует weak labels. Следующий шаг — human-verified test 400 и финальный замер.
-
-Этапы разработки взяты из слайда 3 проектного плана: **Задача → Архитектура → Эксперименты → Тестирование → Деплой → Мониторинг**.
-
-## Что уже реализовано
-
-- 7 классов и маршрутизация в 7 очередей + `manual_review`.
-- Data pipeline: загрузка TWCS/Bitext, очистка, PII-маскирование, дедупликация, weak labels, group split, manifest, validation.
-- TF-IDF word (1–2) + LogisticRegression C=32, выбран через CV/RandomizedSearchCV; артефакты в `artifacts/`.
-- FastAPI: `/v1/classify`, `/v1/classify/batch`, `/v1/feedback`, `/healthcheck`, `/model-info`, `/metrics`.
-- 37 тестов, `ruff`, `mypy`, smoke.
-- Dockerfile, Compose (api + Prometheus), alert rules.
-- Инструкция и скрипты разметки: `docs/annotation.md`.
-
-Подробно: [`docs/stage_audit.md`](docs/stage_audit.md), [`docs/report.md`](docs/report.md).
+Этапы разработки взяты из слайда 3 проектного плана: **Задача → Архитектура → Эксперименты → Тестирование → Деплой → Мониторинг**. Карта этапов и gates — [`docs/01_task/stages.md`](docs/01_task/stages.md).
 
 ## Структура репозитория
 
@@ -48,7 +32,7 @@
 ├── configs/                  # конфигурации обучения и сервиса
 ├── data/                     # локальные данные: raw/interim/processed/feedback
 ├── docker/                   # Dockerfile и docker-compose (этап 5)
-├── docs/                     # TZ, архитектура, API, тесты, деплой, мониторинг
+├── docs/                     # документация по этапам 01–08
 ├── monitoring/               # Prometheus/Grafana (этап 6)
 ├── notebooks/                # EDA и демонстрационные ноутбуки
 ├── scripts/                  # train/evaluate/validate
@@ -68,9 +52,9 @@
 
 ## Быстрый старт
 
-Сырые датасеты не коммитятся. Положите TWCS dev/pseudo CSV и Bitext CSV в пути из
-[`configs/data.yaml`](configs/data.yaml) (по умолчанию `data/external/twcs/` и
-`data/external/bitext/`). Для Bitext можно использовать `--fetch-bitext`.
+Сырые датасеты не коммитятся. Положите TWCS dev/pseudo CSV, Bitext CSV и synthetic
+corpus в пути из [`configs/data.yaml`](configs/data.yaml) (по умолчанию
+`data/external/twcs/`, `data/external/bitext/`, `data/external/synthetic/`).
 
 ```bash
 python -m venv .venv
@@ -100,42 +84,32 @@ docker compose -f docker/docker-compose.yml up --build
 $env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 ```
 
-`--allow-provisional` нужен только пока validation/test размечены weak labels. После human-verified разметки запускайте без него.
-
-## Метрики (provisional)
+## Метрики
 
 | Метрика | Значение |
 |---|---|
-| CV macro-F1 (5-fold) | 0.875 ± 0.025 |
-| Test macro-F1 | 0.726 |
-| Bootstrap 95% CI | [0.645; 0.797] |
-| Test accuracy | 0.917 |
-| Test weighted-F1 | 0.916 |
-| Test coverage | 0.742 |
-| Test selective precision | 0.979 |
-| Balanced test macro-F1 | 0.760 |
+| CV macro-F1 (5-fold) | 0.910 ± 0.011 |
+| Test macro-F1 | 0.909 |
+| Bootstrap 95% CI | [0.876; 0.934] |
+| Test accuracy | 0.959 |
+| Test weighted-F1 | 0.959 |
+| Test coverage | 0.887 |
+| Test selective precision | 0.989 |
 
-Данные: домен TWCS делится 80/20 — 11 004 train (TWCS 3 725 + Bitext 7 279), 1 163 test. Validation не выделяется: модель выбирается через `StratifiedGroupKFold` CV на train, test открывается один раз. Test — weak labels, поэтому числа не финальные. Подробно: [`docs/experiments.md`](docs/experiments.md).
+Данные: 13 847 строк, объединённый пул TWCS + Bitext + synthetic, 80/20 со стратификацией по `(source, label)`: 11 061 train, 2 786 test. Validation не выделяется: 5-fold CV на train, test открывается один раз. Overall macro-F1 0.909 смешивает источники; на реальном TWCS macro-F1 = 0.680. Test-метки weak/synthetic. Подробно: [`docs/03_experiments/experiments.md`](docs/03_experiments/experiments.md).
 
 ## Документация
 
-- [`docs/TZ.md`](docs/TZ.md) — техническое задание v2.2, источник истины.
-- [`docs/stages.md`](docs/stages.md) — этапы 1–6, gates и передача артефактов.
-- [`docs/sources.md`](docs/sources.md) — карта требований: задание, план, 16 вебинаров.
-- [`docs/data.md`](docs/data.md) — план данных, разметки и валидации.
-- [`docs/data_card.md`](docs/data_card.md) — data card: источники, split, ограничения.
-- [`docs/annotation.md`](docs/annotation.md) — аннотационная инструкция и kappa.
-- [`docs/stage_audit.md`](docs/stage_audit.md) — аудит текущих черновиков.
-- [`docs/architecture.md`](docs/architecture.md) — архитектура и ADR.
-- [`docs/api.md`](docs/api.md) — API-контракт.
-- [`docs/experiments.md`](docs/experiments.md) — журнал экспериментов.
-- [`docs/model_card.md`](docs/model_card.md) — model card и ограничения.
-- [`docs/testing.md`](docs/testing.md) — тест-план и найденные проблемы.
-- [`docs/deployment.md`](docs/deployment.md) — локальный запуск и runbook.
-- [`docs/monitoring.md`](docs/monitoring.md) — метрики, алерты, drift.
-- [`docs/ai_usage.md`](docs/ai_usage.md) — журнал ИИ-ассистентов.
-- [`docs/report.md`](docs/report.md) — итоговый отчёт (черновик v0.2).
-- [`docs/presentation.md`](docs/presentation.md) — план презентации 10–15 слайдов.
+Документация разложена по этапам:
+
+- [`docs/01_task/`](docs/01_task/) — TZ, источники, stages, data, data card, аудит.
+- [`docs/02_architecture/`](docs/02_architecture/) — архитектура, схема, API, OpenAPI.
+- [`docs/03_experiments/`](docs/03_experiments/) — эксперименты, model card.
+- [`docs/04_testing/`](docs/04_testing/) — тест-план и найденные проблемы.
+- [`docs/05_deployment/`](docs/05_deployment/) — Docker, запуск, runbook.
+- [`docs/06_monitoring/`](docs/06_monitoring/) — метрики, алерты, drift.
+- [`docs/07_report/`](docs/07_report/) — отчёт и презентация.
+- [`docs/08_ai/`](docs/08_ai/) — журнал ИИ-ассистентов.
 
 ## Команда и роли
 
@@ -151,25 +125,25 @@ $env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 
 ## Данные
 
-Проект англоязычный: для учебного кейса важнее объём и домен, чем язык.
+Все источники объединены в один пул и разделены 80/20 со стратификацией по `(source, label)`:
 
-- **TWCS SpotifyCares** — ~38 тыс. реальных диалогов поддержки Spotify; готовый dev-подкорпус 6 000.
-- **Bitext Customer Support** — 26 872 чистых примера, 27 интентов; вспомогательный train.
-- **420 синтетических** музыкальных обращений — seed и edge cases.
-- **Human-verified validation/test** — 250–300 / 350–400 примеров SpotifyCares.
+- **TWCS SpotifyCares** — 5 732 строки, реальный домен.
+- **Bitext Customer Support** — 7 695 строк, вспомогательный домен.
+- **420 синтетических** — 420 строк, seed и редкие классы.
 
-Цель train — 15 000–20 000 примеров, `other` ≤ 35%, синтетика ≤ 10%. Финальные метрики считаются только на human-verified test. Подробно: [`docs/data.md`](docs/data.md).
+Train 11 061, test 2 786. Test-метки weak/synthetic, поэтому overall 0.909 смешивает источники; на TWCS macro-F1 = 0.680. Подробно: [`docs/01_task/data_card.md`](docs/01_task/data_card.md).
 
 ## Ограничения
 
 - Учебный прототип, не production-система.
 - 7 классов, single-label; несколько тем уходят в manual.
 - Англоязычный фокус; русский и mixed-language — опциональное расширение.
-- TWCS не имеет официальных тем: train использует слабые метки, их шум честно измеряется.
-- `content` и `recommendations` редки в реальном потоке; нужны human-written кейсы и balanced stress subset.
+- TWCS не имеет официальных тем: используются слабые метки, их шум честно измеряется.
+- Test смешивает TWCS, Bitext и synthetic; overall macro-F1 выше, чем на TWCS.
+- `content` и `app` редки.
 - Нет реальной интеграции с CRM и автоматических ответов.
 - CI/CD на GitHub не используется: проверки и запуск локальные.
 
 ## Использование ИИ-ассистентов
 
-ИИ-ассистенты применяются только в разработке. Команда проверяет сгенерированный код, данные и текст. Фактический журнал — в [`docs/ai_usage.md`](docs/ai_usage.md).
+ИИ-ассистенты применяются только в разработке. Команда проверяет сгенерированный код, данные и текст. Фактический журнал — в [`docs/08_ai/ai_usage.md`](docs/08_ai/ai_usage.md).

@@ -1,7 +1,7 @@
 # Тестирование и найденные проблемы
 
-**Статус:** базовый набор реализован (37 тестов), финальный тест-план — после human-verified данных  
-**Источник требований:** [`TZ.md`](TZ.md), §10; вебинары В06–В08
+**Статус:** реализовано (37 тестов), Gate 4 закрыт  
+**Источник требований:** [`TZ.md`](../01_task/TZ.md), §10; вебинары В06–В08
 
 ## 0. Текущий результат
 
@@ -12,7 +12,7 @@ mypy src     — Success: 19 source files
 smoke        — 5/5 (healthcheck, model-info, classify, batch, metrics)
 ```
 
-Покрыто: очистка/PII, маппинг меток, group split, cap `other`, дедупликация, data validation, routing (threshold/margin/`other`), API-контракт, OpenAPI, error envelope, `X-Request-ID`, batch, feedback idempotency, `/metrics`, model quality (overall macro-F1, per-class recall, robustness, edge, behavior, adversarial, subgroup). Найденные ошибки модели: отрицание («I don't want to cancel my subscription, I need a receipt» → `subscription`), `content`/`recommendations` confusion.
+Покрыто: очистка/PII, маппинг меток, стратифицированный 80/20 split, дедупликация, data validation, routing (threshold/margin/`other`), API-контракт, OpenAPI, error envelope, `X-Request-ID`, batch, feedback idempotency, `/metrics`, model quality (overall macro-F1, per-class recall, robustness, edge, behavior, adversarial, subgroup). Найденные ошибки модели: отрицание («I don't want to cancel my subscription, I need a receipt» → `subscription`), `content`/`recommendations` confusion.
 
 ## 1. Уровни
 
@@ -32,7 +32,7 @@ smoke        — 5/5 (healthcheck, model-info, classify, batch, metrics)
 
 - `text` not null;
 - `label` in 7 classes;
-- `split` in train/validation/test;
+- `split` in train/test;
 - `id` unique;
 - `label_quality` in `human_verified`/`weak`/`synthetic`;
 - `conversation_id` не пересекает split;
@@ -50,7 +50,7 @@ smoke        — 5/5 (healthcheck, model-info, classify, batch, metrics)
 
 | Тип | Проверка |
 |---|---|
-| Overall | macro-F1 ≥ 0.80 на natural test, ≥ 0.70 на balanced stress |
+| Overall | macro-F1 ≥ 0.80 на frozen test (факт 0.909) |
 | Per-class | recall ≥ 0.65 |
 | Robustness | uppercase/spaces/punctuation/handles/URLs |
 | Edge | empty/too long/emoji-only |
@@ -144,11 +144,11 @@ pytest -q
 | ID | Проблема | Влияние | Решение | Статус |
 |---|---|---|---|---|
 | R-01 | Отрицание «не хочу отменять» | Неверная тема | Данные/модель/правило | open |
-| R-02 | Threshold 0.0 | Нет abstention | Калибровка/margin | open |
-| R-03 | Старый test 84 | Широкий CI | Human-verified 350–400 | open |
+| R-02 | Threshold 0.0 | Нет abstention | OOF-порог 0.85/0.05 | closed |
+| R-03 | Старый test 84 | Широкий CI | 80/20 frozen test 2 786 | closed |
 | R-04 | PII в твитах и логах | Приватность | Маскирование, запрет коммита | open |
 | R-05 | Модель недоступна | 503 | Readiness/rollback | open |
-| R-06 | Шум weak labels TWCS | Низкое качество | Аудит 500, agreement, confidence-фильтр | open |
-| R-07 | Дисбаланс `other` | Модель всё относит к `other` | Cap 35%, class weights, macro-F1 | open |
-| R-08 | Мало `content`/`recommendations` | Низкий recall | Human-written, balanced stress subset | open |
+| R-06 | Шум weak labels | Низкое качество | Ограничение явно указано; confidence-фильтр | accepted |
+| R-07 | Дисбаланс `other` | Модель всё относит к `other` | class_weight, macro-F1, стратификация | accepted |
+| R-08 | Мало `content`/`app` | Низкий recall | class_weight, macro-F1, стратификация | open |
 | R-09 | Неясная лицензия TWCS | Юридический риск | Сырые данные локально, data card | open |

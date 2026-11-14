@@ -22,52 +22,55 @@ Music Support Triage — классификация обращений в под
 
 ## Слайд 4. Данные
 
-- TWCS SpotifyCares — реальный домен, ~38 тыс., dev 6 000.
-- Bitext — 26 872, вспомогательный train.
+- TWCS SpotifyCares — реальный домен, dev 6 000.
+- Bitext — 26 872, вспомогательный домен.
 - 420 синтетических — seed.
-- TWCS 80/20: train 11 004, test 1 163.
+- Все три источника: 13 847 строк.
+- 80/20 stratified by `(source, label)`: train 11 061, test 2 786.
 - Validation не выделяется: 5-fold CV на train.
-- Bitext только в train.
-- Test пока weak → метрики provisional.
+- Test-метки weak/synthetic.
 
 ## Слайд 5. Архитектура
+
+![Общая схема](../02_architecture/architecture_overview.png)
 
 - Модульный монолит FastAPI.
 - Online-инференс, embedded model.
 - Preprocessing → TF-IDF/LogReg → routing → queue/manual.
 - 3 узких места: модель, очередь, drift.
+- Техническая схема — [`architecture.png`](../02_architecture/architecture.png).
 
 ## Слайд 6. API и routing
 
 - `POST /v1/classify`, batch, feedback.
 - `GET /healthcheck`, `/model-info`, `/metrics`.
-- threshold 0.70 + margin 0.10 → manual.
+- threshold 0.85 + margin 0.05 → manual.
 - Низкая уверенность не маршрутизируется автоматически.
 
 ## Слайд 7. Эксперименты
 
 | Семейство | CV macro-F1 |
 |---|---|
-| **LogReg word** | **0.875 ± 0.025** |
-| LogReg word+char | 0.862 ± 0.035 |
-| Calibrated SVC | 0.816 ± 0.022 |
-| ComplementNB | 0.704 ± 0.011 |
+| **LogReg word+char** | **0.910 ± 0.011** |
+| LogReg word | 0.883 ± 0.011 |
+| Calibrated SVC | 0.870 ± 0.011 |
+| ComplementNB | 0.807 ± 0.008 |
 
-Выбор по CV на train, не по test. Test: macro-F1 0.726, 95% CI [0.645; 0.797].
+Выбор по CV на train, не по test. Test: macro-F1 0.909, 95% CI [0.876; 0.934].
 
 ## Слайд 8. Ошибки и ограничения
 
 - Отрицание: «I don't want to cancel my subscription, I need a receipt» → `subscription`, manual.
 - `content` ↔ `recommendations` confusion.
-- `recommendations` recall 0 на 4 тестовых примерах.
-- Weak labels и domain shift.
+- Test смешивает Bitext, TWCS и synthetic; на TWCS macro-F1 = 0.680.
+- Weak labels и разный язык источников.
 
 ## Слайд 9. Данные и валидация
 
 - PII-маскирование, дедупликация, group split.
 - 8/8 Great Expectations.
-- 34 теста, `ruff`, `mypy`.
-- Drift: PSI длины 0.883, `other_share` 34.7% vs 73.2%.
+- 37 тестов, `ruff`, `mypy`.
+- Drift: PSI 0.002, `other_share` 43.3% vs 43.3%.
 
 ## Слайд 10. Деплой
 
@@ -92,11 +95,11 @@ Music Support Triage — классификация обращений в под
 
 ## Слайд 13. Следующие шаги
 
-- Human-verified test 400, kappa ≥ 0.70.
-- Пересчёт метрик без provisional.
-- Balanced stress subset ≥25/класс.
-- Contract/load/adversarial тесты.
+- Contract/load/adversarial тесты на финальном стенде.
 - Drift на реальных логах.
+- Отдельная human-verified подвыборка как future work.
+- Улучшение TWCS-качества и редких классов.
+- Презентация и защита.
 
 ## Слайд 14. Итог
 

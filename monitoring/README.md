@@ -21,4 +21,4 @@ monitoring/
 - Минимум один алерт с действием.
 - Демонстрация алерта на защите.
 
-Описание метрик и runbook — в [`docs/monitoring.md`](../docs/monitoring.md).
+Описание метрик и runbook — в [`docs/monitoring.md`](../docs/06_monitoring/monitoring.md).

@@ -279,7 +279,11 @@ def main() -> int:
 
     seed = int(config.get("seed", 42))
     groups = train["conversation_id"].astype(str).to_numpy()
-    cv = StratifiedGroupKFold(n_splits=args.cv_folds, shuffle=True, random_state=seed)
+    strata = (train["source"].astype(str) + "||" + train["label"].astype(str)).to_numpy()
+    cv_splitter = StratifiedGroupKFold(
+        n_splits=args.cv_folds, shuffle=True, random_state=seed
+    )
+    cv_splits = list(cv_splitter.split(train["text"], strata, groups))
 
     families = {
         "logreg_word": (word_pipeline(), word_space()),
@@ -300,7 +304,7 @@ def main() -> int:
             param_distributions=space,
             n_iter=args.n_iter,
             scoring="f1_macro",
-            cv=cv,
+            cv=cv_splits,
             random_state=seed,
             n_jobs=2,
             refit=True,
@@ -347,7 +351,7 @@ def main() -> int:
         train["text"],
         train["label"],
         groups=groups,
-        cv=cv,
+        cv=cv_splits,
         method="predict_proba",
         n_jobs=2,
     )

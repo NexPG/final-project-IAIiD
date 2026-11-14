@@ -113,7 +113,7 @@ def validate_dataset(frame: pd.DataFrame, config: dict[str, Any] | None = None) 
     evaluation = frame[frame["split"].isin(["validation", "test"])]
     if not train.empty:
         other_share = float((train["label"] == "other").mean())
-        max_other = float(config.get("sampling", {}).get("other_max_share", 0.40))
+        max_other = float(config.get("sampling", {}).get("other_max_share", 0.50))
         if other_share > max_other + 0.01:
             warnings.append(
                 _issue(

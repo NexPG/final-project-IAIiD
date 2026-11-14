@@ -1,7 +1,7 @@
 # Деплой и запуск
 
 **Статус:** реализовано (v1), этап 5  
-**Источник требований:** [`TZ.md`](TZ.md), §11; вебинары В10–В11
+**Источник требований:** [`TZ.md`](../01_task/TZ.md), §11; вебинары В10–В11
 
 ## 1. Учебный маршрут
 
@@ -14,7 +14,7 @@ python -m venv .venv
 # Windows: .venv\Scripts\activate
 pip install -e ".[dev,ml]"
 python scripts/build_dataset.py --config configs/data.yaml
-python scripts/train.py --config configs/baseline.yaml --allow-provisional
+python scripts/search_models.py --n-iter 12
 uvicorn music_support_triage.api.app:app --reload
 ```
 

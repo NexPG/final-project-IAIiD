@@ -29,6 +29,10 @@ def build_pipeline(
     c_value: float = 4.0,
     seed: int = 42,
     use_char: bool = True,
+    word_ngram: tuple[int, int] = (1, 2),
+    word_min_df: int = 2,
+    char_ngram: tuple[int, int] = (3, 5),
+    char_min_df: int = 2,
 ) -> Pipeline:
     """Create the reproducible TF-IDF baseline (word, optionally + char)."""
     transformers: list[tuple[str, TfidfVectorizer]] = [
@@ -36,8 +40,8 @@ def build_pipeline(
             "word",
             TfidfVectorizer(
                 analyzer="word",
-                ngram_range=(1, 2),
-                min_df=2,
+                ngram_range=word_ngram,
+                min_df=word_min_df,
                 max_features=word_max_features,
                 sublinear_tf=True,
             ),
@@ -49,8 +53,8 @@ def build_pipeline(
                 "char",
                 TfidfVectorizer(
                     analyzer="char_wb",
-                    ngram_range=(3, 5),
-                    min_df=2,
+                    ngram_range=char_ngram,
+                    min_df=char_min_df,
                     max_features=char_max_features,
                     sublinear_tf=True,
                 ),
@@ -105,6 +109,10 @@ def train_baseline(
         c_value=float(params.get("c_value", 4.0)),
         seed=int(config.get("seed", 42)),
         use_char=bool(params.get("use_char", True)),
+        word_ngram=tuple(params.get("word_ngram", (1, 2))),
+        word_min_df=int(params.get("word_min_df", 2)),
+        char_ngram=tuple(params.get("char_ngram", (3, 5))),
+        char_min_df=int(params.get("char_min_df", 2)),
     )
     pipeline.fit(train_frame["text"], train_frame["label"])
     use_char = bool(params.get("use_char", True))

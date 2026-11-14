@@ -1,7 +1,7 @@
 # Архитектура системы
 
 **Статус:** Gate 2 закрыт, v1  
-**Источник требований:** [`TZ.md`](TZ.md), §7–§8; вебинары В01–В04  
+**Источник требований:** [`TZ.md`](../01_task/TZ.md), §7–§8; вебинары В01–В04  
 **Контракт:** [`api.md`](api.md), [`openapi.json`](openapi.json)
 
 ## 1. Контекст
@@ -32,11 +32,19 @@
 | Monitoring | Метрики, логи, алерты |
 | MLflow | Эксперименты и артефакты |
 
-## 4. Схема
+## 4. Схемы
 
-![Music Support Triage — архитектура](architecture.png)
+### 4.1. Общая схема (business overview)
 
-Диаграмма: `docs/architecture.png` (D2). Ниже — та же схема в Mermaid для чтения в diff.
+![Общая схема Music Support Triage](architecture_overview.png)
+
+Эта схема из второго варианта команды показывает путь пользователя: приложение → API Gateway → сервис классификации (preprocessing → модель → routing) → 7 классов. Она хороша для презентации и объяснения бизнес-логики.
+
+### 4.2. Техническая схема
+
+![Music Support Triage — техническая архитектура](architecture.png)
+
+Техническая схема (D2) дополняет overview: показывает preprocessing/PII, routing в очередь или `manual_review`, Prometheus/logs и ML-lifecycle (данные → CV/search → MLflow → artifact). Ниже — та же схема в Mermaid для чтения в diff.
 
 ```mermaid
 flowchart LR
@@ -125,7 +133,7 @@ SLA: p95 ≤ 300 мс (TF-IDF), 5xx < 1%, 20 RPS на worker, batch ≤ 100. `re
 
 ## 10. Что осталось
 
-- [ ] Human-verified test и финальные метрики (Gate 3).
+- [x] 80/20 frozen test и финальные метрики (Gate 3).
 - [ ] Load test 20 RPS.
 - [ ] Grafana dashboard (Prometheus alert rules уже есть).
 - [ ] Production-маршрут: reverse proxy, replicas, registry, queue, DB, secrets.

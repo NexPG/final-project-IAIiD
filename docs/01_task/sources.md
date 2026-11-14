@@ -19,15 +19,15 @@
 | Репозиторий, отчёт, презентация | TZ §16–§18 |
 | README по шаблону | `README.md` |
 | Код или Colab-ноутбук | `src/`, `notebooks/` |
-| Тесты или тест-план | `tests/`, `docs/testing.md` |
-| Материалы экспериментов | `docs/experiments.md`, MLflow |
-| Описание архитектуры | `docs/architecture.md` |
-| API/контракт | `docs/api.md`, OpenAPI |
-| Деплой и мониторинг | `docs/deployment.md`, `docs/monitoring.md` |
-| Отчёт 5–7 страниц | `docs/report.md` |
+| Тесты или тест-план | `tests/`, `docs/04_testing/testing.md` |
+| Материалы экспериментов | `docs/03_experiments/experiments.md`, MLflow |
+| Описание архитектуры | `docs/02_architecture/architecture.md` |
+| API/контракт | `docs/02_architecture/api.md`, OpenAPI |
+| Деплой и мониторинг | `docs/05_deployment/deployment.md`, `docs/06_monitoring/monitoring.md` |
+| Отчёт 5–7 страниц | `docs/07_report/report.md` |
 | Презентация 10–15 слайдов | отдельный файл |
 | Роли участников | `README.md`, TZ §2 |
-| Честное использование ИИ-ассистентов | `docs/ai_usage.md`, TZ §13 |
+| Честное использование ИИ-ассистентов | `docs/08_ai/ai_usage.md`, TZ §13 |
 | Ограничения, drift, этика | TZ §1.4, §12, §13 |
 | Доступность материалов по ссылке | TZ §16 |
 
@@ -52,7 +52,7 @@
 | В04. MLOps | DevOps/DataOps/MLOps, этапы цикла, уровни зрелости 0–2, инструменты | §7.10, §9.7 | TZ, MLflow |
 | В05. MLflow | experiment/run/params/metrics/artifacts/tags, 5 запусков, модель и confusion matrix | §9.3 | experiments.md, mlruns |
 | В06. Data validation | Пропуски, выбросы, дубли, несогласованность, schema drift; pandas + Great Expectations, ≥5 проверок, отчёт | §6.6 | data.md, GE-отчёты |
-| Данные проекта | Реальный домен TWCS SpotifyCares + вспомогательный Bitext; human-verified eval; слабые метки только train | §6 | data card, manifest |
+| Данные проекта | TWCS + Bitext + synthetic, 80/20 stratified by source+label; CV вместо validation | §6 | data card, manifest |
 | В07. Качество модели | Precision/recall/F1, behavioral, edge, subgroup, adversarial, 5+ pytest-тестов | §10.3 | tests, testing.md |
 | В08. Тестирование системы | Unit препроцессинга/постобработки, integration, mock, contract, CI/CD | §10.1–§10.8 | tests, local quality gate |
 | В09. FastAPI | REST, Pydantic, DI, `/predict`, `/healthcheck`, `/model-info`, Swagger, TestClient | §8 | api.md, src/api |
@@ -70,7 +70,7 @@
 |---|---|---|---|
 | В08: GitHub Actions блокирует слияние | Не используем GitHub CI/CD | Решение команды/учебная среда | Локальный quality gate: ruff, mypy, pytest, smoke |
 | В04: уровень MLOps 2 | Целимся в уровень 1 | 5 человек, одна модель, учебный проект | MLflow, версионирование, ручной релиз |
-| В01/В06: только чистые human-метки | Слабые метки TWCS в train, human-verified только eval | Больше объёма для NLP без потери доверия к метрикам | Аудит 500, agreement, cap `other` |
+| В01/В06: только чистые human-метки | Используются доступные weak/synthetic метки, test frozen | Больше данных для NLP в учебном проекте | Ограничение явно указано в отчёте и data card |
 | В11: PostgreSQL в Compose | Допустим SQLite/volume | Упрощение учебного стенда | В production-маршруте — PostgreSQL |
 | В12: полный Prometheus/Grafana | Учебный минимум | Нет промышленной инфраструктуры | `/metrics`, compose, дашборд-эскиз |
 

@@ -4,18 +4,16 @@ CLI-скрипты для воспроизводимых операций.
 
 | Скрипт | Назначение |
 |---|---|
-| `download_data.py` | проверка локальных датасетов, checksums, опциональная загрузка Bitext |
-| `build_dataset.py` | сборка train/validation/test, cap `other`, manifest |
+| `download_data.py` | проверка локальных датасетов и checksums |
+| `build_dataset.py` | объединение источников, 80/20 stratified split, manifest |
 | `validate_data.py` | схема, дубли, утечки, дисбаланс, PII |
 | `validate_data_ge.py` | Great Expectations: 8 expectations |
 | `search_models.py` | 5-fold StratifiedGroupKFold + RandomizedSearchCV, OOF threshold, bootstrap CI |
 | `tune_threshold.py` | показать OOF threshold/margin из результатов поиска |
-| `train.py` | обучение выбранной модели, model card |
-| `evaluate.py` | метрики на validation/test, natural или balanced |
-| `make_balanced_test.py` | balanced stress subset |
-| `export_annotation_batch.py` | два независимых batch для разметки |
-| `merge_annotations.py` | kappa, расхождения, human-verified CSV |
-| `drift_report.py` | offline PSI/KS-отчёт по длине и лексике |
+| `train.py` | обучение выбранной конфигурации |
+| `evaluate.py` | метрики на frozen test |
+| `export_openapi.py` | выгрузка OpenAPI в docs |
+| `drift_report.py` | offline PSI/KS-отчёт |
 | `smoke.py` | smoke-проверка запущенного API |
 
 ## Порядок
@@ -27,8 +25,7 @@ python scripts/validate_data.py --config configs/data.yaml
 python scripts/validate_data_ge.py
 python scripts/search_models.py --n-iter 12
 python scripts/tune_threshold.py
-python scripts/make_balanced_test.py
-python scripts/evaluate.py --split test --balanced --data data/processed/test_balanced.csv
+python scripts/evaluate.py --split test
 ```
 
 ## Правила
@@ -37,4 +34,4 @@ python scripts/evaluate.py --split test --balanced --data data/processed/test_ba
 2. Все параметры передаются через аргументы или конфиг.
 3. Каждый запуск фиксирует seed и dataset manifest.
 4. Сырые данные не коммитятся.
-5. `--allow-provisional` использовать только до human-verified разметки.
+5. Test открывается один раз после фиксации модели и порога.

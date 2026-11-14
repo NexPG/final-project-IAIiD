@@ -1,7 +1,7 @@
 # Использование ИИ-ассистентов
 
 **Статус:** ведётся постоянно  
-**Источник требований:** [`TZ.md`](TZ.md), §13; вебинары В15–В16
+**Источник требований:** [`TZ.md`](../01_task/TZ.md), §13; вебинары В15–В16
 
 ## 1. Принцип
 
@@ -19,7 +19,7 @@
 |---|---|---|---|---|---|
 | 14.11.2026 | Черновик TZ | DeepSeek/OpenCode | Структура и разделы | Сверка с заданием и 16 вебинарами | Убраны несоответствия, добавлены 7 классов и аудит |
 | 14.11.2026 | Исследование датасетов | DeepSeek/OpenCode | Сравнение TWCS, Bitext, Tobi-Bueck, Audio Retailer; размеры и лицензии | Проверка карточек Hugging Face и первичный анализ CSV | Tobi-Bueck отклонён как основной; выбраны TWCS + Bitext |
-| 14.11.2026 | Анализ дисбаланса TWCS | DeepSeek/OpenCode | Подсчёт 7 классов на 6 000 примерах | Повторный подсчёт pandas | Зафиксирован cap `other` 35% и balanced stress subset |
+| 14.11.2026 | Анализ дисбаланса | DeepSeek/OpenCode | Подсчёт 7 классов на 6 000 примерах | Повторный подсчёт pandas | Отказались от cap `other`, чтобы сохранить стратификацию |
 | 14.11.2026 | Data pipeline | DeepSeek/OpenCode | Модули загрузки, очистки, маппинга, split, validation | Запуск на реальных CSV, 16 тестов, ручная проверка маппинга | Исправлены NaN в Bitext sampling и группа в split |
 | 14.11.2026 | Baseline и API | DeepSeek/OpenCode | TF-IDF + LogReg, FastAPI, routing, тесты | `pytest` (тогда 26 passed), `ruff`, `mypy`, smoke | Исправлены FastAPI DI и формат metrics |
 | 14.11.2026 | Docker и мониторинг | DeepSeek/OpenCode | Dockerfile, Compose, Prometheus rules, drift script | `docker compose build/up`, smoke 5/5, alert firing | Проверено вручную, порт API параметризован |
@@ -27,17 +27,14 @@
 | 14.11.2026 | MLflow и GE | DeepSeek/OpenCode | 6 runs, 8 expectations, threshold tuning | Запуск MLflow UI/API, `ge_report.json`, сверка метрик | Исправлены file-store, порядок вероятностей и выбор модели |
 | 14.11.2026 | CV и RandomizedSearchCV | DeepSeek/OpenCode | Поиск по 4 семействам, 5-fold StratifiedGroupKFold, OOF-порог, bootstrap CI | `search_results.json`, MLflow, smoke, повторный запуск | Убрано отдельное validation; test открыт один раз; проверена утечка по группам |
 | 14.11.2026 | Gate 2 | DeepSeek/OpenCode | Единый error envelope, `X-Request-ID`, OpenAPI, SLA, ADR-10/11 | `pytest` 37, `openapi.json`, contract tests | Контракт приведён в соответствие с кодом |
-| 14.11.2026 | Gate 3 package | DeepSeek/OpenCode | Stratified 400 batch, merge/kappa, `check_gate3.py`, leak-check | Batch 400, скрипты, ручная проверка распределения | Human labels не сгенерированы ассистентом; это ответственность команды |
-| TBD | Архитектура | TBD | Схема и ADR | Обсуждение, сверка с В02–В03 | TBD |
-| TBD | API | TBD | Pydantic-схемы | Code review + pytest | TBD |
-| TBD | Данные | TBD | Синтетические примеры | Ручная проверка и разметка | TBD |
-| TBD | Тесты | TBD | Пограничные кейсы | Запуск pytest | TBD |
-| TBD | Отчёт | TBD | Черновик раздела | Факт-чек по артефактам | TBD |
+| 14.11.2026 | Единый 80/20 split | DeepSeek/OpenCode | Объединение TWCS+Bitext+synthetic, стратификация `(source,label)`, group split | `validate_data.py`, `pytest` 37, `manifest.json` | Убран внешний/balanced test; только один frozen test |
+| 14.11.2026 | Документация по этапам | DeepSeek/OpenCode | Разложение docs на 01_task…08_ai, обновление ссылок | Проверка ссылок и структуры | Удалены лишние annotation/external артефакты |
+| TBD | Презентация | TBD | Слайды | Сверка с отчётом | TBD |
 
 ## 4. Протокол проверки
 
 1. Код: review, запуск, линтеры, тесты, лицензии.
-2. Данные: ручная проверка, дедупликация, запрет синтетики в test.
+2. Данные: ручная проверка, дедупликация, контроль стратификации.
 3. Текст: сверка с артефактами.
 4. Безопасность: секреты, PII, зависимости.
 5. Воспроизводимость: чистый запуск.
@@ -47,7 +44,7 @@
 1. Не отправлять PII и секреты.
 2. Любой сгенерированный код — после review и тестов.
 3. Любые сгенерированные данные — после ручной проверки.
-4. Синтетика и слабые метки не попадают в test.
+4. Test-метки и их ограничения явно описываются в отчёте.
 5. Все числа в отчёте — только из артефактов.
 6. Сырые TWCS/Bitext-данные не отправляются ассистенту целиком; анализируются локально.
 

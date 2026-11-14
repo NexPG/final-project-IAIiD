@@ -37,4 +37,4 @@ data/
 | `pii_flags` | list[string] | нет |
 | `notes` | string | нет |
 
-Подробности — в [`docs/TZ.md`](../docs/TZ.md), раздел 7.
+Подробности — в [`docs/TZ.md`](../docs/01_task/TZ.md), раздел 7.
