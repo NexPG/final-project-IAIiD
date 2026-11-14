@@ -31,7 +31,7 @@
 
 ### 2.1. Первый run на новых данных (provisional)
 
-Дата: 14.11.2026. Модель: TF-IDF word (1–2) + char_wb (3–5), LogisticRegression, `class_weight=balanced`, C=4.
+Дата: 14.11.2026. Выбранная модель: TF-IDF word (1–2) + LogisticRegression, `class_weight=balanced`, C=16 (E3, лучший balanced validation).
 
 | Параметр | Значение |
 |---|---|
@@ -44,11 +44,11 @@
 
 | Метрика | Validation | Test | Balanced test (114) |
 |---|---|---|---|
-| Accuracy | 0.930 | 0.916 | 0.833 |
-| Macro-F1 | 0.809 | 0.660 | 0.680 |
-| Weighted-F1 | 0.929 | 0.914 | 0.817 |
+| Accuracy | 0.939 | 0.913 | 0.807 |
+| Macro-F1 | 0.854 | 0.640 | 0.662 |
+| Weighted-F1 | 0.939 | 0.910 | 0.793 |
 
-**Вывод:** на естественном test macro-F1 падает из-за редких классов. `recommendations` имеет 0 recall (4 примера), `content` — 0.33 recall (3 примера), `account` — 0.75, `app` — 0.89. `payment`, `subscription`, `other` работают устойчиво (F1 0.84–0.96). Это ожидаемый результат для слабых меток и сильного дисбаланса, а не финальная оценка.
+**Вывод:** на естественном test macro-F1 падает из-за редких классов. `recommendations` имеет 0 recall (4 примера), `content` — 0.33 recall (3 примера), `account` — 0.75, `app` — 0.72. `payment`, `subscription`, `other` работают устойчиво (F1 0.84–0.96). Это ожидаемый результат для слабых меток и сильного дисбаланса, а не финальная оценка.
 
 **Ограничение:** test использует weak labels, поэтому числа нельзя защищать как финальные. Нужна human-verified разметка и balanced stress subset с ≥25 примерами на класс.
 
@@ -66,20 +66,22 @@
 
 Подробно: [`data.md`](data.md).
 
-## 4. Целевые эксперименты
+## 4. Проведённые эксперименты
 
-| ID | Гипотеза | Конфигурация | Что сравниваем | Статус |
-|---|---|---|---|---|
-| E0 | Keyword baseline — нижняя граница на реальных данных | эвристики | macro-F1, latency | План |
-| E1 | TF-IDF word + LogReg лучше keyword | C=0.5/4/16 | macro-F1, per-class recall | План |
-| E2 | Char n-grams помогают на опечатках и коротких твитах | word+char, C=4/16 | macro-F1, robustness | План |
-| E3 | LinearSVC/CNB конкурентен и быстрее | TF-IDF + LinearSVC/CNB | macro-F1, скорость | План |
-| E4 | Калибровка + threshold/margin повышают selective precision | CalibratedClassifierCV | coverage, selective precision, ECE | План |
-| E5 | Bitext улучшает редкие классы | TWCS vs TWCS+Bitext | macro-F1, per-class recall | План |
-| E6 | Ограничение `other` и class weights помогают | cap 35% + balanced | macro-F1, `other` share | План |
-| E7 (optional) | Transformer/embeddings лучше на перефразированиях | DistilBERT или MiniLM + LogReg | macro-F1, latency, размер | Опционально |
+Запуск: `python scripts/run_experiments.py`; 6 MLflow runs в `music_support_triage`.
 
-Минимум: 3 варианта, 5+ MLflow runs. Цель: 7–9 runs на новом split.
+| ID | Конфигурация | Val macro-F1 | Val balanced macro-F1 | Test macro-F1 | Coverage | Selective precision |
+|---|---|---|---|---|---|---|
+| E0 | Keyword baseline | 0.466 | 0.566 | 0.475 | 1.000 | 0.670 |
+| E1 | TF-IDF word, C=1 | 0.747 | 0.786 | 0.563 | 0.284 | 0.978 |
+| E2 | TF-IDF word, C=4 | 0.818 | 0.846 | 0.600 | 0.716 | 0.979 |
+| **E3** | **TF-IDF word, C=16** | **0.854** | **0.894** | **0.640** | **0.847** | **0.978** |
+| E4 | TF-IDF char_wb, C=4 | 0.737 | 0.851 | 0.585 | 0.771 | 0.984 |
+| E5 | TF-IDF word+char, C=4 | 0.809 | 0.845 | 0.660 | 0.844 | 0.982 |
+
+**Выбор модели:** E3 по `val_balanced_macro_f1` = 0.894. Test не использовался для выбора. E5 лучше на test (0.660), но хуже на balanced validation, поэтому не выбран; это честный пример отказа от подгонки под test.
+
+**Осталось:** E6 (TWCS vs TWCS+Bitext ablation), E7 (calibration/threshold уже частично), transformer — опционально. Минимум 5 runs выполнен (6).
 
 ### 4.1. Обязательные абляции
 
@@ -125,6 +127,21 @@
 - калибровка;
 - ошибки, вызванные слабыми метками;
 - вывод и следующий шаг.
+
+## 6.1. Калибровка и threshold (E4, provisional)
+
+`python scripts/tune_threshold.py` на validation (327 строк, weak labels):
+
+| Показатель | Значение |
+|---|---|
+| ECE top-1 | 0.0845 |
+| Accuracy top-1 | 0.9388 |
+| Лучший feasible threshold / margin | 0.30 / 0.15 |
+| Coverage | 0.951 |
+| Selective precision | 0.955 |
+| Review rate | 0.049 |
+
+Формально это проходит цель selective precision ≥ 0.95 и ECE ≤ 0.10. Но selective precision измерен против weak labels, поэтому **порог 0.30/0.15 не внедряется** до human-verified validation. В сервисе остаются консервативные 0.70/0.10; после разметки порог пересчитывается и фиксируется в `configs/service.yaml`.
 
 ## 7.1. Дрейф train/test
 

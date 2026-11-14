@@ -33,9 +33,9 @@
 
 - 7 классов и маршрутизация в 7 очередей + `manual_review`.
 - Data pipeline: загрузка TWCS/Bitext, очистка, PII-маскирование, дедупликация, weak labels, group split, manifest, validation.
-- TF-IDF word+char + LogisticRegression; артефакты в `artifacts/`.
+- TF-IDF word (1–2) + LogisticRegression C=16; артефакты в `artifacts/`.
 - FastAPI: `/v1/classify`, `/v1/classify/batch`, `/v1/feedback`, `/healthcheck`, `/model-info`, `/metrics`.
-- 26 тестов, `ruff`, `mypy`, smoke.
+- 34 теста, `ruff`, `mypy`, smoke.
 - Dockerfile, Compose (api + Prometheus), alert rules.
 - Инструкция и скрипты разметки: `docs/annotation.md`.
 
@@ -105,9 +105,9 @@ $env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 
 | Метрика | Validation | Test | Balanced test |
 |---|---|---|---|
-| Accuracy | 0.930 | 0.916 | 0.833 |
-| Macro-F1 | 0.809 | 0.660 | 0.680 |
-| Weighted-F1 | 0.929 | 0.914 | 0.817 |
+| Accuracy | 0.939 | 0.913 | 0.807 |
+| Macro-F1 | 0.853 | 0.640 | 0.662 |
+| Weighted-F1 | 0.939 | 0.910 | 0.793 |
 
 Данные: 11 183 train (TWCS 4 713 + Bitext 7 236), 327 validation, 439 test. Test — weak labels, поэтому числа не финальные. Подробно: [`docs/experiments.md`](docs/experiments.md).
 
@@ -128,6 +128,7 @@ $env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 - [`docs/monitoring.md`](docs/monitoring.md) — метрики, алерты, drift.
 - [`docs/ai_usage.md`](docs/ai_usage.md) — журнал ИИ-ассистентов.
 - [`docs/report.md`](docs/report.md) — итоговый отчёт (черновик v0.2).
+- [`docs/presentation.md`](docs/presentation.md) — план презентации 10–15 слайдов.
 
 ## Команда и роли
 

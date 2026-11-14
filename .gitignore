@@ -96,6 +96,8 @@ data/annotation/*
 /artifacts/
 /mlruns/
 /mlartifacts/
+/mlflow.db
+/mlflow.db-*
 *.joblib
 *.pkl
 *.onnx

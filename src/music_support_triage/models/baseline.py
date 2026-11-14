@@ -28,20 +28,23 @@ def build_pipeline(
     char_max_features: int = 50_000,
     c_value: float = 4.0,
     seed: int = 42,
+    use_char: bool = True,
 ) -> Pipeline:
-    """Create the reproducible word+char TF-IDF baseline."""
-    features = FeatureUnion(
-        [
-            (
-                "word",
-                TfidfVectorizer(
-                    analyzer="word",
-                    ngram_range=(1, 2),
-                    min_df=2,
-                    max_features=word_max_features,
-                    sublinear_tf=True,
-                ),
+    """Create the reproducible TF-IDF baseline (word, optionally + char)."""
+    transformers: list[tuple[str, TfidfVectorizer]] = [
+        (
+            "word",
+            TfidfVectorizer(
+                analyzer="word",
+                ngram_range=(1, 2),
+                min_df=2,
+                max_features=word_max_features,
+                sublinear_tf=True,
             ),
+        )
+    ]
+    if use_char:
+        transformers.append(
             (
                 "char",
                 TfidfVectorizer(
@@ -51,9 +54,9 @@ def build_pipeline(
                     max_features=char_max_features,
                     sublinear_tf=True,
                 ),
-            ),
-        ]
-    )
+            )
+        )
+    features = FeatureUnion(transformers)
     classifier = LogisticRegression(
         C=c_value,
         max_iter=2_000,
@@ -101,10 +104,12 @@ def train_baseline(
         char_max_features=int(params.get("char_max_features", 50_000)),
         c_value=float(params.get("c_value", 4.0)),
         seed=int(config.get("seed", 42)),
+        use_char=bool(params.get("use_char", True)),
     )
     pipeline.fit(train_frame["text"], train_frame["label"])
+    use_char = bool(params.get("use_char", True))
     metadata = {
-        "model_type": "tfidf_word_char_logreg",
+        "model_type": "tfidf_word_char_logreg" if use_char else "tfidf_word_logreg",
         "trained_at": datetime.now(UTC).isoformat(),
         "n_train": int(len(train_frame)),
         "labels": list(LABELS),
@@ -112,6 +117,7 @@ def train_baseline(
             "word_max_features": int(params.get("word_max_features", 50_000)),
             "char_max_features": int(params.get("char_max_features", 50_000)),
             "c_value": float(params.get("c_value", 4.0)),
+            "use_char": use_char,
             "class_weight": "balanced",
         },
     }

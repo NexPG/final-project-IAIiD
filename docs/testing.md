@@ -1,18 +1,18 @@
 # Тестирование и найденные проблемы
 
-**Статус:** базовый набор реализован (26 тестов), финальный тест-план — после human-verified данных  
+**Статус:** базовый набор реализован (34 теста), финальный тест-план — после human-verified данных  
 **Источник требований:** [`TZ.md`](TZ.md), §10; вебинары В06–В08
 
 ## 0. Текущий результат
 
 ```text
-pytest -q   — 26 passed
+pytest -q   — 34 passed
 ruff check . — All checks passed
 mypy src     — Success: 19 source files
 smoke        — 5/5 (healthcheck, model-info, classify, batch, metrics)
 ```
 
-Покрыто: очистка/PII, маппинг меток, group split, cap `other`, дедупликация, data validation, routing (threshold/margin/`other`), API-контракт, batch, feedback idempotency, `/metrics`. Найденные ошибки модели: отрицание («I don't want to cancel my subscription, I need a receipt» → `subscription`), `content`/`recommendations` confusion.
+Покрыто: очистка/PII, маппинг меток, group split, cap `other`, дедупликация, data validation, routing (threshold/margin/`other`), API-контракт, batch, feedback idempotency, `/metrics`, model quality (overall macro-F1, per-class recall, robustness, edge, behavior, adversarial, subgroup). Найденные ошибки модели: отрицание («I don't want to cancel my subscription, I need a receipt» → `subscription`), `content`/`recommendations` confusion.
 
 ## 1. Уровни
 

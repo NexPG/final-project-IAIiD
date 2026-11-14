@@ -7,7 +7,10 @@ CLI-скрипты для воспроизводимых операций.
 | `download_data.py` | проверка локальных датасетов, checksums, опциональная загрузка Bitext |
 | `build_dataset.py` | сборка train/validation/test, cap `other`, manifest |
 | `validate_data.py` | схема, дубли, утечки, дисбаланс, PII |
-| `train.py` | обучение TF-IDF + LogReg, model card |
+| `validate_data_ge.py` | Great Expectations: 8 expectations |
+| `run_experiments.py` | 6 MLflow runs: keyword, word C=1/4/16, char, word+char |
+| `tune_threshold.py` | threshold/margin grid + ECE |
+| `train.py` | обучение выбранной модели, model card |
 | `evaluate.py` | метрики на validation/test, natural или balanced |
 | `make_balanced_test.py` | balanced stress subset |
 | `export_annotation_batch.py` | два независимых batch для разметки |

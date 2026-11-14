@@ -14,4 +14,6 @@ margin_threshold: 0.10
 model:
   word_max_features: 50000
   char_max_features: 50000
-  c_value: 4.0
+  c_value: 16.0
+  # E3 (word-only C=16) won balanced validation in scripts/run_experiments.py
+  use_char: false

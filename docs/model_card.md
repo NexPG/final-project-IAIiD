@@ -1,6 +1,6 @@
 # Model card: TF-IDF + Logistic Regression
 
-**Версия:** `tfidf-logreg-20261114162931`  
+**Версия:** `tfidf-logreg-20261114165350`  
 **Дата:** 14.11.2026  
 **Владелец:** Владимир Егоров
 
@@ -21,19 +21,20 @@
 
 ## 3. Модель
 
-- Features: TF-IDF word (1–2), TF-IDF char_wb (3–5), `min_df=2`, до 50 000 признаков каждого типа.
-- Classifier: LogisticRegression, C=4, `class_weight=balanced`, max_iter=2000, seed 42.
+- Features: TF-IDF word (1–2), `min_df=2`, до 50 000 признаков.
+- Classifier: LogisticRegression, C=16, `class_weight=balanced`, max_iter=2000, seed 42.
 - Выход: вероятности по 7 классам; routing по threshold 0.70 и margin 0.10.
+- ECE top-1 на validation: 0.0845. Подбор предлагает 0.30/0.15 (coverage 0.951, selective precision 0.955), но порог не внедрён до human-verified validation.
 
 ## 4. Метрики (provisional)
 
 | Метрика | Validation | Test | Balanced test |
 |---|---|---|---|
-| Accuracy | 0.930 | 0.916 | 0.833 |
-| Macro-F1 | 0.809 | 0.660 | 0.680 |
-| Weighted-F1 | 0.929 | 0.914 | 0.817 |
+| Accuracy | 0.939 | 0.913 | 0.807 |
+| Macro-F1 | 0.853 | 0.640 | 0.662 |
+| Weighted-F1 | 0.939 | 0.910 | 0.793 |
 
-Per-class test recall: `payment` 0.83, `subscription` 0.90, `account` 0.75, `app` 0.89, `recommendations` 0.00, `content` 0.33, `other` 0.95.
+Per-class test recall: `payment` 0.78, `subscription` 0.88, `account` 0.75, `app` 0.72, `recommendations` 0.00, `content` 0.33, `other` 0.96.
 
 **Важно:** test использует weak labels. Числа не финальные.
 

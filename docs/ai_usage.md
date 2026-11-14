@@ -24,6 +24,7 @@
 | 14.11.2026 | Baseline и API | DeepSeek/OpenCode | TF-IDF + LogReg, FastAPI, routing, тесты | `pytest` 26 passed, `ruff`, `mypy`, smoke | Исправлены FastAPI DI и формат metrics |
 | 14.11.2026 | Docker и мониторинг | DeepSeek/OpenCode | Dockerfile, Compose, Prometheus rules, drift script | `docker compose build/up`, smoke 5/5, alert firing | Проверено вручную, порт API параметризован |
 | 14.11.2026 | Отчёт v0.2 | DeepSeek/OpenCode | Черновик 5–7 страниц с реальными числами | Сверка с `artifacts/metrics.json`, manifest, Docker logs | Явно помечены provisional-метрики и ограничения |
+| 14.11.2026 | MLflow и GE | DeepSeek/OpenCode | 6 runs, 8 expectations, threshold tuning | Запуск MLflow UI/API, `ge_report.json`, сверка метрик | Исправлены file-store, порядок вероятностей и выбор модели |
 | TBD | Архитектура | TBD | Схема и ADR | Обсуждение, сверка с В02–В03 | TBD |
 | TBD | API | TBD | Pydantic-схемы | Code review + pytest | TBD |
 | TBD | Данные | TBD | Синтетические примеры | Ручная проверка и разметка | TBD |

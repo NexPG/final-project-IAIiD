@@ -82,15 +82,19 @@ structured logs + Prometheus /metrics
 
 ### 4.2. Модель
 
-TF-IDF word (1–2) + char_wb (3–5), LogisticRegression, `class_weight=balanced`, C=4, seed 42.
+TF-IDF word (1–2) + LogisticRegression, `class_weight=balanced`, C=16, seed 42. Модель выбрана по **balanced validation macro-F1** среди 6 MLflow-запусков; test не использовался для выбора.
 
 | Метрика | Validation | Test | Balanced test (114) |
 |---|---|---|---|
-| Accuracy | 0.930 | 0.916 | 0.833 |
-| Macro-F1 | **0.809** | **0.660** | **0.680** |
-| Weighted-F1 | 0.929 | 0.914 | 0.817 |
+| Accuracy | 0.939 | 0.913 | 0.807 |
+| Macro-F1 | **0.853** | **0.640** | **0.662** |
+| Weighted-F1 | 0.939 | 0.910 | 0.793 |
+
+Сравнение вариантов (validation / test macro-F1): keyword 0.466/0.475, word C=1 0.747/0.563, word C=4 0.818/0.600, **word C=16 0.854/0.640**, char C=4 0.737/0.585, word+char C=4 0.809/0.660. Word+char лучше на test, но хуже на balanced validation, поэтому выбран word C=16; это пример честного выбора без подгонки под test.
 
 **Вывод:** частые классы (`payment`, `subscription`, `other`) работают устойчиво, macro-F1 падает на редких (`recommendations` — 4 примера, recall 0; `content` — 3 примера, recall 0.33). Это ожидаемо для weak labels и дисбаланса. Числа не являются финальными.
+
+**Калибровка и порог.** ECE top-1 = 0.0845. Подбор на validation даёт лучший feasible вариант threshold 0.30 / margin 0.15: coverage 0.951, selective precision 0.955. Формально это лучше текущих 0.70/0.10, но selective precision измерен против weak labels, поэтому порог не внедряется до human-verified validation. В сервисе остаются консервативные 0.70/0.10.
 
 ### 4.3. Найденная проблема
 
@@ -102,11 +106,11 @@ TF-IDF word (1–2) + char_wb (3–5), LogisticRegression, `class_weight=balance
 
 **Pipeline:** download → clean → PII masking → dedup → weak labeling → mapping → group split → manifest → validation.
 
-**Проверки:** обязательные поля, допустимые классы/split/source, длины 10–5000, уникальность id, отсутствие cross-split дублей, отсутствие утечки `conversation_id`, доля `other` ≤ 40%, доля синтетики ≤ 15%, human-verified в eval, PII-паттерны. Отчёт пишется в `data/processed/validation_report.json`.
+**Проверки:** обязательные поля, допустимые классы/split/source, длины 10–5000, уникальность id, отсутствие cross-split дублей, отсутствие утечки `conversation_id`, доля `other` ≤ 40%, доля синтетики ≤ 15%, human-verified в eval, PII-паттерны. Отчёт пишется в `data/processed/validation_report.json`. Дополнительно Great Expectations: 8/8 expectations на 11 949 строках (`data/processed/ge_report.json`).
 
 Текущий отчёт: `ok=true`, два предупреждения — provisional eval (766 строк) и низкая поддержка редких классов в test.
 
-**Тесты:** 26 passed. Покрыты очистка/PII, маппинг меток, group split, cap `other`, дедупликация, data validation, routing, API-контракт, batch, feedback idempotency, `/metrics`. Локальный quality gate: `ruff`, `mypy`, `pytest`, smoke.
+**Тесты:** 34 passed. Покрыты очистка/PII, маппинг меток, group split, cap `other`, дедупликация, data validation, routing, API-контракт, batch, feedback idempotency, `/metrics`, model quality (overall, per-class, robustness, edge, behavior, adversarial, subgroup). Локальный quality gate: `ruff`, `mypy`, `pytest`, smoke. Great Expectations: 8/8 проверок на 11 949 строках.
 
 **План финальной проверки:** human-verified validation 300 и test 400, kappa ≥ 0.70, balanced stress subset ≥25 на класс (где возможно), contract test OpenAPI, load test 20 RPS, PII-тест логов, 503 при отсутствии модели.
 
@@ -159,9 +163,13 @@ Drift-план: PSI/KS по длине текста, доле языков, dist
 python scripts/download_data.py --config configs/data.yaml
 python scripts/build_dataset.py --config configs/data.yaml
 python scripts/validate_data.py --config configs/data.yaml
+python scripts/validate_data_ge.py
+python scripts/run_experiments.py
 python scripts/train.py --config configs/baseline.yaml --allow-provisional
+python scripts/tune_threshold.py
 python scripts/make_balanced_test.py
 python scripts/evaluate.py --split test --balanced --data data/processed/test_balanced.csv
+python scripts/drift_report.py
 uvicorn music_support_triage.api.app:app --port 8000
 python scripts/smoke.py
 ```
