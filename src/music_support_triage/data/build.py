@@ -13,7 +13,6 @@ import pandas as pd
 from music_support_triage.data.loaders import (
     load_bitext,
     load_human,
-    load_synthetic,
     load_twcs,
 )
 from music_support_triage.data.schema import LABELS, SPLITS
@@ -120,15 +119,6 @@ def build_dataset(config: dict[str, Any]) -> tuple[pd.DataFrame, dict[str, Any]]
     if bitext_path is not None:
         parts.append(load_bitext(bitext_path, int(sampling["bitext_max_rows"]), seed))
 
-    synthetic_path = paths.get("synthetic")
-    if synthetic_path is not None:
-        synthetic = load_synthetic(synthetic_path)
-        if len(synthetic) > int(sampling["synthetic_max_rows"]):
-            synthetic = synthetic.sample(
-                n=int(sampling["synthetic_max_rows"]), random_state=seed
-            )
-        parts.append(synthetic)
-
     human_path = paths.get("human")
     if human_path is not None:
         parts.append(load_human(human_path))
@@ -155,8 +145,6 @@ def build_dataset(config: dict[str, Any]) -> tuple[pd.DataFrame, dict[str, Any]]
     }
     if bitext_path is not None:
         files["bitext"] = bitext_path
-    if synthetic_path is not None:
-        files["synthetic"] = synthetic_path
     if human_path is not None:
         files["human"] = human_path
 

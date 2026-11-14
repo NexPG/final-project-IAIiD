@@ -24,11 +24,10 @@ Music Support Triage — классификация обращений в под
 
 - TWCS SpotifyCares — реальный домен, dev 6 000.
 - Bitext — 26 872, вспомогательный домен.
-- 420 синтетических — seed.
-- Все три источника: 13 847 строк.
-- 80/20 stratified by `(source, label)`: train 11 061, test 2 786.
+- Всего 13 427 строк.
+- 80/20 stratified by `(source, label)`: train 10 713, test 2 714.
 - Validation не выделяется: 5-fold CV на train.
-- Test-метки weak/synthetic.
+- Test-метки weak.
 
 ## Слайд 5. Архитектура
 
@@ -51,26 +50,26 @@ Music Support Triage — классификация обращений в под
 
 | Семейство | CV macro-F1 |
 |---|---|
-| **LogReg word+char** | **0.910 ± 0.011** |
-| LogReg word | 0.883 ± 0.011 |
-| Calibrated SVC | 0.870 ± 0.011 |
-| ComplementNB | 0.807 ± 0.008 |
+| **LogReg word** | **0.855 ± 0.048** |
+| LogReg word+char | 0.848 ± 0.038 |
+| Calibrated SVC | 0.775 ± 0.012 |
+| ComplementNB | 0.701 ± 0.006 |
 
-Выбор по CV на train, не по test. Test: macro-F1 0.909, 95% CI [0.876; 0.934].
+HalvingRandomSearchCV: 120 кандидатов, 3 раунда. Выбор по CV, test один раз. Test: macro-F1 0.855, 95% CI [0.791; 0.908].
 
 ## Слайд 8. Ошибки и ограничения
 
 - Отрицание: «I don't want to cancel my subscription, I need a receipt» → `subscription`, manual.
 - `content` ↔ `recommendations` confusion.
-- Test смешивает Bitext, TWCS и synthetic; на TWCS macro-F1 = 0.680.
-- Weak labels и разный язык источников.
+- Test смешивает Bitext и TWCS; на TWCS macro-F1 = 0.739.
+- Weak labels и разный домен источников.
 
 ## Слайд 9. Данные и валидация
 
 - PII-маскирование, дедупликация, group split.
 - 8/8 Great Expectations.
 - 37 тестов, `ruff`, `mypy`.
-- Drift: PSI 0.002, `other_share` 43.3% vs 43.3%.
+- Drift: PSI 0.003, `other_share` 44.1% vs 44.5%.
 
 ## Слайд 10. Деплой
 

@@ -8,7 +8,7 @@ CLI-скрипты для воспроизводимых операций.
 | `build_dataset.py` | объединение источников, 80/20 stratified split, manifest |
 | `validate_data.py` | схема, дубли, утечки, дисбаланс, PII |
 | `validate_data_ge.py` | Great Expectations: 8 expectations |
-| `search_models.py` | 5-fold StratifiedGroupKFold + RandomizedSearchCV, OOF threshold, bootstrap CI |
+| `search_models.py` | 5-fold StratifiedGroupKFold + HalvingRandomSearchCV, OOF threshold, bootstrap CI |
 | `tune_threshold.py` | показать OOF threshold/margin из результатов поиска |
 | `train.py` | обучение выбранной конфигурации |
 | `evaluate.py` | метрики на frozen test |
@@ -23,7 +23,7 @@ python scripts/download_data.py --config configs/data.yaml
 python scripts/build_dataset.py --config configs/data.yaml
 python scripts/validate_data.py --config configs/data.yaml
 python scripts/validate_data_ge.py
-python scripts/search_models.py --n-iter 12
+python scripts/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
 python scripts/tune_threshold.py
 python scripts/evaluate.py --split test
 ```

@@ -283,13 +283,14 @@
 
 ### 6.1. Решение по языку и объёму
 
-Проект **смешанный по языку**: TWCS и Bitext — английские, synthetic — русский. Все три источника объединяются в один пул:
+Проект **англоязычный**: TWCS и Bitext — английские. Оба источника объединяются в один пул:
 
 - **TWCS SpotifyCares** — реальные публичные диалоги поддержки Spotify в Twitter; dev-подкорпус 6 000.
 - **Bitext Customer Support** — 26 872 чистых примера, 27 интентов; сэмпл 8 000.
-- **420 синтетических** — seed и редкие классы.
 
-**Принцип:** все источники перемешиваются и делятся 80/20 со стратификацией одновременно по `(source, label)`. Test содержит те же пропорции источников и классов, что и train. Метки — weak/synthetic; это ограничение фиксируется в отчёте.
+Synthetic исключён: реальных данных достаточно, а synthetic добавлял русский шаблонный шум.
+
+**Принцип:** источники перемешиваются и делятся 80/20 со стратификацией одновременно по `(source, label)`. Test содержит те же пропорции источников и классов, что и train. Метки — weak; это ограничение фиксируется в отчёте.
 
 ### 6.2. Источники, лицензии и роль
 
@@ -297,7 +298,6 @@
 |---|---|---|---|---|
 | TWCS SpotifyCares | dev 6 000; в пуле 5 732 | реальный домен | требует уточнения; сырые твиты не коммитим | нет официальных тем; PII; шум |
 | Bitext Customer Support | 26 872; в пуле 7 695 | вспомогательный домен | CDLA-Sharing-1.0 | другой домен; маппинг |
-| Synthetic 420 | 420 | seed и редкие классы | собственная | русский язык, шаблоны |
 
 **Маппинг меток в 7 классов:**
 
@@ -306,9 +306,9 @@
 | `payment` | `billing_payment`, refund-часть `cancellation_refund` | PAYMENT, INVOICE, REFUND, CANCEL |
 | `subscription` | `subscription_plan`, cancellation-часть `cancellation_refund` | SUBSCRIPTION, ORDER (только cancel/change) |
 | `account` | `account_access`, `account_data_privacy` | ACCOUNT, CONTACT |
-| `app` | `playback_technical` | — (дополняем synthetic) |
+| `app` | `playback_technical` | — |
 | `recommendations` | `feature_request_feedback` | FEEDBACK |
-| `content` | `content_availability` | — (дополняем synthetic) |
+| `content` | `content_availability` | — |
 | `other` | `ads_free_tier_complaint`, `general_complaint_dissatisfaction`, `other` | ORDER (place/track), DELIVERY, SHIPPING |
 
 Маппинг `cancellation_refund` выполняется по тексту: возврат денег/списание → `payment`, отмена плана → `subscription`. Если сигналов нет — `other` или ручная проверка.
@@ -317,16 +317,15 @@
 
 | Параметр | Значение |
 |---|---|
-| Train | 11 061 (79.9%) |
-| Test | 2 786 (20.1%) |
+| Train | 10 713 (79.8%) |
+| Test | 2 714 (20.2%) |
 | Стратификация | `(source, label)` одновременно |
 | Группировка | `conversation_id` |
 | Validation | не выделяется, 5-fold CV на train |
-| `other` | 43.3% в train и test (без cap) |
-| Синтетика | 84 в test, 336 в train |
+| `other` | 44.1% в train и 44.5% в test (без cap) |
 | Дубли между split | 0 |
 
-**Сборка:** объединить TWCS + Bitext + synthetic → дедупликация → 80/20 split по стратумам → manifest → validation.
+**Сборка:** объединить TWCS + Bitext → дедупликация → 80/20 split по стратумам → manifest → validation.
 
 **Редкие классы.** `content` и `app` малочисленны; `class_weight=balanced` и macro-F1 используются как основные меры. Отдельный balanced stress subset не создаётся: test уже стратифицирован и содержит редкие классы.
 
@@ -340,8 +339,8 @@
 | `label` | enum | да | Один из 7 классов |
 | `scenario_id` | string | нет | Группа переформулировок; для реальных твитов — `conversation_id` |
 | `split` | enum | да | `train`, `validation`, `test` |
-| `source` | enum | да | `weak_twcs`, `bitext`, `synthetic`, `human`, `external_audio` |
-| `label_quality` | enum | да | `human_verified`, `weak`, `synthetic` |
+| `source` | enum | да | `weak_twcs`, `bitext` |
+| `label_quality` | enum | да | `weak` |
 | `channel` | enum | да | `twitter`, `app`, `web`, `email`, `chat` |
 | `locale` | enum | да | `en`, `ru`, `mixed` |
 | `annotator_1` | string | да | Псевдоним разметчика |
@@ -352,9 +351,9 @@
 
 ### 6.5. Метки и test
 
-1. Метки источников: TWCS weak, Bitext mapped, synthetic seed.
-2. Все источники объединяются и делятся 80/20 со стратификацией `(source, label)`.
-3. Test — frozen 20%, открывается один раз; метки weak/synthetic, это явно указывается в отчёте.
+1. Метки источников: TWCS weak, Bitext mapped.
+2. Источники объединяются и делятся 80/20 со стратификацией `(source, label)`.
+3. Test — frozen 20%, открывается один раз; метки weak, это явно указывается в отчёте.
 4. Validation не выделяется: его роль выполняет 5-fold CV на train.
 5. Test не используется для выбора модели или гиперпараметров.
 
@@ -707,13 +706,13 @@ Multi-class single-label классификация:
 | ID | Гипотеза | Конфигурация | Что сравниваем |
 |---|---|---|---|
 | E0 | Keyword baseline даст нижнюю границу | эвристики | macro-F1, latency |
-| E1 | LogReg word лучше keyword | TF-IDF word + LogReg, RandomizedSearchCV | CV macro-F1, std |
+| E1 | LogReg word лучше keyword | TF-IDF word + LogReg, HalvingRandomSearchCV | CV macro-F1, std |
 | E2 | Char n-grams помогают на опечатках | word+char + LogReg | CV macro-F1, robustness |
 | E3 | LinearSVC/CNB конкурентен | calibrated SVC / ComplementNB | CV macro-F1, скорость |
 | E4 | OOF threshold повышает selective precision | threshold/margin по OOF | coverage, selective precision, review rate |
 | E5 (optional) | Transformer/embeddings лучше на перефразированиях | DistilBERT или MiniLM + LogReg | macro-F1, latency, размер |
 
-**Правило:** `RandomizedSearchCV(n_iter=12, cv=StratifiedGroupKFold(5), scoring="f1_macro")`. Test не используется для выбора. Финальная оценка — один раз, с 95% bootstrap CI.
+**Правило:** `HalvingRandomSearchCV(n_candidates=120, factor=2, resources 2000→4000→8000, cv=StratifiedGroupKFold(5), scoring="f1_macro")`. Test не используется для выбора. Финальная оценка — один раз, с 95% bootstrap CI.
 
 Каждый запуск логирует:
 
@@ -1179,7 +1178,7 @@ pytest -q
 - аудит 420 и 500 слабых меток;
 - frozen test 20% после 80/20 split;
 - StratifiedGroupKFold CV по `conversation_id`;
-- RandomizedSearchCV по 4 семействам;
+- HalvingRandomSearchCV по 4 семействам;
 - OOF-порог и margin;
 - одно измерение на test + 95% bootstrap CI;
 - data validation;
@@ -1346,9 +1345,9 @@ pytest -q
 1. **Подтвердить команду из 5 человек** у преподавателя.
 2. **Подтвердить таксономию 7 классов** и распределение этапов 2–6.
 3. **Подготовить данные**:
-   - объединить TWCS + Bitext + synthetic;
+   - объединить TWCS + Bitext;
    - 80/20 stratified split по `(source, label)`;
-   - train 11 061, test 2 786;
+   - train 10 713, test 2 714;
    - зафиксировать manifest и data card.
 4. **Проверить стратификацию** и отсутствие утечек.
 5. **Python 3.12 + Docker Desktop** на машинах команды.
@@ -1390,5 +1389,5 @@ pytest -q
 |---|---|---|
 | 1.0 | 14.11.2026 | Первая версия TZ |
 | 2.0 | 14.11.2026 | Учтены 16 вебинаров, 5 участников, 7 классов, аудит черновиков, план данных, деплой/мониторинг, отчёт |
-| 2.1 | 14.11.2026 | Утверждены роли этапов 2–6; данные TWCS + Bitext + synthetic; 80/20 stratified split; CV/search; `data/external/` |
-| 2.2 | 14.11.2026 | Validation заменён на StratifiedGroupKFold CV; RandomizedSearchCV; OOF-порог; bootstrap CI; 80/20 frozen test |
+| 2.1 | 14.11.2026 | Утверждены роли этапов 2–6; данные TWCS + Bitext; 80/20 stratified split; HalvingRandomSearchCV; `data/external/` |
+| 2.2 | 14.11.2026 | Validation заменён на StratifiedGroupKFold CV; HalvingRandomSearchCV; OOF-порог; bootstrap CI; 80/20 frozen test |

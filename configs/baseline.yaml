@@ -12,12 +12,12 @@ threshold: 0.85
 margin_threshold: 0.05
 
 model:
-  word_max_features: 20000
+  word_max_features: 50000
   char_max_features: 30000
-  c_value: 16.0
-  # Selected by StratifiedGroupKFold CV in scripts/search_models.py.
-  use_char: true
-  word_ngram: [1, 1]
-  word_min_df: 1
+  c_value: 32.0
+  # Selected by HalvingRandomSearchCV in scripts/search_models.py.
+  use_char: false
+  word_ngram: [1, 2]
+  word_min_df: 2
   char_ngram: [3, 5]
   char_min_df: 3

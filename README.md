@@ -52,9 +52,9 @@
 
 ## Быстрый старт
 
-Сырые датасеты не коммитятся. Положите TWCS dev/pseudo CSV, Bitext CSV и synthetic
-corpus в пути из [`configs/data.yaml`](configs/data.yaml) (по умолчанию
-`data/external/twcs/`, `data/external/bitext/`, `data/external/synthetic/`).
+Сырые датасеты не коммитятся. Положите TWCS dev/pseudo CSV и Bitext CSV в пути из
+[`configs/data.yaml`](configs/data.yaml) (по умолчанию `data/external/twcs/` и
+`data/external/bitext/`).
 
 ```bash
 python -m venv .venv
@@ -65,7 +65,7 @@ pip install -e ".[dev,ml]"
 python scripts/download_data.py --config configs/data.yaml
 python scripts/build_dataset.py --config configs/data.yaml
 python scripts/validate_data_ge.py
-python scripts/search_models.py --n-iter 12
+python scripts/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
 pytest -q
 ```
 
@@ -88,15 +88,15 @@ $env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 
 | Метрика | Значение |
 |---|---|
-| CV macro-F1 (5-fold) | 0.910 ± 0.011 |
-| Test macro-F1 | 0.909 |
-| Bootstrap 95% CI | [0.876; 0.934] |
-| Test accuracy | 0.959 |
-| Test weighted-F1 | 0.959 |
-| Test coverage | 0.887 |
+| CV macro-F1 (5-fold) | 0.855 ± 0.048 |
+| Test macro-F1 | 0.855 |
+| Bootstrap 95% CI | [0.791; 0.908] |
+| Test accuracy | 0.963 |
+| Test weighted-F1 | 0.963 |
+| Test coverage | 0.881 |
 | Test selective precision | 0.989 |
 
-Данные: 13 847 строк, объединённый пул TWCS + Bitext + synthetic, 80/20 со стратификацией по `(source, label)`: 11 061 train, 2 786 test. Validation не выделяется: 5-fold CV на train, test открывается один раз. Overall macro-F1 0.909 смешивает источники; на реальном TWCS macro-F1 = 0.680. Test-метки weak/synthetic. Подробно: [`docs/03_experiments/experiments.md`](docs/03_experiments/experiments.md).
+Данные: 13 427 строк, объединённый пул TWCS + Bitext, 80/20 со стратификацией по `(source, label)`: 10 713 train, 2 714 test. Validation не выделяется: 5-fold CV на train, test открывается один раз. Overall macro-F1 0.855 смешивает источники; на реальном TWCS macro-F1 = 0.739. Test-метки weak. Подробно: [`docs/03_experiments/experiments.md`](docs/03_experiments/experiments.md).
 
 ## Документация
 
@@ -129,9 +129,8 @@ $env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 
 - **TWCS SpotifyCares** — 5 732 строки, реальный домен.
 - **Bitext Customer Support** — 7 695 строк, вспомогательный домен.
-- **420 синтетических** — 420 строк, seed и редкие классы.
 
-Train 11 061, test 2 786. Test-метки weak/synthetic, поэтому overall 0.909 смешивает источники; на TWCS macro-F1 = 0.680. Подробно: [`docs/01_task/data_card.md`](docs/01_task/data_card.md).
+Train 10 713, test 2 714. Test-метки weak, поэтому overall 0.855 смешивает источники; на TWCS macro-F1 = 0.739. Подробно: [`docs/01_task/data_card.md`](docs/01_task/data_card.md).
 
 ## Ограничения
 
@@ -139,7 +138,7 @@ Train 11 061, test 2 786. Test-метки weak/synthetic, поэтому overall
 - 7 классов, single-label; несколько тем уходят в manual.
 - Англоязычный фокус; русский и mixed-language — опциональное расширение.
 - TWCS не имеет официальных тем: используются слабые метки, их шум честно измеряется.
-- Test смешивает TWCS, Bitext и synthetic; overall macro-F1 выше, чем на TWCS.
+- Test смешивает TWCS и Bitext; overall macro-F1 выше, чем на TWCS.
 - `content` и `app` редки.
 - Нет реальной интеграции с CRM и автоматических ответов.
 - CI/CD на GitHub не используется: проверки и запуск локальные.

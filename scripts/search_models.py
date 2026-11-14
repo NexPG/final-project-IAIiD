@@ -1,7 +1,8 @@
-"""Stage 3: model selection with StratifiedGroupKFold CV and RandomizedSearchCV.
+"""Stage 3: model selection with StratifiedGroupKFold CV and HalvingRandomSearchCV.
 
-The test split is frozen and evaluated exactly once, after the best pipeline
-and its threshold are fixed on out-of-fold train predictions.
+Each family samples many candidates, evaluates them on increasing data
+subsets (successive halving), and only the best candidates reach the full
+train size. The test split is frozen and evaluated exactly once.
 """
 
 from __future__ import annotations
@@ -19,11 +20,12 @@ import mlflow
 import numpy as np
 import pandas as pd
 from sklearn.calibration import CalibratedClassifierCV
+from sklearn.experimental import enable_halving_search_cv  # noqa: F401
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import f1_score
 from sklearn.model_selection import (
-    RandomizedSearchCV,
+    HalvingRandomSearchCV,
     StratifiedGroupKFold,
     cross_val_predict,
 )
@@ -77,7 +79,7 @@ def svc_pipeline() -> Pipeline:
                 "classifier",
                 CalibratedClassifierCV(
                     estimator=LinearSVC(random_state=42, dual="auto"),
-                    cv=3,
+                    cv=2,
                 ),
             ),
         ]
@@ -258,8 +260,11 @@ def write_model_card(payload: dict[str, Any], path: Path) -> None:
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--config", type=Path, default=Path("configs/data.yaml"))
-    parser.add_argument("--n-iter", type=int, default=12)
+    parser.add_argument("--n-candidates", type=int, default=120)
     parser.add_argument("--cv-folds", type=int, default=5)
+    parser.add_argument("--factor", type=int, default=3)
+    parser.add_argument("--min-resources", type=int, default=2000)
+    parser.add_argument("--max-resources", type=int, default=8000)
     parser.add_argument("--output", type=Path, default=Path("artifacts/search_results.json"))
     return parser.parse_args()
 
@@ -295,14 +300,18 @@ def main() -> int:
     mlflow.set_tracking_uri("sqlite:///mlflow.db")
     mlflow.set_experiment("music_support_triage")
     search_results: list[dict[str, Any]] = []
-    best_searches: dict[str, RandomizedSearchCV] = {}
+    best_searches: dict[str, HalvingRandomSearchCV] = {}
 
     for name, (pipeline, space) in families.items():
         print(f"searching {name}")
-        search = RandomizedSearchCV(
+        search = HalvingRandomSearchCV(
             estimator=pipeline,
             param_distributions=space,
-            n_iter=args.n_iter,
+            n_candidates=args.n_candidates,
+            factor=args.factor,
+            resource="n_samples",
+            min_resources=args.min_resources,
+            max_resources=args.max_resources,
             scoring="f1_macro",
             cv=cv_splits,
             random_state=seed,
@@ -318,14 +327,20 @@ def main() -> int:
             "cv_macro_f1_mean": float(search.best_score_),
             "cv_macro_f1_std": float(search.cv_results_["std_test_score"][search.best_index_]),
             "best_params": search.best_params_,
-            "n_iter": args.n_iter,
+            "n_candidates": args.n_candidates,
+            "factor": args.factor,
+            "min_resources": args.min_resources,
+            "max_resources": args.max_resources,
         }
         search_results.append(record)
         with mlflow.start_run(run_name=f"search_{name}"):
             mlflow.log_params(
                 {
                     "family": name,
-                    "n_iter": args.n_iter,
+                    "n_candidates": args.n_candidates,
+                    "factor": args.factor,
+                    "min_resources": args.min_resources,
+                    "max_resources": args.max_resources,
                     "cv_folds": args.cv_folds,
                     "seed": seed,
                     "n_train": len(train),

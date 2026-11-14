@@ -27,7 +27,7 @@
 - роли 5 участников.
 
 **Gate 1:** задача, вход/выход, метрики, ограничения и роли согласованы.  
-**Артефакты:** [`TZ.md`](TZ.md), [`README.md`](../../README.md), [`data.md`](data.md).
+**Артефакты:** [`TZ.md`](TZ.md), [`README.md`](../../README.md), [`data.md`](data.md), [`gate_report.md`](gate_report.md).
 
 ## Этап 2. Архитектура
 
@@ -47,7 +47,7 @@
 - схема `docs/02_architecture/architecture.png`.
 
 **Gate 2:** схема читаема, контракт совпадает с кодом, OpenAPI валиден, ошибки и SLA описаны.  
-**Артефакты:** [`architecture.md`](../02_architecture/architecture.md), [`api.md`](../02_architecture/api.md), [`openapi.json`](../02_architecture/openapi.json), `src/music_support_triage/api/`.
+**Артефакты:** [`architecture.md`](../02_architecture/architecture.md), [`api.md`](../02_architecture/api.md), [`openapi.json`](../02_architecture/openapi.json), [`gate_report.md`](../02_architecture/gate_report.md), `src/music_support_triage/api/`.
 
 ## Этап 3. Эксперименты
 
@@ -55,17 +55,17 @@
 
 **Сделано:**
 
-- объединённый пул 13 847 строк: TWCS + Bitext + synthetic;
-- 80/20 со стратификацией одновременно по `(source, label)`: 11 061 train, 2 786 test;
+- объединённый пул 13 427 строк: TWCS + Bitext;
+- 80/20 со стратификацией одновременно по `(source, label)`: 10 713 train, 2 714 test;
 - 5-fold `StratifiedGroupKFold` на train, стратификация по `(source, label)`;
-- `RandomizedSearchCV(n_iter=12)` по 4 семействам;
+- `HalvingRandomSearchCV`: 120 кандидатов, factor=2, resources 2000→4000→8000;
 - выбор по mean CV macro-F1, test не используется;
 - OOF-порог 0.85/0.05;
-- одно измерение на test: macro-F1 0.909, 95% CI [0.876; 0.934];
+- одно измерение на test: macro-F1 0.855, 95% CI [0.791; 0.908];
 - MLflow runs, model card.
 
 **Gate 3:** split стратифицирован, CV и search воспроизводимы, test не использован для выбора, CI опубликован, MLflow заполнен.  
-**Артефакты:** [`experiments.md`](../03_experiments/experiments.md), [`model_card.md`](../03_experiments/model_card.md), `artifacts/search_results.json`, MLflow.
+**Артефакты:** [`experiments.md`](../03_experiments/experiments.md), [`model_card.md`](../03_experiments/model_card.md), [`gate_report.md`](../03_experiments/gate_report.md), `artifacts/search_results.json`, MLflow.
 
 ## Этап 4. Тестирование
 
@@ -81,7 +81,7 @@
 - найдены: отрицание, `content`/`recommendations`, mixed-source test.
 
 **Gate 4:** критические сценарии покрыты, найденная проблема описана, quality gate зелёный.  
-**Артефакты:** [`testing.md`](../04_testing/testing.md), `tests/`, `data/processed/ge_report.json`.
+**Артефакты:** [`testing.md`](../04_testing/testing.md), [`gate_report.md`](../04_testing/gate_report.md), `tests/`, `data/processed/ge_report.json`.
 
 ## Этап 5. Деплой
 
@@ -96,7 +96,7 @@
 - rollback и production-маршрут описаны.
 
 **Gate 5:** `docker compose build/up`, smoke, healthcheck, rollback.  
-**Артефакты:** [`deployment.md`](../05_deployment/deployment.md), `docker/`.
+**Артефакты:** [`deployment.md`](../05_deployment/deployment.md), [`gate_report.md`](../05_deployment/gate_report.md), `docker/`.
 
 ## Этап 6. Мониторинг
 
@@ -107,11 +107,11 @@
 - `/metrics`, Prometheus;
 - 4 алерта: API down, model not ready, 5xx, latency;
 - алерт `TriageApiDown` проверен в firing;
-- drift-отчёт: PSI 0.002, KS 0.012, `other_share` 43.3% vs 43.3%;
+- drift-отчёт: PSI 0.003, KS 0.020, `other_share` 44.1% vs 44.5%;
 - runbook и стратегия переобучения.
 
 **Gate 6:** 3 уровня метрик, ≥1 алерт, drift-отчёт, runbook.  
-**Артефакты:** [`monitoring.md`](../06_monitoring/monitoring.md), `monitoring/`, `scripts/drift_report.py`.
+**Артефакты:** [`monitoring.md`](../06_monitoring/monitoring.md), [`gate_report.md`](../06_monitoring/gate_report.md), `monitoring/`, `scripts/drift_report.py`.
 
 ## Что нельзя делать раньше
 

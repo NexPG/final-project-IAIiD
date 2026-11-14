@@ -14,7 +14,7 @@ python -m venv .venv
 # Windows: .venv\Scripts\activate
 pip install -e ".[dev,ml]"
 python scripts/build_dataset.py --config configs/data.yaml
-python scripts/search_models.py --n-iter 12
+python scripts/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
 uvicorn music_support_triage.api.app:app --reload
 ```
 

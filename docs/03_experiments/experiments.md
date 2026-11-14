@@ -6,10 +6,10 @@
 
 ## 1. Правила
 
-1. Все источники объединены в один пул и разделены 80/20.
-2. Split стратифицирован одновременно по `(source, label)`.
+1. TWCS и Bitext объединены в один пул.
+2. 80/20 split стратифицирован одновременно по `(source, label)`.
 3. Модель выбирается по 5-fold CV на train.
-4. Гиперпараметры — `RandomizedSearchCV`.
+4. Гиперпараметры — `HalvingRandomSearchCV`.
 5. Test открывается один раз после фиксации модели и порога.
 6. После test дополнительные проверки не используются для выбора.
 7. Публикуются CV mean/std, test macro-F1 и 95% bootstrap CI.
@@ -18,120 +18,131 @@
 
 | Источник | Train | Test | Всего |
 |---|---|---|---|
-| TWCS weak | 4 570 | 1 162 | 5 732 |
+| TWCS weak | 4 558 | 1 174 | 5 732 |
 | Bitext mapped | 6 155 | 1 540 | 7 695 |
-| Synthetic | 336 | 84 | 420 |
-| **Всего** | **11 061** | **2 786** | **13 847** |
+| **Всего** | **10 713** | **2 714** | **13 427** |
 
-Доли test по каждому источнику — 20.0–20.3%. Классовые доли также сохранены.
+Доли test: TWCS 20.5%, Bitext 20.0%. Классовые доли сохранены.
 
-## 3. Схема
+## 3. Схема эксперимента
 
 ```text
-combined pool (TWCS + Bitext + synthetic)
+combined pool (TWCS + Bitext)
         │
         ├─ deduplicate
         ├─ 80/20 stratified by (source, label), grouped by conversation_id
         │
-        ├─ train 11 061 ── 5-fold StratifiedGroupKFold on (source,label)
-        │       ├─ RandomizedSearchCV (n_iter=12) per family
+        ├─ train 10 713 ── 5-fold StratifiedGroupKFold on (source,label)
+        │       ├─ HalvingRandomSearchCV: 120 → 60 → 30 candidates
+        │       ├─ resource: 2000 → 4000 → 8000 rows
         │       ├─ select by mean CV macro-F1
         │       ├─ refit on full train
         │       └─ OOF threshold/margin
         │
-        └─ test 2 786 ── one final evaluation + bootstrap CI
+        └─ test 2 714 ── one final evaluation + bootstrap CI
 ```
 
-## 4. Search space
+## 4. HalvingRandomSearchCV
 
-| Семейство | Ключевые параметры |
+- `n_candidates=120` на семейство;
+- `factor=2`, `resource="n_samples"`;
+- `min_resources=2000`, `max_resources=8000`;
+- 3 раунда: 120 → 60 → 30 кандидатов;
+- `cv=5` (StratifiedGroupKFold по `(source,label)`);
+- `scoring="f1_macro"`;
+- `random_state=42`.
+
+Итого: 1 050 fits на семейство (кроме ComplementNB — 840), то есть **в 7–8 раз больше**, чем 12 итераций RandomizedSearch.
+
+## 5. Пространства поиска
+
+| Семейство | Параметры |
 |---|---|
-| `logreg_word` | ngram (1,1)/(1,2), min_df, max_features, C, class_weight |
-| `logreg_word_char` | word + char_wb, min_df, max_features, C, class_weight |
-| `linear_svc` | calibrated LinearSVC, ngram, min_df, C, class_weight |
-| `complement_nb` | ngram, min_df, alpha, fit_prior |
+| `logreg_word` | ngram (1,1)/(1,2), min_df 1–3, max_features 20k/50k/100k, sublinear, C 0.5–32, class_weight |
+| `logreg_word_char` | word + char_wb (2–5)/(3–5), min_df, max_features, C, class_weight |
+| `linear_svc` | calibrated LinearSVC, ngram, min_df, C 0.1–4, class_weight |
+| `complement_nb` | ngram, min_df, alpha 0.1–2, fit_prior |
 
-`RandomizedSearchCV(n_iter=12, cv=5, scoring="f1_macro", n_jobs=2, random_state=42)`.
+## 6. Результаты
 
-## 5. Результаты CV
+| Семейство | CV macro-F1 | Std | Best params | Выбрано |
+|---|---|---|---|---|
+| **logreg_word** | **0.855** | **0.048** | word (1,2), min_df=2, max_features=50k, sublinear=False, C=32, balanced | **да** |
+| logreg_word_char | 0.848 | 0.038 | word (1,2), min_df=2, max_features=20k; char (2,5), min_df=3, max_features=30k; C=2 | нет |
+| linear_svc | 0.775 | 0.012 | word (1,2), min_df=2, max_features=20k, C=2 | нет |
+| complement_nb | 0.701 | 0.006 | word (1,2), min_df=1, max_features=50k, alpha=0.1 | нет |
 
-| Семейство | CV macro-F1 | Std | Выбрано |
-|---|---|---|---|
-| **logreg_word_char** | **0.910** | **0.011** | да |
-| logreg_word | 0.883 | 0.011 | нет |
-| linear_svc (calibrated) | 0.870 | 0.011 | нет |
-| complement_nb | 0.807 | 0.008 | нет |
+**Почему выбрана `logreg_word`:**
+- максимальный mean CV macro-F1 — 0.855;
+- std 0.048 выше, чем у word+char, но разница mean +0.007 и меньшая сложность;
+- word-only быстрее и проще для inference;
+- word+char не дал статистически убедительного прироста.
 
-Лучшие параметры: word (1,1), `min_df=1`, `max_features=20000`; char_wb (3,5), `min_df=3`, `max_features=30000`; C=16, `class_weight=balanced`.
-
-**Почему word+char:** CV выше на 0.027 при меньшем std; char-признаки помогают на опечатках и смешанном языке.
-
-## 6. Финальный test (один раз)
+## 7. Финальный test (один раз)
 
 | Метрика | Значение |
 |---|---|
-| Accuracy | 0.959 |
-| Macro-F1 | **0.909** |
-| Weighted-F1 | 0.959 |
-| Bootstrap 95% CI | **[0.876; 0.934]** |
-| Coverage | 0.887 |
+| Accuracy | 0.963 |
+| Macro-F1 | **0.855** |
+| Weighted-F1 | 0.963 |
+| Bootstrap 95% CI | **[0.791; 0.908]** |
+| Coverage | 0.881 |
 | Selective precision | **0.989** |
-| Review rate | 0.113 |
+| Review rate | 0.119 |
 
-Per-class recall: `payment` 0.96, `subscription` 0.95, `account` 0.97, `app` 0.86, `recommendations` 0.97, `content` 0.71, `other` 0.97.
+Per-class recall: `payment` 0.97, `subscription` 0.92, `account` 0.96, `app` 0.69, `recommendations` 0.98, `content` 0.40, `other` 0.98.
 
 ### Test по источникам (диагностика)
 
 | Источник | Rows | Accuracy | Macro-F1 |
 |---|---|---|---|
-| Bitext | 1 540 | 0.997 | 0.712 |
-| TWCS | 1 162 | 0.912 | 0.680 |
-| Synthetic | 84 | 0.905 | 0.906 |
+| Bitext | 1 540 | 0.998 | 0.713 |
+| TWCS | 1 174 | 0.917 | 0.739 |
 
-Overall 0.909 смешивает источники. На реальном TWCS macro-F1 = 0.680; это ограничение, а не выбор по test.
+Overall 0.855 смешивает источники. На реальном TWCS macro-F1 = 0.739; это ограничение, а не выбор по test.
 
-## 7. Threshold и routing
+## 8. Threshold и routing
 
 Политика: selective precision ≥ 0.95, coverage ≤ 0.90 на OOF.
 
 | Параметр | OOF | Test |
 |---|---|---|
 | Threshold / margin | 0.85 / 0.05 | 0.85 / 0.05 |
-| Coverage | 0.877 | 0.887 |
-| Selective precision | 0.988 | 0.989 |
-| Review rate | 0.123 | 0.113 |
+| Coverage | 0.878 | 0.881 |
+| Selective precision | 0.989 | 0.989 |
+| Review rate | 0.122 | 0.119 |
 
-## 8. Стабильность split
+## 9. Стабильность split
 
 `python scripts/drift_report.py`:
 
 | Показатель | Train | Test |
 |---|---|---|
-| Средняя длина | 64.8 | 65.4 |
-| p95 длины | 133 | 137 |
-| Доля `other` | 43.3% | 43.3% |
+| Средняя длина | 65.2 | 66.7 |
+| p95 длины | 133 | 138 |
+| Доля `other` | 44.1% | 44.5% |
 
-PSI длины = **0.002**, KS = **0.012**, p = 0.917 — распределения совпадают, стратификация сработала.
+PSI длины = **0.003**, KS = **0.020**, p = 0.346 — распределения совпадают, стратификация сработала.
 
-## 9. MLflow
+## 10. MLflow
 
 - Tracking: `sqlite:///mlflow.db`.
 - Runs: 4 search runs + 1 final run.
 - Логируются params, CV mean/std, test macro-F1, CI, coverage, selective precision.
 - Test логируется только в final run.
 
-## 10. Воспроизводимость
+## 11. Воспроизводимость
 
 ```bash
 python scripts/build_dataset.py --config configs/data.yaml
-python scripts/search_models.py --n-iter 12
+python scripts/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
 python scripts/tune_threshold.py
 ```
 
-## 11. Ограничения
+## 12. Ограничения
 
-- Test-метки weak/synthetic, не human-verified.
+- Test-метки weak, не human-verified.
 - Overall test смешивает источники; TWCS-качество ниже.
-- Synthetic русскоязычный, TWCS/Bitext англоязычные.
+- `content` (5 test) и `app` (54 test) редки.
 - Bootstrap CI учитывает вариабельность test, не разметку.
 - Transformer не запускался: CPU/время; optional.

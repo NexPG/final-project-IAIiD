@@ -7,7 +7,7 @@ paths:
   twcs_dev: data/external/twcs/dev_cases.csv
   twcs_pseudo: data/external/twcs/dev_cases_pseudo_labeled.csv
   bitext: data/external/bitext/bitext.csv
-  synthetic: data/external/synthetic/corpus.jsonl
+  synthetic: null
   human: null
   processed: data/processed/dataset.csv
   manifest: data/manifest.json
@@ -16,7 +16,6 @@ paths:
 sampling:
   twcs_max_rows: 12000
   bitext_max_rows: 8000
-  synthetic_max_rows: 420
 
 splits:
   # One combined pool: TWCS + Bitext + synthetic.

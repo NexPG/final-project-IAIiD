@@ -10,19 +10,18 @@
 |---|---|---|---|
 | TWCS SpotifyCares | 5 732 | EN | реальный домен |
 | Bitext Customer Support | 7 695 | EN | вспомогательный домен |
-| Synthetic seed | 420 | RU | seed и редкие классы |
-| **Всего** | **13 847** | mixed | один пул |
+| **Всего** | **13 427** | EN | один пул |
 
-Сырые данные лежат в `data/external/` и не коммитятся.
+Сырые данные лежат в `data/external/` и не коммитятся. Synthetic исключён: реальных данных достаточно, а synthetic добавлял русский шаблонный шум.
 
 ## 2. 80/20 split
 
-Все источники объединены, перемешаны и разделены **80/20**:
+Источники объединены, перемешаны и разделены **80/20**:
 
 | Split | Строк | Доля |
 |---|---|---|
-| Train | 11 061 | 79.9% |
-| Test | 2 786 | 20.1% |
+| Train | 10 713 | 79.8% |
+| Test | 2 714 | 20.2% |
 
 Стратификация — одновременно по двум ключам:
 
@@ -30,39 +29,34 @@
 stratum = source + "||" + label
 ```
 
-То есть сохраняются и классовые, и источниковые пропорции. Внутри каждого стратума split идёт по `conversation_id`, чтобы один диалог не попал в train и test.
+Сохраняются и классовые, и источниковые пропорции. Внутри стратума split идёт по `conversation_id`, чтобы один диалог не попал в train и test.
 
 | Источник | Train | Test |
 |---|---|---|
-| TWCS | 4 570 | 1 162 |
+| TWCS | 4 558 | 1 174 |
 | Bitext | 6 155 | 1 540 |
-| Synthetic | 336 | 84 |
 
-`other` — 43.3% в train и 43.3% в test. Cap не применяется, чтобы не ломать стратификацию; дисбаланс компенсируется `class_weight=balanced`.
+`other` — 44.1% в train и 44.5% в test. Cap не применяется; дисбаланс компенсируется `class_weight=balanced`.
 
 ## 3. Почему нет validation
 
-Отдельный validation не нужен:
-
-- train — единственный источник для обучения, выбора модели и гиперпараметров;
+- train — источник для обучения, выбора модели и гиперпараметров;
 - 5-fold `StratifiedGroupKFold` на train даёт OOF-оценку;
-- `RandomizedSearchCV` подбирает гиперпараметры по CV;
+- `HalvingRandomSearchCV` подбирает гиперпараметры по CV;
 - порог и margin выбираются по OOF;
 - test открывается один раз после фиксации модели и порога.
 
-Это сохраняет 20% данных для честной финальной проверки и не тратит ещё 10–15% на validation.
-
 ## 4. Маппинг в 7 классов
 
-| Целевой класс | TWCS-интенты | Bitext-категории | Synthetic |
-|---|---|---|---|
-| `payment` | `billing_payment`; refund-часть `cancellation_refund` | PAYMENT, INVOICE, REFUND, CANCEL | Оплата |
-| `subscription` | `subscription_plan`; cancellation-часть | SUBSCRIPTION, ORDER (cancel/change) | Подписка |
-| `account` | `account_access`, `account_data_privacy` | ACCOUNT, CONTACT | Аккаунт |
-| `app` | `playback_technical` | — | Приложение |
-| `recommendations` | `feature_request_feedback` | FEEDBACK | Рекомендации |
-| `content` | `content_availability` | — | Контент |
-| `other` | `ads_free_tier_complaint`, `general_complaint_dissatisfaction`, `other` | ORDER (place/track), DELIVERY, SHIPPING | Другое |
+| Целевой класс | TWCS-интенты | Bitext-категории |
+|---|---|---|
+| `payment` | `billing_payment`; refund-часть `cancellation_refund` | PAYMENT, INVOICE, REFUND, CANCEL |
+| `subscription` | `subscription_plan`; cancellation-часть | SUBSCRIPTION, ORDER (cancel/change) |
+| `account` | `account_access`, `account_data_privacy` | ACCOUNT, CONTACT |
+| `app` | `playback_technical` | — |
+| `recommendations` | `feature_request_feedback` | FEEDBACK |
+| `content` | `content_availability` | — |
+| `other` | `ads_free_tier_complaint`, `general_complaint_dissatisfaction`, `other` | ORDER (place/track), DELIVERY, SHIPPING |
 
 Спорные правила:
 
@@ -78,16 +72,14 @@ stratum = source + "||" + label
 | `id` | string | стабильный ID |
 | `text` | string | очищенный текст |
 | `label` | enum | 7 классов |
-| `label_quality` | enum | `weak`, `synthetic` |
-| `source` | enum | `weak_twcs`, `bitext`, `synthetic` |
+| `label_quality` | enum | `weak` |
+| `source` | enum | `weak_twcs`, `bitext` |
 | `split` | enum | `train`, `test` |
 | `conversation_id` | string | группа для split |
-| `channel` | enum | twitter/app/email |
-| `locale` | enum | en/ru/mixed |
+| `channel` | enum | twitter/email |
+| `locale` | enum | en |
 
 ## 6. Валидация
-
-Pandas-проверки:
 
 - обязательные поля и пропуски;
 - допустимые классы/split/source;
@@ -109,8 +101,7 @@ Great Expectations: 8 expectations, отчёт `data/processed/ge_report.json`.
 
 ## 8. Ограничения
 
-- Test-метки weak/synthetic, не human-verified.
-- Overall test смешивает три источника; на TWCS macro-F1 ниже.
-- Synthetic русскоязычный, TWCS/Bitext англоязычные.
+- Test-метки weak, не human-verified.
+- Overall test смешивает два источника; на TWCS macro-F1 ниже.
 - `content` и `app` редки.
 - Лицензия TWCS требует уточнения.

@@ -31,7 +31,7 @@
 |---|---|---|---|---|
 | 1. Задача | Требования курса | Таксономия, метрики, границы, данные | `TZ.md`, `data.md`, `README.md` | закрыт |
 | 2. Архитектура | TZ, 7 классов | Монолит, API, routing, ADR | `architecture.md`, `api.md`, `openapi.json` | закрыт |
-| 3. Эксперименты | Данные + архитектура | 80/20, CV, RandomizedSearchCV, test | `experiments.md`, MLflow, `model_card.md` | закрыт |
+| 3. Эксперименты | Данные + архитектура | 80/20, CV, HalvingRandomSearchCV, test | `experiments.md`, MLflow, `model_card.md` | закрыт |
 | 4. Тестирование | Модель + API | Data/model/API/contract tests | `tests/`, `testing.md` | базово закрыт |
 | 5. Деплой | Сервис | Docker, Compose, smoke, rollback | `deployment.md` | базово закрыт |
 | 6. Мониторинг | Сервис | Метрики, алерты, drift, runbook | `monitoring.md` | базово закрыт |
@@ -61,7 +61,7 @@
 | Язык | Python 3.12 | ML/NLP-экосистема |
 | API | FastAPI + Pydantic v2 | OpenAPI, валидация, TestClient |
 | Модель | TF-IDF + LogisticRegression | CPU, скорость, интерпретируемость |
-| Подбор | RandomizedSearchCV + StratifiedGroupKFold | Быстрее grid, честная CV |
+| Подбор | HalvingRandomSearchCV + StratifiedGroupKFold | Больше комбинаций, successive halving |
 | Данные | pandas + PyYAML | Воспроизводимый pipeline |
 | Трекинг | MLflow (SQLite) | Runs, params, metrics, artifacts |
 | Валидация | Great Expectations | 8 expectations, отчёт |
@@ -75,21 +75,20 @@
 
 | Источник | Всего | Train | Test |
 |---|---|---|---|
-| TWCS SpotifyCares | 5 732 | 4 570 | 1 162 |
+| TWCS SpotifyCares | 5 732 | 4 558 | 1 174 |
 | Bitext Customer Support | 7 695 | 6 155 | 1 540 |
-| Synthetic seed | 420 | 336 | 84 |
-| **Всего** | **13 847** | **11 061** | **2 786** |
+| **Всего** | **13 427** | **10 713** | **2 714** |
 
-Пул перемешан и разделён **80/20** со стратификацией одновременно по `(source, label)`. Доли test по источникам — 20.0–20.3%, классовые доли сохранены. Validation не выделяется: его роль выполняет 5-fold CV на train.
+Пул перемешан и разделён **80/20** со стратификацией одновременно по `(source, label)`. Доли test: TWCS 20.5%, Bitext 20.0%; классовые доли сохранены. Validation не выделяется: его роль выполняет 5-fold CV на train.
 
-**Метки:** TWCS weak (keyword/pseudo-label), Bitext mapped, synthetic seed. Это не независимая человеческая разметка; test-метрики измеряют согласие с этими метками. Ограничение зафиксировано в data card.
+**Метки:** TWCS weak (keyword/pseudo-label), Bitext mapped. Это не независимая человеческая разметка; test-метрики измеряют согласие с этими метками. Ограничение зафиксировано в data card.
 
 ## 6. Эксперименты
 
 ### 6.1. Схема
 
 - 5-fold `StratifiedGroupKFold` на train, стратификация по `(source, label)`, группы — `conversation_id`;
-- `RandomizedSearchCV(n_iter=12)` для каждого семейства;
+- `HalvingRandomSearchCV`: 120 кандидатов, factor=2, resources 2000→4000→8000;
 - выбор по mean CV macro-F1; test не используется;
 - после выбора — refit на полном train и OOF-порог;
 - **одно** измерение на test + 95% bootstrap CI.
@@ -98,46 +97,45 @@
 
 | Семейство | CV macro-F1 | Std |
 |---|---|---|
-| **logreg_word_char** | **0.910** | **0.011** |
-| logreg_word | 0.883 | 0.011 |
-| linear_svc (calibrated) | 0.870 | 0.011 |
-| complement_nb | 0.807 | 0.008 |
+| **logreg_word** | **0.855** | **0.048** |
+| logreg_word_char | 0.848 | 0.038 |
+| linear_svc (calibrated) | 0.775 | 0.012 |
+| complement_nb | 0.701 | 0.006 |
 
-Выбрана `logreg_word_char`: TF-IDF word (1,1) + char_wb (3,5), C=16, `class_weight=balanced`.
+Выбрана `logreg_word`: TF-IDF word (1,2), `min_df=2`, `max_features=50000`, C=32, `class_weight=balanced`.
 
 ### 6.3. Финальный test
 
 | Метрика | Значение |
 |---|---|
-| Accuracy | 0.959 |
-| Macro-F1 | **0.909** |
-| Weighted-F1 | 0.959 |
-| Bootstrap 95% CI | **[0.876; 0.934]** |
-| Coverage | 0.887 |
+| Accuracy | 0.963 |
+| Macro-F1 | **0.855** |
+| Weighted-F1 | 0.963 |
+| Bootstrap 95% CI | **[0.791; 0.908]** |
+| Coverage | 0.881 |
 | Selective precision | **0.989** |
-| Review rate | 0.113 |
+| Review rate | 0.119 |
 
-Per-class recall: `payment` 0.96, `subscription` 0.95, `account` 0.97, `app` 0.86, `recommendations` 0.97, `content` 0.71, `other` 0.97.
+Per-class recall: `payment` 0.97, `subscription` 0.92, `account` 0.96, `app` 0.69, `recommendations` 0.98, `content` 0.40, `other` 0.98.
 
 **Test по источникам (диагностика):**
 
 | Источник | Rows | Accuracy | Macro-F1 |
 |---|---|---|---|
-| Bitext | 1 540 | 0.997 | 0.712 |
-| TWCS | 1 162 | 0.912 | 0.680 |
-| Synthetic | 84 | 0.905 | 0.906 |
+| Bitext | 1 540 | 0.998 | 0.713 |
+| TWCS | 1 174 | 0.917 | 0.739 |
 
-Overall 0.909 смешивает источники. На реальном TWCS macro-F1 = 0.680; это ограничение, а не результат выбора по test.
+Overall 0.855 смешивает источники. На реальном TWCS macro-F1 = 0.739; это ограничение, а не результат выбора по test.
 
 ### 6.4. Threshold
 
-Порог 0.85 / margin 0.05 выбран по OOF: coverage 0.877, selective precision 0.988. На test — 0.887 и 0.989. Целевые показатели selective precision ≥ 0.95 и coverage ≥ 0.40 выполнены.
+Порог 0.85 / margin 0.05 выбран по OOF: coverage 0.878, selective precision 0.989. На test — 0.881 и 0.989. Целевые показатели selective precision ≥ 0.95 и coverage ≥ 0.40 выполнены.
 
 ## 7. Данные, валидация и тестирование
 
 **Pipeline:** download → clean → PII masking → dedup → 80/20 stratified split → manifest → validation.
 
-**Проверки:** обязательные поля, классы/split/source, длины 10–5000, уникальность id, cross-split дубли, утечка `conversation_id`, PII. Отчёт — `data/processed/validation_report.json`. Great Expectations — **8/8** expectations на 13 847 строках.
+**Проверки:** обязательные поля, классы/split/source, длины 10–5000, уникальность id, cross-split дубли, утечка `conversation_id`, PII. Отчёт — `data/processed/validation_report.json`. Great Expectations — **8/8** expectations на 13 427 строках.
 
 **Тесты:** **37 passed**. Покрыты очистка/PII, маппинг, стратифицированный split, дедупликация, data validation, routing, API, OpenAPI, error envelope, batch, feedback idempotency, `/metrics`, model quality (overall, per-class, robustness, edge, behavior, adversarial, subgroup). Локальный quality gate: `ruff`, `mypy`, `pytest`, smoke.
 
@@ -161,7 +159,7 @@ Overall 0.909 смешивает источники. На реальном TWCS 
 
 Метрики — `/metrics`; Prometheus scrape и 4 алерта: `TriageApiDown`, `TriageModelNotReady`, `TriageHigh5xxRate`, `TriageHighLatency`. Алерт проверен: после `docker compose stop api` `TriageApiDown` перешёл в **firing**, после запуска smoke снова 5/5.
 
-**Drift:** `scripts/drift_report.py`: PSI длины **0.002**, KS **0.012**, p = 0.917; `other_share` 43.3% в train и test. Стратифицированный split сохранил распределения; production drift требует реальных логов.
+**Drift:** `scripts/drift_report.py`: PSI длины **0.003**, KS **0.020**, p = 0.346; `other_share` 44.1% в train и 44.5% в test. Стратифицированный split сохранил распределения; production drift требует реальных логов.
 
 ## 10. ИИ-ассистенты
 
@@ -169,10 +167,10 @@ Overall 0.909 смешивает источники. На реальном TWCS 
 
 ## 11. Ограничения, drift и этика
 
-- Test-метки weak/synthetic, не human-verified.
-- Overall test смешивает Bitext, TWCS и synthetic; реальный TWCS macro-F1 = 0.680.
+- Test-метки weak, не human-verified.
+- Overall test смешивает Bitext и TWCS; реальный TWCS macro-F1 = 0.739.
 - TWCS — публичные твиты с шумом, сарказмом, ссылками и PII; PII маскируется, сырые данные не коммитятся.
-- Bitext — retail/support, synthetic — русскоязычные шаблоны.
+- Bitext — retail/support, не музыкальный стриминг.
 - `content` и `app` редки.
 - Модель не понимает отрицания и сложные multi-topic обращения; такие случаи уходят в manual.
 - Automation bias: интерфейс должен показывать confidence и top-3.
@@ -197,7 +195,7 @@ python scripts/smoke.py
 | Участник | Этап | Вклад |
 |---|---|---|
 | Максим Федулаев | 2. Архитектура | Схема, API-контракт, ADR |
-| Владимир Егоров | 3. Эксперименты | Данные, CV, RandomizedSearchCV, модель, CI |
+| Владимир Егоров | 3. Эксперименты | Данные, CV, HalvingRandomSearchCV, модель, CI |
 | Айдар Мугизов | 4. Тестирование | Тест-план, pytest, data validation |
 | Евгений Кононов | 5. Деплой | Docker, Compose, smoke, rollback |
 | Александр Аксенов | 6. Мониторинг | Метрики, алерты, drift, отчёт |
