@@ -5,7 +5,7 @@ services:
       dockerfile: docker/Dockerfile
     image: music-support-triage:local
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     environment:
       MODEL_PATH: /app/artifacts/model.joblib
       SERVICE_CONFIG: /app/configs/service.yaml

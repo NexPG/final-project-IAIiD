@@ -61,7 +61,9 @@ Middleware на каждый запрос.
 - KS-тест, PSI, Evidently.
 - Reference: validation / последняя стабильная неделя.
 - PSI > 0.2 — сигнал; KS p-value < 0.05 — сигнал.
-- Отчёт: Evidently HTML или `docs/drift_report.md`.
+- Отчёт: `python scripts/drift_report.py` → `artifacts/drift_report.json`.
+
+**Первый offline-отчёт (train vs test):** PSI длины 0.904, KS 0.386, p < 0.001; `other_share` 34.8% vs 74.5%. Причина — cap `other` в train и естественное распределение test. Это ожидаемый shift, но он показывает, что production-мониторинг `other_share` и длины обязателен. Offline-отчёт демонстрационный: для реального drift нужны логи запросов.
 
 ## 9. Переобучение
 
@@ -79,6 +81,8 @@ Middleware на каждый запрос.
 2. Открыть Prometheus `http://localhost:9090/alerts`.
 3. Остановить api или подать поток ошибок → `TriageApiDown` / `TriageHigh5xxRate` переходит в firing.
 4. Выполнить действие по runbook: проверить `/healthcheck`, логи, перезапустить контейнер, при необходимости откатить модель.
+
+**Проверено:** `docker compose stop api` → через 2 минуты `TriageApiDown` перешёл в `firing`; после `docker compose start api` smoke снова 5/5.
 
 ## 11. Runbook
 

@@ -5,16 +5,18 @@
 | [`TZ.md`](TZ.md) | Техническое задание, источник истины по требованиям | v2.0 обновлён |
 | [`sources.md`](sources.md) | Карта требований: задание, план, 16 вебинаров | заполнен |
 | [`data.md`](data.md) | План данных, разметки и валидации | стратегия утверждена, разметка в работе |
+| [`data_card.md`](data_card.md) | Data card: источники, лицензии, split, ограничения | v1 |
 | [`annotation.md`](annotation.md) | Аннотационная инструкция и протокол kappa | рабочая версия |
 | [`stage_audit.md`](stage_audit.md) | Аудит текущих черновиков этапов 2–4 | выполнен |
-| [`architecture.md`](architecture.md) | Архитектура, компоненты, ADR | заполняется на этапе 2 |
-| [`api.md`](api.md) | API-контракт и OpenAPI | заполняется на этапе 2 |
-| [`experiments.md`](experiments.md) | Журнал экспериментов и выводы | план v2, runs на новых данных в работе |
-| [`testing.md`](testing.md) | Тест-план, пограничные случаи, найденные проблемы | заполняется на этапе 4 |
-| [`deployment.md`](deployment.md) | Локальный запуск, Docker, runbook | заполняется на этапе 5 |
-| [`monitoring.md`](monitoring.md) | Метрики, алерты, drift, действия | заполняется на этапе 6 |
+| [`architecture.md`](architecture.md) | Архитектура, компоненты, ADR | реализовано, v1 |
+| [`api.md`](api.md) | API-контракт и OpenAPI | реализовано, v1 |
+| [`experiments.md`](experiments.md) | Журнал экспериментов и выводы | первый provisional run |
+| [`model_card.md`](model_card.md) | Model card и ограничения | v1 provisional |
+| [`testing.md`](testing.md) | Тест-план, пограничные случаи, найденные проблемы | 26 тестов, v1 |
+| [`deployment.md`](deployment.md) | Локальный запуск, Docker, runbook | проверено в Docker |
+| [`monitoring.md`](monitoring.md) | Метрики, алерты, drift, действия | базовый мониторинг + drift-отчёт |
 | [`ai_usage.md`](ai_usage.md) | Журнал использования ИИ-ассистентов | ведётся постоянно |
-| [`report.md`](report.md) | Структура итогового отчёта (5–7 страниц) | заполняется к защите |
+| [`report.md`](report.md) | Итоговый отчёт (5–7 страниц) | черновик v0.2 с реальными числами |
 
 ## Правила работы с документацией
 

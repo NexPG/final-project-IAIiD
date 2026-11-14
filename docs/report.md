@@ -2,7 +2,8 @@
 
 **Версия:** черновик 0.2, 14.11.2026  
 **Команда:** Максим Федулаев, Владимир Егоров, Айдар Мугизов, Евгений Кононов, Александр Аксенов  
-**Репозиторий:** https://github.com/NexPG/final-project-IAIiD
+**Репозиторий:** https://github.com/NexPG/final-project-IAIiD  
+**Data card:** [`data_card.md`](data_card.md) · **Model card:** [`model_card.md`](model_card.md)
 
 > **Статус чисел.** Метрики раздела 4 получены на **weak labels** и являются предварительными. После human-verified разметки validation/test (300/400) таблица обновляется без изменения архитектуры и кода. Все числа воспроизводятся командами из раздела 10.
 
@@ -114,8 +115,8 @@ TF-IDF word (1–2) + char_wb (3–5), LogisticRegression, `class_weight=balance
 - Multi-stage `docker/Dockerfile`, slim-образ, non-root пользователь, healthcheck.
 - `docker/docker-compose.yml`: API + Prometheus.
 - Модель и конфиги монтируются read-only.
-- Smoke: `python scripts/smoke.py` проверяет healthcheck, model-info, classify, batch, metrics — 5/5 проверок пройдены локально на uvicorn.
-- **Ограничение:** Docker build/up на текущей машине не проверен, потому что Docker daemon не запущен. Это честно указано в `docs/deployment.md`; на машине с Docker достаточно выполнить `docker compose -f docker/docker-compose.yml up --build`.
+- Smoke: `python scripts/smoke.py` проверяет healthcheck, model-info, classify, batch, metrics — 5/5 проверок пройдены и на uvicorn, и в Docker.
+- `docker compose build` и `up -d --wait` проверены: api и Prometheus healthy; правила алертов загружены.
 - Rollback: предыдущий `model.joblib` + перезапуск контейнера; модель версионируется, артефакт не коммитится.
 - CI/CD на GitHub не используется: локальный quality gate и ручной release.
 
@@ -125,7 +126,7 @@ TF-IDF word (1–2) + char_wb (3–5), LogisticRegression, `class_weight=balance
 **Продукт:** число запросов, доля auto-routed, доля manual, distribution тем.
 **Модель:** `model_loaded`, `model_inference_seconds`, confidence, drift.
 
-Метрики отдаются через `/metrics`. Prometheus scrape-конфиг и 4 алерта: `TriageApiDown`, `TriageModelNotReady`, `TriageHigh5xxRate`, `TriageHighLatency`. Минимальное требование «≥1 алерт» выполнено; алерты проверяются через Prometheus UI.
+Метрики отдаются через `/metrics`. Prometheus scrape-конфиг и 4 алерта: `TriageApiDown`, `TriageModelNotReady`, `TriageHigh5xxRate`, `TriageHighLatency`. Минимальное требование «≥1 алерт» выполнено: после `docker compose stop api` алерт `TriageApiDown` через 2 минуты перешёл в `firing`, после запуска API smoke снова прошёл 5/5.
 
 Drift-план: PSI/KS по длине текста, доле языков, distribution предсказанных тем; Evidently-отчёт; переобучение при устойчивом падении macro-F1 или росте manual rate.
 
@@ -147,6 +148,7 @@ Drift-план: PSI/KS по длине текста, доле языков, dist
 - Bitext — другой домен (retail/support), поэтому его вес ниже, а оценка идёт только на TWCS.
 - `content` и `recommendations` редки; без human-written кейсов их recall ненадёжен.
 - Модель не понимает отрицания и сложные multi-topic обращения; такие случаи уходят в manual.
+- **Обнаружен distribution shift train/test:** доля `other` 34.8% в train против 74.5% в test; PSI длины 0.904, KS 0.386, p < 0.001. Причина — cap `other` в train и естественное распределение в test. Поэтому публикуются natural и balanced метрики, а `other_share` вынесен в мониторинг.
 - Возможен drift: новые темы, язык, длина, каналы. Нужны мониторинг и переобучение.
 - Automation bias: оператор не должен слепо доверять топ-1; интерфейс показывает confidence и top-3.
 - Лицензия TWCS требует уточнения; данные используются локально в учебных целях.

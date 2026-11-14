@@ -12,6 +12,7 @@ CLI-скрипты для воспроизводимых операций.
 | `make_balanced_test.py` | balanced stress subset |
 | `export_annotation_batch.py` | два независимых batch для разметки |
 | `merge_annotations.py` | kappa, расхождения, human-verified CSV |
+| `drift_report.py` | offline PSI/KS-отчёт по длине и лексике |
 | `smoke.py` | smoke-проверка запущенного API |
 
 ## Порядок

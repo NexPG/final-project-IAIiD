@@ -95,6 +95,8 @@ Docker:
 
 ```bash
 docker compose -f docker/docker-compose.yml up --build
+# если порт 8000 занят:
+$env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 ```
 
 `--allow-provisional` нужен только пока validation/test размечены weak labels. После human-verified разметки запускайте без него.
@@ -114,11 +116,13 @@ docker compose -f docker/docker-compose.yml up --build
 - [`docs/TZ.md`](docs/TZ.md) — техническое задание v2.0, источник истины.
 - [`docs/sources.md`](docs/sources.md) — карта требований: задание, план, 16 вебинаров.
 - [`docs/data.md`](docs/data.md) — план данных, разметки и валидации.
+- [`docs/data_card.md`](docs/data_card.md) — data card: источники, split, ограничения.
 - [`docs/annotation.md`](docs/annotation.md) — аннотационная инструкция и kappa.
 - [`docs/stage_audit.md`](docs/stage_audit.md) — аудит текущих черновиков.
 - [`docs/architecture.md`](docs/architecture.md) — архитектура и ADR.
 - [`docs/api.md`](docs/api.md) — API-контракт.
 - [`docs/experiments.md`](docs/experiments.md) — журнал экспериментов.
+- [`docs/model_card.md`](docs/model_card.md) — model card и ограничения.
 - [`docs/testing.md`](docs/testing.md) — тест-план и найденные проблемы.
 - [`docs/deployment.md`](docs/deployment.md) — локальный запуск и runbook.
 - [`docs/monitoring.md`](docs/monitoring.md) — метрики, алерты, drift.

@@ -24,6 +24,12 @@ uvicorn music_support_triage.api.app:app --reload
 docker compose -f docker/docker-compose.yml up --build
 ```
 
+Если порт 8000 занят, задайте `API_PORT`:
+
+```powershell
+$env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
+```
+
 | Сервис | Порт | Назначение |
 |---|---|---|
 | `api` | 8000 | FastAPI |
@@ -102,14 +108,13 @@ Rollback:
 
 ## 6. Чек-лист
 
-- [x] Dockerfile написан (multi-stage, non-root, healthcheck).
-- [x] Compose описывает api + Prometheus.
+- [x] Dockerfile собирается: `docker compose build` — успешно.
+- [x] Compose поднимает api + Prometheus: `up -d --wait` — оба healthy.
 - [x] healthcheck.
-- [x] smoke — 5/5 проверок (локальный uvicorn).
+- [x] smoke — 5/5 (uvicorn и Docker).
 - [x] модель read-only volume.
 - [x] секреты не в образе.
 - [x] rollback описан.
 - [x] README-инструкция.
-- [ ] Docker build/up — не проверен: Docker daemon не запущен на текущей машине.
 - [ ] Проверка на чистой машине без `.venv`.
 - [ ] Load test 20 RPS.
