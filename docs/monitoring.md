@@ -59,7 +59,7 @@ Middleware на каждый запрос.
 
 - Data drift vs concept drift.
 - KS-тест, PSI, Evidently.
-- Reference: validation / последняя стабильная неделя.
+- Reference: OOF train / последняя стабильная неделя.
 - PSI > 0.2 — сигнал; KS p-value < 0.05 — сигнал.
 - Отчёт: `python scripts/drift_report.py` → `artifacts/drift_report.json`.
 

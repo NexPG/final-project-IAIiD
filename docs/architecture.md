@@ -1,7 +1,8 @@
 # Архитектура системы
 
-**Статус:** реализовано (v1), этап 2  
-**Источник требований:** [`TZ.md`](TZ.md), §7–§8; вебинары В01–В04
+**Статус:** Gate 2 закрыт, v1  
+**Источник требований:** [`TZ.md`](TZ.md), §7–§8; вебинары В01–В04  
+**Контракт:** [`api.md`](api.md), [`openapi.json`](openapi.json)
 
 ## 1. Контекст
 
@@ -71,9 +72,20 @@ flowchart LR
 | Backend/очередь недоступна | Тикет не попал в очередь | retry, очередь сообщений, manual fallback |
 | Drift входных данных | Тихие ошибки, падение качества | мониторинг, drift-отчёт, переобучение |
 
-## 7. Контракт
+## 7. Контракт и SLA
 
-См. [`api.md`](api.md). Обязательные элементы: вход, выход, SLA, ошибки, версия API/модели/данных, OpenAPI.
+См. [`api.md`](api.md), [`openapi.json`](openapi.json). Обязательные элементы: вход, выход, SLA, ошибки, версия API/модели/данных.
+
+| Ситуация | Поведение |
+|---|---|
+| Валидный запрос | 200 + `topic`, `queue`, `confidence`, `margin`, `top_k`, `needs_human_review` |
+| Ошибка схемы/текста | 422 + `error.code=VALIDATION_ERROR` + `request_id` |
+| Модель не загружена | 503 + `error.code=MODEL_UNAVAILABLE` |
+| Неизвестный путь | 404 + `error.code=NOT_FOUND` |
+| Низкий confidence/margin | 200, `queue=manual_review`, `needs_human_review=true` |
+| `other` с высокой уверенностью | 200, `queue=general_support` |
+
+SLA: p95 ≤ 300 мс (TF-IDF), 5xx < 1%, 20 RPS на worker, batch ≤ 100. `request_id` возвращается в теле и заголовке `X-Request-ID`.
 
 ## 8. ADR
 
@@ -88,6 +100,8 @@ flowchart LR
 | ADR-07 | MLflow локально | accepted |
 | ADR-08 | Без GitHub CI/CD | accepted |
 | ADR-09 | Без feature store | accepted |
+| ADR-10 | Train + StratifiedGroupKFold CV + frozen test | accepted |
+| ADR-11 | Threshold/margin по OOF train, не по test | accepted |
 
 ## 9. Реализация
 
@@ -107,7 +121,7 @@ flowchart LR
 
 ## 10. Что осталось
 
-- [ ] Human-verified test и финальные метрики.
+- [ ] Human-verified test и финальные метрики (Gate 3).
 - [ ] Load test 20 RPS.
 - [ ] Grafana dashboard (Prometheus alert rules уже есть).
 - [ ] Production-маршрут: reverse proxy, replicas, registry, queue, DB, secrets.

@@ -25,6 +25,8 @@
 | 14.11.2026 | Docker и мониторинг | DeepSeek/OpenCode | Dockerfile, Compose, Prometheus rules, drift script | `docker compose build/up`, smoke 5/5, alert firing | Проверено вручную, порт API параметризован |
 | 14.11.2026 | Отчёт v0.2 | DeepSeek/OpenCode | Черновик 5–7 страниц с реальными числами | Сверка с `artifacts/metrics.json`, manifest, Docker logs | Явно помечены provisional-метрики и ограничения |
 | 14.11.2026 | MLflow и GE | DeepSeek/OpenCode | 6 runs, 8 expectations, threshold tuning | Запуск MLflow UI/API, `ge_report.json`, сверка метрик | Исправлены file-store, порядок вероятностей и выбор модели |
+| 14.11.2026 | CV и RandomizedSearchCV | DeepSeek/OpenCode | Поиск по 4 семействам, 5-fold StratifiedGroupKFold, OOF-порог, bootstrap CI | `search_results.json`, MLflow, smoke, повторный запуск | Убрано отдельное validation; test открыт один раз; проверена утечка по группам |
+| 14.11.2026 | Gate 2 | DeepSeek/OpenCode | Единый error envelope, `X-Request-ID`, OpenAPI, SLA, ADR-10/11 | `pytest` 37, `openapi.json`, contract tests | Контракт приведён в соответствие с кодом |
 | TBD | Архитектура | TBD | Схема и ADR | Обсуждение, сверка с В02–В03 | TBD |
 | TBD | API | TBD | Pydantic-схемы | Code review + pytest | TBD |
 | TBD | Данные | TBD | Синтетические примеры | Ручная проверка и разметка | TBD |
@@ -44,7 +46,7 @@
 1. Не отправлять PII и секреты.
 2. Любой сгенерированный код — после review и тестов.
 3. Любые сгенерированные данные — после ручной проверки.
-4. Синтетика и слабые метки не попадают в validation/test.
+4. Синтетика и слабые метки не попадают в test.
 5. Все числа в отчёте — только из артефактов.
 6. Сырые TWCS/Bitext-данные не отправляются ассистенту целиком; анализируются локально.
 

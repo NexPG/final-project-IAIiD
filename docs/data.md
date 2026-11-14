@@ -10,11 +10,11 @@
 
 | Уровень | Источник | Роль |
 |---|---|---|
-| Реальный домен | TWCS SpotifyCares | train (слабые метки) + human-verified validation/test |
+| Реальный домен | TWCS SpotifyCares | train (слабые метки) + human-verified test |
 | Вспомогательный домен | Bitext Customer Support | train, ниже вес |
 | Seed и редкие классы | 420 синтетических + human-written | train |
 
-**Ключевое правило:** train может быть шумным и синтетическим, но **validation и test — только human-verified примеры из SpotifyCares**. Метрики на синтетике, Bitext или слабых метках не выдаются за финальные.
+**Ключевое правило:** train может быть шумным и синтетическим, но **test — только human-verified примеры из SpotifyCares**. Метрики на синтетике, Bitext или слабых метках не выдаются за финальные. Отдельный validation не выделяется: его роль выполняет CV на train.
 
 ## 2. Что уже есть
 
@@ -103,12 +103,12 @@
 | — Bitext mapped | 3 000 | 6 000–8 000 |
 | — Synthetic | 420 | 420 |
 | — Human-verified train | 0 | 300–500 |
-| Validation, human-verified | 250 | 300 |
+| Validation | не выделяется | CV на train |
 | Test, human-verified | 350 | 400 |
 | Test на класс в balanced subset | 25 | 30–40 |
 | `other` в train | ≤ 40% | ≤ 35% |
 | Синтетика в train | ≤ 15% | ≤ 10% |
-| Синтетика в validation/test | 0% | 0% |
+| Синтетика и weak в test | 0% | 0% |
 | Дубли и near-duplicates между split | 0 | 0 |
 
 ### 5.1. Практическая сборка
@@ -118,12 +118,20 @@
 3. **Ограничение `other`.** Все не-`other` примеры сохраняются; `other` сэмплируется до 35% train.
 4. **Bitext.** Маппинг категорий, дедупликация, сэмплирование до 6 000–8 000, вес 0,5 от TWCS.
 5. **Редкие классы.** `content` и `recommendations` дополняются human-written и синтетикой в train.
-6. **Eval.** Отдельная стратифицированная выборка SpotifyCares: 300 validation + 400 test, двойная разметка.
+6. **Eval.** Одна замороженная выборка SpotifyCares: 400 test, двойная разметка.
 7. **Balanced stress subset.** Из test отдельно формируется по 25–30 примеров на класс; метрики публикуются отдельно от natural-distribution test.
 
-### 5.2. Почему test меньше train
+### 5.2. Почему train + CV + test
 
-Test — не «ещё немного данных», а дорогая ручная работа. 400 примеров дают приемлемый доверительный интервал для macro-F1, а 15–20 тыс. train — достаточный объём для TF-IDF и линейных моделей. Если класс меньше 25 примеров в test, это честно указывается, и per-class вывод считается предварительным.
+Отдельный validation не нужен, если есть корректная CV:
+
+- train — единственный источник для обучения и подбора;
+- `StratifiedGroupKFold(5)` по `conversation_id` даёт out-of-fold оценку и не допускает утечку диалогов;
+- `RandomizedSearchCV` подбирает гиперпараметры по CV;
+- порог и margin выбираются по OOF-предсказаниям train;
+- test замораживается и открывается один раз.
+
+Это даёт больше данных для обучения и исключает подбор по test. 400 test — компромисс между стоимостью разметки и шириной bootstrap CI; 15–20 тыс. train достаточно для TF-IDF и линейных моделей.
 
 ## 6. Схема записи
 
@@ -161,11 +169,11 @@ weak labeling (TWCS) + label mapping (Bitext)
         ↓
 sample and cap classes -> train pool
         ↓
-stratified human annotation -> validation/test
+stratified human annotation -> frozen test
         ↓
 freeze splits + manifest (SHA-256) + data card
         ↓
-validation -> train
+test -> final evaluation only
 ```
 
 **Требования к пайплайну:**
@@ -217,8 +225,8 @@ validation -> train
 4. Уникальность `id`.
 5. Длина 10–5000.
 6. Наличие букв.
-7. Все 7 классов в train/validation/test.
-8. `label_quality` = `human_verified` в validation/test.
+7. Все 7 классов в train/test.
+8. `label_quality` = `human_verified` в test.
 9. `other` ≤ 40% train, синтетика ≤ 15% train.
 10. `conversation_id` не пересекает split.
 11. Near-duplicates между split = 0.
@@ -232,12 +240,12 @@ validation -> train
 
 1. `text` not null.
 2. `label` in 7 classes.
-3. `split` in train/validation/test.
+3. `split` in train/validation/test (validation допустим, но не создаётся).
 4. `label_quality` in set.
 5. `id` unique.
 6. `conversation_id` unique within split.
 7. `text` length between 10 and 5000.
-8. synthetic share in validation/test = 0.
+8. synthetic и weak share in test = 0.
 
 Дополнительно:
 
@@ -293,8 +301,8 @@ validation -> train
 | Реализовать weak labeling и маппинг | Владимир | 2 дня |
 | Аудит 500 слабых меток | Владимир + Айдар | 2 дня |
 | Аннотационная инструкция | Владимир | 2 дня |
-| Разметка validation 300 | Вся команда, 2 основных | 3–4 дня |
 | Разметка test 400 | Вся команда, 2 основных | 4–5 дней |
+| Human-written stress subset | Вся команда | 2–3 дня |
 | Проверить kappa и арбитраж | Айдар | 1 день |
 | Собрать manifest и data card | Владимир | 1 день |
 | Проверить data validation | Айдар | 1 день |

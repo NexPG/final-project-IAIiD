@@ -1,8 +1,9 @@
 # Runtime service configuration.
 
 model_path: artifacts/model.joblib
-threshold: 0.70
-margin_threshold: 0.10
+# Calibrated on out-of-fold train predictions (search_models.py).
+threshold: 0.85
+margin_threshold: 0.05
 max_batch_size: 100
 min_text_chars: 10
 max_text_chars: 5000

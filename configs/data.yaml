@@ -22,9 +22,12 @@ sampling:
   synthetic_max_rows: 420
 
 splits:
-  validation_size: 300
+  # Model selection and hyperparameter tuning use StratifiedGroupKFold CV
+  # on train. A separate validation split is not needed; the test split is
+  # frozen and touched once after the best pipeline is selected.
+  validation_size: 0
   test_size: 400
-  # Development mode allows weak labels in validation/test.
+  # Development mode allows weak labels in test.
   # It must be false for final experiments.
   allow_weak_eval: true
   min_test_per_class: 25

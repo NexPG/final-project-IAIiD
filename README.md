@@ -25,7 +25,7 @@
 
 ## Статус
 
-**Этапы 1–3 в работе.** TZ и документация обновлены; собран data pipeline TWCS + Bitext; обучен первый TF-IDF baseline; реализованы FastAPI-сервис, Docker/Compose, Prometheus-метрики и алерты. Метрики пока provisional: validation/test используют weak labels. Следующий шаг — human-verified разметка 300/400 и финальные эксперименты.
+**Этапы идут по gates** — см. [`docs/stages.md`](docs/stages.md). Gate 1–2 закрыты; Gate 3 в работе (CV + RandomizedSearchCV + test один раз); Gates 4–6 базово закрыты. Метрики provisional: test использует weak labels. Следующий шаг — human-verified test 400 и финальный замер.
 
 Этапы разработки взяты из слайда 3 проектного плана: **Задача → Архитектура → Эксперименты → Тестирование → Деплой → Мониторинг**.
 
@@ -33,9 +33,9 @@
 
 - 7 классов и маршрутизация в 7 очередей + `manual_review`.
 - Data pipeline: загрузка TWCS/Bitext, очистка, PII-маскирование, дедупликация, weak labels, group split, manifest, validation.
-- TF-IDF word (1–2) + LogisticRegression C=16; артефакты в `artifacts/`.
+- TF-IDF word (1–2) + LogisticRegression C=32, выбран через CV/RandomizedSearchCV; артефакты в `artifacts/`.
 - FastAPI: `/v1/classify`, `/v1/classify/batch`, `/v1/feedback`, `/healthcheck`, `/model-info`, `/metrics`.
-- 34 теста, `ruff`, `mypy`, smoke.
+- 37 тестов, `ruff`, `mypy`, smoke.
 - Dockerfile, Compose (api + Prometheus), alert rules.
 - Инструкция и скрипты разметки: `docs/annotation.md`.
 
@@ -80,7 +80,8 @@ pip install -e ".[dev,ml]"
 
 python scripts/download_data.py --config configs/data.yaml
 python scripts/build_dataset.py --config configs/data.yaml
-python scripts/train.py --config configs/baseline.yaml --allow-provisional
+python scripts/validate_data_ge.py
+python scripts/search_models.py --n-iter 12
 pytest -q
 ```
 
@@ -103,17 +104,23 @@ $env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 
 ## Метрики (provisional)
 
-| Метрика | Validation | Test | Balanced test |
-|---|---|---|---|
-| Accuracy | 0.939 | 0.913 | 0.807 |
-| Macro-F1 | 0.853 | 0.640 | 0.662 |
-| Weighted-F1 | 0.939 | 0.910 | 0.793 |
+| Метрика | Значение |
+|---|---|
+| CV macro-F1 (5-fold) | 0.869 ± 0.035 |
+| Test macro-F1 | 0.657 |
+| Bootstrap 95% CI | [0.564; 0.739] |
+| Test accuracy | 0.920 |
+| Test weighted-F1 | 0.916 |
+| Test coverage | 0.734 |
+| Test selective precision | 0.975 |
+| Balanced test macro-F1 | 0.680 |
 
-Данные: 11 183 train (TWCS 4 713 + Bitext 7 236), 327 validation, 439 test. Test — weak labels, поэтому числа не финальные. Подробно: [`docs/experiments.md`](docs/experiments.md).
+Данные: 11 325 train (TWCS 4 580 + Bitext 7 184), 439 test. Validation не выделяется: модель выбирается через `StratifiedGroupKFold` CV на train, test открывается один раз. Test — weak labels, поэтому числа не финальные. Подробно: [`docs/experiments.md`](docs/experiments.md).
 
 ## Документация
 
-- [`docs/TZ.md`](docs/TZ.md) — техническое задание v2.0, источник истины.
+- [`docs/TZ.md`](docs/TZ.md) — техническое задание v2.2, источник истины.
+- [`docs/stages.md`](docs/stages.md) — этапы 1–6, gates и передача артефактов.
 - [`docs/sources.md`](docs/sources.md) — карта требований: задание, план, 16 вебинаров.
 - [`docs/data.md`](docs/data.md) — план данных, разметки и валидации.
 - [`docs/data_card.md`](docs/data_card.md) — data card: источники, split, ограничения.

@@ -35,10 +35,9 @@ def main() -> int:
     frame = pd.read_csv(data_path)
 
     train = frame[frame["split"] == "train"]
-    validation = frame[frame["split"] == "validation"]
     test = frame[frame["split"] == "test"]
-    if train.empty or validation.empty or test.empty:
-        raise SystemExit("Train, validation and test splits are required")
+    if train.empty or test.empty:
+        raise SystemExit("Train and test splits are required")
 
     weak_test = int((test["label_quality"] != "human_verified").sum())
     allow_provisional = args.allow_provisional or bool(config.get("allow_provisional", False))
@@ -58,9 +57,7 @@ def main() -> int:
         "trained_at": metadata["trained_at"],
         "provisional": bool(weak_test),
         "n_train": int(len(train)),
-        "n_validation": int(len(validation)),
         "n_test": int(len(test)),
-        "validation": evaluate(validation["label"], pipeline.predict(validation["text"])),
         "test": evaluate(test["label"], pipeline.predict(test["text"])),
         "class_support": {label: int((train["label"] == label).sum()) for label in LABELS},
     }
@@ -84,10 +81,8 @@ def write_model_card(metrics: dict[str, object], path: Path, metadata: dict[str,
         f"- Version: `{metrics['model_version']}`",
         f"- Trained at: {metrics['trained_at']}",
         f"- Train rows: {metrics['n_train']}",
-        f"- Validation rows: {metrics['n_validation']}",
         f"- Test rows: {metrics['n_test']}",
         f"- Provisional (weak test labels): {metrics['provisional']}",
-        f"- Macro-F1 (validation): {metrics['validation']['macro_f1']:.4f}",  # type: ignore[index]
         f"- Macro-F1 (test): {test['macro_f1']:.4f}",
         "",
         "## Intended use",

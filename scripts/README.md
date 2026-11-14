@@ -8,8 +8,8 @@ CLI-скрипты для воспроизводимых операций.
 | `build_dataset.py` | сборка train/validation/test, cap `other`, manifest |
 | `validate_data.py` | схема, дубли, утечки, дисбаланс, PII |
 | `validate_data_ge.py` | Great Expectations: 8 expectations |
-| `run_experiments.py` | 6 MLflow runs: keyword, word C=1/4/16, char, word+char |
-| `tune_threshold.py` | threshold/margin grid + ECE |
+| `search_models.py` | 5-fold StratifiedGroupKFold + RandomizedSearchCV, OOF threshold, bootstrap CI |
+| `tune_threshold.py` | показать OOF threshold/margin из результатов поиска |
 | `train.py` | обучение выбранной модели, model card |
 | `evaluate.py` | метрики на validation/test, natural или balanced |
 | `make_balanced_test.py` | balanced stress subset |
@@ -24,7 +24,9 @@ CLI-скрипты для воспроизводимых операций.
 python scripts/download_data.py --config configs/data.yaml
 python scripts/build_dataset.py --config configs/data.yaml
 python scripts/validate_data.py --config configs/data.yaml
-python scripts/train.py --config configs/baseline.yaml --allow-provisional
+python scripts/validate_data_ge.py
+python scripts/search_models.py --n-iter 12
+python scripts/tune_threshold.py
 python scripts/make_balanced_test.py
 python scripts/evaluate.py --split test --balanced --data data/processed/test_balanced.csv
 ```

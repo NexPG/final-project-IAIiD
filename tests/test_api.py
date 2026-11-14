@@ -107,3 +107,34 @@ def test_metrics_endpoint() -> None:
     response = api.get("/metrics")
     assert response.status_code == 200
     assert "http_requests_total" in response.text
+
+
+def test_validation_error_envelope_and_request_id() -> None:
+    api = client()
+    response = api.post("/v1/classify", json={"text": "short"})
+    assert response.status_code == 422
+    body = response.json()
+    assert body["error"]["code"] == "VALIDATION_ERROR"
+    assert body["error"]["request_id"]
+    assert response.headers["X-Request-ID"]
+
+
+def test_not_found_envelope() -> None:
+    api = client()
+    response = api.get("/does-not-exist")
+    assert response.status_code == 404
+    assert response.json()["error"]["code"] == "NOT_FOUND"
+
+
+def test_openapi_contains_contract_paths() -> None:
+    api = client()
+    schema = api.get("/openapi.json").json()
+    for path in (
+        "/v1/classify",
+        "/v1/classify/batch",
+        "/v1/feedback",
+        "/healthcheck",
+        "/model-info",
+        "/metrics",
+    ):
+        assert path in schema["paths"]

@@ -25,7 +25,8 @@ Music Support Triage — классификация обращений в под
 - TWCS SpotifyCares — реальный домен, ~38 тыс., dev 6 000.
 - Bitext — 26 872, вспомогательный train.
 - 420 синтетических — seed.
-- Train 11 183, validation 327, test 439.
+- Train 11 325, test 439.
+- Validation не выделяется: 5-fold CV на train.
 - Test пока weak → метрики provisional.
 
 ## Слайд 5. Архитектура
@@ -44,16 +45,14 @@ Music Support Triage — классификация обращений в под
 
 ## Слайд 7. Эксперименты
 
-| Вариант | Val macro-F1 | Test macro-F1 |
-|---|---|---|
-| Keyword | 0.466 | 0.475 |
-| Word C=1 | 0.747 | 0.563 |
-| Word C=4 | 0.818 | 0.600 |
-| **Word C=16** | **0.854** | **0.640** |
-| Char C=4 | 0.737 | 0.585 |
-| Word+char C=4 | 0.809 | 0.660 |
+| Семейство | CV macro-F1 |
+|---|---|
+| **LogReg word** | **0.869 ± 0.035** |
+| LogReg word+char | 0.865 ± 0.031 |
+| Calibrated SVC | 0.807 ± 0.038 |
+| ComplementNB | 0.711 ± 0.009 |
 
-Выбор по balanced validation, не по test.
+Выбор по CV на train, не по test. Test: macro-F1 0.657, 95% CI [0.564; 0.739].
 
 ## Слайд 8. Ошибки и ограничения
 
@@ -67,7 +66,7 @@ Music Support Triage — классификация обращений в под
 - PII-маскирование, дедупликация, group split.
 - 8/8 Great Expectations.
 - 34 теста, `ruff`, `mypy`.
-- Drift: PSI длины 0.904, `other_share` 34.8% vs 74.5%.
+- Drift: PSI длины 0.868, `other_share` 34.8% vs 74.5%.
 
 ## Слайд 10. Деплой
 
@@ -92,7 +91,7 @@ Music Support Triage — классификация обращений в под
 
 ## Слайд 13. Следующие шаги
 
-- Human-verified 300/400, kappa ≥ 0.70.
+- Human-verified test 400, kappa ≥ 0.70.
 - Пересчёт метрик без provisional.
 - Balanced stress subset ≥25/класс.
 - Contract/load/adversarial тесты.

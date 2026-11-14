@@ -3,7 +3,7 @@
 **Проект:** Классификация обращений в поддержку музыкального сервиса  
 **Кодовое имя:** Music Support Triage  
 **Репозиторий:** `final-project-IAIiD`  
-**Версия документа:** 2.0  
+**Версия документа:** 2.2  
 **Дата:** 14.11.2026  
 **Статус:** рабочая версия, требуется подтверждение командой  
 **Команда:** 5 человек  
@@ -121,6 +121,7 @@
 | Уровень | Метрика | Целевое значение |
 |---|---|---|
 | Модель | Macro-F1 на human-verified test | ≥ 0.80 (минимум 0.75 с обоснованием) |
+| Модель | 95% bootstrap CI для macro-F1 | публикуется, нижняя граница анализируется |
 | Модель | Recall каждого класса | ≥ 0.65 |
 | Маршрутизация | Selective precision при auto-routing | ≥ 0.95 |
 | Маршрутизация | Coverage | ≥ 0.40 |
@@ -273,7 +274,7 @@
 2. Manual: `confidence < threshold` или `margin < margin_threshold` или несколько равнозначных тем.
 3. `other` при высокой уверенности → `general_support`; при низкой → `manual_review`.
 4. Модель недоступна → 503; upstream направляет в manual.
-5. Пороги калибруются на validation, фиксируются в конфиге и возвращаются в ответе.
+5. Пороги калибруются по OOF-предсказаниям train, фиксируются в конфиге и возвращаются в ответе.
 
 ---
 
@@ -290,7 +291,7 @@
 
 Русский язык остаётся опциональным расширением на будущее: контракт API допускает `locale`, но финальные метрики считаются на английском.
 
-**Принцип доверия:** train может быть слабо размеченным и содержать синтетику; validation и test — только human-verified примеры из реального домена SpotifyCares. Метрики на синтетике и слабых метках не выдаются за финальные.
+**Принцип доверия:** train может быть слабо размеченным и содержать синтетику; test — только human-verified примеры из реального домена SpotifyCares. Метрики на синтетике и слабых метках не выдаются за финальные.
 
 ### 6.2. Источники, лицензии и роль
 
@@ -298,7 +299,7 @@
 |---|---|---|---|---|
 | TWCS SpotifyCares | ~38 тыс. обращений; готовый dev-подкорпус 6 000 | Основной домен, train + human-verified eval | Лицензия TWCS требует уточнения; сырые твиты не коммитим | Нет официальных тем; PII; шум |
 | Bitext Customer Support | 26 872 | Вспомогательный train | CDLA-Sharing-1.0 | Другой домен; маппинг категорий |
-| Синтетические 420 | 420 | Seed и edge cases в train | Собственная генерация | Не в validation/test |
+| Синтетические 420 | 420 | Seed и edge cases в train | Собственная генерация | Не в test |
 | Audio Retailer | 1 000 | Внешняя проверка обобщения | MIT | Синтетика, другой бизнес |
 | Human-written музыкальные кейсы | 300–600 | Дополнение редких классов | Собственная разметка | Только после двойной проверки |
 
@@ -321,12 +322,12 @@
 | Параметр | Минимум | Цель |
 |---|---|---|
 | Train (weak + synthetic + human) | 8 000 | 15 000–20 000 |
-| Validation, human-verified SpotifyCares | 250 | 300 |
+| Validation | не выделяется | CV на train |
 | Test, human-verified SpotifyCares | 350 | 400 |
 | Test на класс в balanced subset | 25 | 30–40 |
 | `other` в train | ≤ 40% | ≤ 35% |
 | Синтетика в train | ≤ 15% | ≤ 10% |
-| Синтетика в validation/test | 0% | 0% |
+| Синтетика и weak в test | 0% | 0% |
 | Дубли и near-duplicates между split | 0 | 0 |
 
 **Практическая сборка train:**
@@ -334,8 +335,8 @@
 - TWCS SpotifyCares: до 12 000 слабо размеченных обращений; `other` ограничен 35%, редкие классы сохраняются полностью.
 - Bitext: 6 000–8 000 сбалансированных примеров после маппинга; вес при обучении ниже, чем у TWCS.
 - Синтетика: 420 после аудита; только train.
-- Human-verified SpotifyCares train: 300–500, если команда успевает разметить больше, чем нужно для validation/test.
-- Итого ориентир: 15 000–20 000 train, 300 validation, 400 test.
+- Human-verified SpotifyCares train: 300–500, если команда успевает разметить больше, чем нужно для test.
+- Итого ориентир: 15 000–20 000 train, 400 test. Validation не выделяется: его роль выполняет `StratifiedGroupKFold` CV на train, а порог выбирается по OOF-предсказаниям.
 
 **Редкие классы.** В TWCS `content` и `recommendations` почти отсутствуют: в dev-подкорпусе 6 000 их 22 и 55 соответственно. Поэтому:
 
@@ -343,7 +344,7 @@
 2. В test сначала набираем естественное распределение, затем отдельно формируем **balanced stress subset** по 25–30 примеров на класс.
 3. Метрики на естественном и balanced-подмножествах публикуем раздельно. Если класс меньше 25 примеров, доверительный интервал широкий, и это честно указывается.
 
-Если данных меньше цели, минимальный допустимый вариант — 8 000 train, 250 validation, 350 test. Меньше — только с явным описанием ограничения и риска для оценки.
+Если данных меньше цели, минимальный допустимый вариант — 8 000 train, 350 test. Меньше — только с явным описанием ограничения и риска для оценки.
 
 ### 6.4. Схема записи
 
@@ -371,7 +372,7 @@
 2. Выборка для разметки — только SpotifyCares; сначала дедупликация и маскирование PII.
 3. Два независимых разметчика на 200+ примерах; Cohen's kappa ≥ 0.70.
 4. Расхождения — арбитраж третьим участником; спорные случаи дополняют инструкцию.
-5. Test и validation — human-verified; синтетика и слабые метки запрещены.
+5. Test — human-verified; синтетика и слабые метки запрещены. Отдельный validation не выделяется: его роль выполняет CV на train.
 6. Test замораживается до финальных экспериментов и не используется для подбора.
 7. Разметчик не видит предсказания модели и чужие метки.
 8. Слабая разметка TWCS для train проверяется на аудите 500 примеров: agreement с человеком фиксируется в data card.
@@ -708,31 +709,35 @@ Multi-class single-label классификация:
 
 - вход: текст (+ subject/channel/locale);
 - выход: распределение по 7 классам;
-- основная метрика: macro-F1 на human-verified test;
+- основная метрика: macro-F1 на human-verified test + 95% bootstrap CI;
+- выбор модели: mean CV macro-F1 на train;
 - дополнительные: per-class P/R/F1, accuracy, coverage, selective precision, review rate, ECE, latency.
 
 ### 9.2. Baseline
 
 - Keyword baseline (существующий) — нижняя граница и sanity check.
 - TF-IDF word (1–2 gram) + Logistic Regression.
-- TF-IDF word + char (3–5 gram) + Logistic Regression — основной baseline.
-- `class_weight="balanced"`, стратификация, 5-fold CV на train.
+- TF-IDF word + char (3–5 gram) + Logistic Regression.
+- Calibrated LinearSVC и ComplementNB — альтернативные семейства.
+- `class_weight="balanced"`, `StratifiedGroupKFold(5)` по `conversation_id`, scoring=`f1_macro`.
 
 ### 9.3. Эксперименты (минимум 3 варианта, 5+ MLflow runs)
 
 | ID | Гипотеза | Конфигурация | Что сравниваем |
 |---|---|---|---|
 | E0 | Keyword baseline даст нижнюю границу | эвристики | macro-F1, latency |
-| E1 | TF-IDF word + LogReg лучше keyword | C=0.5/4/16 | macro-F1, per-class recall |
-| E2 | Char n-grams помогают на опечатках | word+char, C=4/16 | macro-F1, robustness |
-| E3 | LinearSVC/CNB конкурентен | TF-IDF + LinearSVC/CNB | macro-F1, скорость |
-| E4 | Калибровка и threshold повышают selective precision | CalibratedClassifierCV + threshold/margin | coverage, selective precision, ECE |
+| E1 | LogReg word лучше keyword | TF-IDF word + LogReg, RandomizedSearchCV | CV macro-F1, std |
+| E2 | Char n-grams помогают на опечатках | word+char + LogReg | CV macro-F1, robustness |
+| E3 | LinearSVC/CNB конкурентен | calibrated SVC / ComplementNB | CV macro-F1, скорость |
+| E4 | OOF threshold повышает selective precision | threshold/margin по OOF | coverage, selective precision, review rate |
 | E5 (optional) | Transformer/embeddings лучше на перефразированиях | DistilBERT или MiniLM + LogReg | macro-F1, latency, размер |
+
+**Правило:** `RandomizedSearchCV(n_iter=12, cv=StratifiedGroupKFold(5), scoring="f1_macro")`. Test не используется для выбора. Финальная оценка — один раз, с 95% bootstrap CI.
 
 Каждый запуск логирует:
 
 - params: модель, C, ngram_range, seed, dataset_version;
-- metrics: validation/test macro-F1, accuracy, per-class recall, coverage, ECE;
+- metrics: CV mean/std, test macro-F1 + bootstrap CI, accuracy, per-class recall, coverage, ECE;
 - artifacts: model, confusion matrix, classification report, config, data hash;
 - tags: code_sha256, dataset_sha256, owner, stage.
 
@@ -740,7 +745,9 @@ Multi-class single-label классификация:
 
 | Метрика | Цель | Комментарий |
 |---|---|---|
-| Macro-F1 | ≥ 0.80 | Основная; минимум 0.75 с анализом причин |
+| CV macro-F1 | ≥ 0.80 | Среднее по 5 фолдам, выбор модели |
+| Test macro-F1 | ≥ 0.80 | Основная; минимум 0.75 с анализом причин |
+| 95% bootstrap CI | публикуется | Ширина CI и нижняя граница |
 | Recall каждого класса | ≥ 0.65 | Кроме `other`, если обосновано |
 | Selective precision | ≥ 0.95 | Среди auto-routed |
 | Coverage | ≥ 0.40 | Доля auto-routed |
@@ -754,8 +761,8 @@ Multi-class single-label классификация:
 ### 9.5. Калибровка и abstention
 
 - Калибровка: `CalibratedClassifierCV` (sigmoid/isotonic) или temperature scaling.
-- Threshold и margin подбираются на validation по selective precision/coverage.
-- Начальные значения: threshold 0.70, margin 0.10; финальные — из эксперимента.
+- Threshold и margin подбираются по OOF-предсказаниям train с политикой selective precision ≥ 0.95 и coverage ≤ 0.90.
+- Текущие значения: threshold 0.85, margin 0.05; после human-verified test пересчитываются.
 - Если калибровка ухудшает macro-F1, сравнить и обосновать.
 - `automation_enabled=false` — допустимый fallback, но в отчёте нужно объяснить, почему.
 
@@ -1041,7 +1048,7 @@ pytest -q
 | AL-07 | `macro_f1_delayed` < 0.75 | Critical | Rollback, переобучение |
 | AL-08 | PII в логах > 0 | Critical | Остановить логирование, инцидент |
 
-Пороги калибруются по историческим данным; в учебном проекте — по validation/test baseline.
+Пороги калибруются по историческим данным; в учебном проекте — по OOF train и test baseline.
 
 ### 12.6. Дашборд
 
@@ -1064,7 +1071,7 @@ pytest -q
 - Data drift: изменение распределения входа.
 - Concept drift: изменение связи «текст → тема».
 - Методы: KS-тест, PSI, Evidently.
-- Reference: validation или последняя стабильная неделя.
+- Reference: OOF train или последняя стабильная неделя.
 - Порог: PSI > 0.2 — сигнал; KS p-value < 0.05 — сигнал.
 - Отчёт: `docs/drift_report.md` или Evidently HTML.
 
@@ -1137,7 +1144,7 @@ pytest -q
 1. Не отправлять PII и секреты.
 2. Любой сгенерированный код — только после review и тестов.
 3. Любые сгенерированные данные — только после ручной проверки.
-4. Синтетика и слабые метки не попадают в validation/test.
+4. Синтетика и слабые метки не попадают в test.
 5. Все числа в отчёте — только из артефактов.
 
 ---
@@ -1189,17 +1196,19 @@ pytest -q
 
 - пайплайн TWCS/Bitext, очистка, дедупликация;
 - аудит 420 и 500 слабых меток;
-- human-verified validation/test;
+- human-verified test 400;
+- StratifiedGroupKFold CV по `conversation_id`;
+- RandomizedSearchCV по 4 семействам;
+- OOF-порог и margin;
+- одно измерение на test + 95% bootstrap CI;
 - data validation;
-- E0–E7 (7+ runs);
 - MLflow;
 - error analysis;
-- выбор модели и порогов;
 - data card и model card.
 
-**Выход:** `docs/experiments.md`, MLflow runs, data card, model card.
+**Выход:** `docs/experiments.md`, `artifacts/search_results.json`, MLflow runs, data card, model card.
 
-**Проверка:** ≥3 варианта, ≥5 runs, вывод по каждому, test не использован для подбора, метрики воспроизводимы.
+**Проверка:** ≥3 семейства, ≥5 runs, CV mean/std, test не использован для подбора, CI опубликован, метрики воспроизводимы.
 
 ### 14.4. Этап 4. Тестирование (Айдар Мугизов)
 
@@ -1358,7 +1367,6 @@ pytest -q
 3. **Собрать данные** — единственный серьёзный пробел:
    - train 8 000 минимум, цель 15 000–20 000;
    - 350–400 human-verified test;
-   - 250–300 human-verified validation;
    - `other` ≤ 40%, синтетика ≤ 15% в train;
    - 2 разметчика, kappa ≥ 0.70.
 4. **Аннотационная инструкция** (1–2 страницы).
@@ -1401,4 +1409,5 @@ pytest -q
 |---|---|---|
 | 1.0 | 14.11.2026 | Первая версия TZ |
 | 2.0 | 14.11.2026 | Учтены 16 вебинаров, 5 участников, 7 классов, аудит черновиков, план данных, деплой/мониторинг, отчёт |
-| 2.1 | 14.11.2026 | Утверждены роли этапов 2–6; английская стратегия данных TWCS + Bitext; train 15–20 тыс., human-verified eval 300/400; `data/external/` |
+| 2.1 | 14.11.2026 | Утверждены роли этапов 2–6; английская стратегия данных TWCS + Bitext; train 15–20 тыс., human-verified test 400; `data/external/` |
+| 2.2 | 14.11.2026 | Validation заменён на StratifiedGroupKFold CV; RandomizedSearchCV; OOF-порог; bootstrap CI; test 400 |

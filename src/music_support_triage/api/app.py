@@ -9,8 +9,11 @@ from pathlib import Path
 from typing import Annotated, Any, cast
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
+from fastapi.encoders import jsonable_encoder
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from music_support_triage.api.schemas import (
     BatchRequest,
@@ -83,15 +86,54 @@ def create_app(
     @app.middleware("http")
     async def observe(request: Request, call_next: Any) -> Response:
         started = time.perf_counter()
+        request_id = request.headers.get("X-Request-ID") or str(uuid.uuid4())
+        request.state.request_id = request_id
         status = 500
         try:
             response = await call_next(request)
             status = response.status_code
+            response.headers["X-Request-ID"] = request_id
             return response
         finally:
             path = request.url.path
             REQUEST_COUNT.labels(request.method, path, str(status)).inc()
             REQUEST_LATENCY.labels(request.method, path).observe(time.perf_counter() - started)
+
+    def error_body(request: Request, code: str, message: str, **extra: Any) -> dict[str, Any]:
+        return {
+            "error": {
+                "code": code,
+                "message": message,
+                "request_id": getattr(request.state, "request_id", None),
+                **extra,
+            }
+        }
+
+    @app.exception_handler(RequestValidationError)
+    async def validation_exception_handler(
+        request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=422,
+            content=error_body(
+                request,
+                "VALIDATION_ERROR",
+                "Request validation failed",
+                details=jsonable_encoder(exc.errors()),
+            ),
+        )
+
+    @app.exception_handler(StarletteHTTPException)
+    async def http_exception_handler(
+        request: Request, exc: StarletteHTTPException
+    ) -> JSONResponse:
+        code = {404: "NOT_FOUND", 503: "MODEL_UNAVAILABLE"}.get(
+            exc.status_code, "HTTP_ERROR"
+        )
+        return JSONResponse(
+            status_code=exc.status_code,
+            content=error_body(request, code, str(exc.detail)),
+        )
 
     @app.get("/healthcheck", response_model=HealthResponse)
     def healthcheck(svc: Annotated[TriageService, Depends(get_service)]) -> Any:

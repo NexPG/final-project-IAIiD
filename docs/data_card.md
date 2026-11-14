@@ -1,7 +1,7 @@
 # Data card
 
 **Версия:** 2026-11-14  
-**Dataset version:** `sha256:85293186118678f41fcb0465834105a4c4ce2cf2414f3528d7623ee86579829b`  
+**Dataset version:** `sha256:b85ccc381543b4868c277da34a1f3bfae45e60cff1c9e0586b9db6d4cdb150d8`  
 **Владелец:** Владимир Егоров
 
 ## 1. Происхождение
@@ -18,24 +18,25 @@
 
 | Split | Строк |
 |---|---|
-| Train | 11 183 |
-| Validation | 327 |
+| Train | 11 325 |
 | Test | 439 |
-| **Всего** | **11 949** |
+| **Всего** | **11 764** |
 
-Train: TWCS weak 4 713 + Bitext 7 236. Validation/test — только TWCS.
+Validation отдельно не выделяется: модель выбирается и настраивается через `StratifiedGroupKFold` CV на train, порог — по OOF-предсказаниям. Test заморожен и используется один раз.
+
+Train: TWCS weak 4 580 + Bitext 7 184. Test — только TWCS.
 
 ## 3. Распределение классов
 
-| Класс | Train | Validation | Test |
-|---|---|---|---|
-| `payment` | 2 146 | 20 | 23 |
-| `subscription` | 1 564 | 40 | 48 |
-| `account` | 2 061 | 12 | 16 |
-| `app` | 219 | 14 | 18 |
-| `recommendations` | 1 286 | 3 | 4 |
-| `content` | 18 | 1 | 3 |
-| `other` | 3 889 | 237 | 327 |
+| Класс | Train | Test |
+|---|---|---|
+| `payment` | 2 166 | 23 |
+| `subscription` | 1 604 | 48 |
+| `account` | 2 073 | 16 |
+| `app` | 233 | 18 |
+| `recommendations` | 1 289 | 4 |
+| `content` | 19 | 3 |
+| `other` | 3 941 | 327 |
 
 `other` в train — 34.8%; в test — 74.5% (естественное распределение). Это осознанный distribution shift.
 
