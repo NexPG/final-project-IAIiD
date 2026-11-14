@@ -1,0 +1,128 @@
+# ---------------------------------------------------------------------------
+# Environment and secrets
+# ---------------------------------------------------------------------------
+.venv/
+venv/
+env/
+ENV/
+.conda/
+.env
+.env.*
+!.env.example
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg
+*.egg-info/
+.eggs/
+build/
+dist/
+develop-eggs/
+downloads/
+sdist/
+wheels/
+share/python-wheels/
+pip-wheel-metadata/
+MANIFEST
+.installed.cfg
+
+# ---------------------------------------------------------------------------
+# Test, lint, type-check and coverage artifacts
+# ---------------------------------------------------------------------------
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+
+# ---------------------------------------------------------------------------
+# Jupyter
+# ---------------------------------------------------------------------------
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+.profile_default
+
+# ---------------------------------------------------------------------------
+# IDE and OS files
+# ---------------------------------------------------------------------------
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# ---------------------------------------------------------------------------
+# Data and model artifacts
+# Raw, interim and processed data are generated or downloaded locally.
+# Small curated samples may be committed only through an explicit exception.
+# ---------------------------------------------------------------------------
+data/raw/*
+!data/raw/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/feedback/*
+!data/feedback/.gitkeep
+/models/
+/artifacts/
+/mlruns/
+/mlartifacts/
+*.joblib
+*.pkl
+*.onnx
+*.pt
+*.pth
+*.safetensors
+*.bin
+*.ckpt
+/predictions/
+/logs/
+*.log
+
+# ---------------------------------------------------------------------------
+# Local development materials for the course (not part of the deliverable)
+# These files and folders are kept only on the team's machines during
+# development and must not be committed.
+# ---------------------------------------------------------------------------
+docs/project_plan/
+docs/presentations/
+diary.md
+
+# Stage workspaces created by the team during development.
+# They are drafts and must not be pushed as part of the final repository.
+/Второй этап/
+/Третий этап/
+/Четвертый этап/
+/Пятый этап/
+/Шестой этап/
+diary.md
+
+# ---------------------------------------------------------------------------
+# Temporary and OS-level files
+# ---------------------------------------------------------------------------
+tmp/
+temp/
+.cache/
+.pytest_tmp/
+*.tmp
+*.bak
