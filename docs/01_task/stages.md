@@ -94,6 +94,8 @@
 - Compose api + Prometheus, `API_PORT`;
 - model/config read-only;
 - smoke 5/5 на uvicorn и Docker;
+- Docker load test: 20 RPS / 20 s, 400 requests, 0 errors, p95 55.46 ms;
+- final model `search-logreg_word-20261114200534` внутри образа;
 - rollback и production-маршрут описаны.
 
 **Gate 5:** `docker compose build/up`, smoke, healthcheck, rollback.  

@@ -106,7 +106,21 @@ Rollback:
 - централизованные логи;
 - blue-green/canary.
 
-## 6. Чек-лист
+## 6. Финальная проверка
+
+| Параметр | Значение |
+|---|---|
+| Image | `music-support-triage:local` |
+| Image ID | `sha256:636e5d0a28a072e2cea6c53608943f4837487b2b6b6462acc5e9f0d0ff30626f` |
+| Image size | 716 MB |
+| Model version | `search-logreg_word-20261114200534` |
+| Model type | `logreg_word` |
+| Threshold | 0.85 / 0.05 |
+| Compose services | api + prometheus, оба healthy |
+| Smoke | 5/5 |
+| Docker load test | 20 RPS, 20 s, 400 requests, 0 errors, p95 55.46 ms |
+
+## 7. Чек-лист
 
 - [x] Dockerfile собирается: `docker compose build` — успешно.
 - [x] Compose поднимает api + Prometheus: `up -d --wait` — оба healthy.
@@ -116,5 +130,5 @@ Rollback:
 - [x] секреты не в образе.
 - [x] rollback описан.
 - [x] README-инструкция.
-- [ ] Проверка на чистой машине без `.venv`.
-- [ ] Load test 20 RPS.
+- [x] Load test 20 RPS — p95 55.46 ms, 0 errors.
+- [ ] Проверка на чистой машине без `.venv` (Docker-путь уже не зависит от venv).

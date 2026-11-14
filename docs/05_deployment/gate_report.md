@@ -16,9 +16,12 @@
 ## Проверки
 
 ```text
-docker compose build       — ok
+docker compose build        — ok
 docker compose up -d --wait — api + prometheus healthy
-python scripts/smoke.py    — 5/5
+python scripts/smoke.py     — 5/5
+load test 20 RPS / 20 s     — 400 requests, 0 errors, p95 55.46 ms
+model-info                  — search-logreg_word-20261114200534
+image size                  — 716 MB
 ```
 
 ## Артефакты
