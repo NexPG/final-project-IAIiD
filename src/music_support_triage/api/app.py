@@ -39,6 +39,16 @@ CLASSIFY_LATENCY = Histogram(
     "model_inference_seconds", "Model inference latency", ["status"]
 )
 MODEL_READY = Gauge("model_loaded", "1 when the model artifact is loaded")
+PREDICTION_COUNT = Counter(
+    "predictions_total",
+    "Classified requests",
+    ["topic", "queue", "needs_review"],
+)
+PREDICTION_CONFIDENCE = Histogram(
+    "prediction_confidence",
+    "Top-1 confidence distribution",
+    buckets=(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 0.95, 1.0),
+)
 
 DEFAULT_CONFIG = Path("configs/service.yaml")
 
@@ -161,6 +171,12 @@ def create_app(
             CLASSIFY_LATENCY.labels("error").observe(0)
             raise HTTPException(status_code=503, detail=str(exc)) from exc
         CLASSIFY_LATENCY.labels("ok").observe(result["latency_ms"] / 1000.0)
+        PREDICTION_COUNT.labels(
+            topic=result["topic"],
+            queue=result["queue"],
+            needs_review=str(result["needs_human_review"]).lower(),
+        ).inc()
+        PREDICTION_CONFIDENCE.observe(result["confidence"])
         return ClassifyResponse(
             request_id=request_id,
             topic=result["topic"],

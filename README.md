@@ -84,6 +84,8 @@ docker compose -f docker/docker-compose.yml up --build
 $env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 ```
 
+Grafana: `http://localhost:3000` (`admin` / `admin`), dashboard `Music Support Triage`.
+
 ## Метрики
 
 | Метрика | Значение |

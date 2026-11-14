@@ -43,3 +43,40 @@ groups:
         annotations:
           summary: "p95 latency is above 500 ms"
           description: "Check CPU, batch size and model size."
+
+      - alert: TriageManualReviewRateHigh
+        expr: |
+          sum(rate(predictions_total{needs_review="true"}[10m]))
+          /
+          clamp_min(sum(rate(predictions_total[10m])), 0.000001) > 0.30
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "More than 30% of requests go to manual review"
+          description: "Confidence dropped or input distribution changed."
+
+      - alert: TriageOtherShareHigh
+        expr: |
+          sum(rate(predictions_total{topic="other"}[10m]))
+          /
+          clamp_min(sum(rate(predictions_total[10m])), 0.000001) > 0.55
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "More than 55% of predictions are other"
+          description: "Possible drift or a broken upstream form."
+
+      - alert: TriageConfidenceLow
+        expr: |
+          histogram_quantile(
+            0.5,
+            sum(rate(prediction_confidence_bucket[10m])) by (le)
+          ) < 0.60
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Median top-1 confidence is below 0.60"
+          description: "Check data drift, calibration and model version."

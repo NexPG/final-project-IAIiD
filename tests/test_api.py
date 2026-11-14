@@ -104,9 +104,12 @@ def test_batch_preserves_order_and_feedback_is_idempotent() -> None:
 def test_metrics_endpoint() -> None:
     api = client()
     api.get("/healthcheck")
+    api.post("/v1/classify", json={"text": "I was charged twice for my subscription"})
     response = api.get("/metrics")
     assert response.status_code == 200
     assert "http_requests_total" in response.text
+    assert "predictions_total" in response.text
+    assert "prediction_confidence_bucket" in response.text
 
 
 def test_validation_error_envelope_and_request_id() -> None:

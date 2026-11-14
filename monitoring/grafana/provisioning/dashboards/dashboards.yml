@@ -1,0 +1,11 @@
+apiVersion: 1
+
+providers:
+  - name: music-support-triage
+    orgId: 1
+    folder: Music Support Triage
+    type: file
+    disableDeletion: true
+    updateIntervalSeconds: 10
+    options:
+      path: /var/lib/grafana/dashboards

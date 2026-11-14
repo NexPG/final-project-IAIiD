@@ -1,8 +1,8 @@
 # Мониторинг
 
-Каталог для конфигурации Prometheus и Grafana. Заполняется на этапе 6.
+Реализовано: Prometheus metrics, 7 alert rules, Grafana dashboard.
 
-Планируемые файлы:
+Файлы:
 
 ```text
 monitoring/
@@ -21,4 +21,6 @@ monitoring/
 - Минимум один алерт с действием.
 - Демонстрация алерта на защите.
 
-Описание метрик и runbook — в [`docs/monitoring.md`](../docs/06_monitoring/monitoring.md).
+Проверено: `TriageApiDown` переходит в firing; Grafana provisioning загружает dashboard `Music Support Triage`.
+
+Описание метрик и runbook — в [`docs/06_monitoring/monitoring.md`](../docs/06_monitoring/monitoring.md).

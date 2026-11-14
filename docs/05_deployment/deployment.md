@@ -34,8 +34,9 @@ $env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 |---|---|---|
 | `api` | 8000 | FastAPI |
 | `prometheus` | 9090 | Метрики и alert rules |
+| `grafana` | 3000 | Dashboard `Music Support Triage` |
 
-`db`/`grafana` не входят в учебный минимум. Feedback хранится в памяти процесса; в production — PostgreSQL. Артефакт модели монтируется read-only из `artifacts/`.
+`db` не входит в учебный минимум. Feedback хранится в памяти процесса; в production — PostgreSQL. Артефакт модели монтируется read-only из `artifacts/`.
 
 ## 2. Dockerfile
 
@@ -116,7 +117,7 @@ Rollback:
 | Model version | `search-logreg_word-20261114200534` |
 | Model type | `logreg_word` |
 | Threshold | 0.85 / 0.05 |
-| Compose services | api + prometheus, оба healthy |
+| Compose services | api + prometheus + grafana, все healthy |
 | Smoke | 5/5 |
 | Docker load test | 20 RPS, 20 s, 400 requests, 0 errors, p95 55.46 ms |
 

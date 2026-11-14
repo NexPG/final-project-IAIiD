@@ -108,7 +108,8 @@
 **Сделано:**
 
 - `/metrics`, Prometheus;
-- 4 алерта: API down, model not ready, 5xx, latency;
+- Grafana dashboard: инфраструктура, продукт, модель;
+- 7 алертов: API down, model not ready, 5xx, latency, manual rate, other share, confidence;
 - алерт `TriageApiDown` проверен в firing;
 - drift-отчёт: PSI 0.003, KS 0.020, `other_share` 44.1% vs 44.5%;
 - runbook и стратегия переобучения.

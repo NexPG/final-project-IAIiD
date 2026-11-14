@@ -7,7 +7,7 @@
 ## Что сделано
 
 - Multi-stage Dockerfile, non-root, healthcheck.
-- Compose: api + Prometheus, `API_PORT`.
+- Compose: api + Prometheus + Grafana, `API_PORT`.
 - Model/config read-only.
 - Smoke 5/5 на uvicorn и в Docker.
 - Rollback: предыдущий artifact + перезапуск.
