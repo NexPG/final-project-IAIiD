@@ -36,7 +36,7 @@ $env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 | `prometheus` | 9090 | Метрики и alert rules |
 | `grafana` | 3000 | Dashboard `Music Support Triage` |
 
-`db` не входит в учебный минимум. Feedback хранится в памяти процесса; в production — PostgreSQL. Артефакт модели монтируется read-only из `artifacts/`.
+`db` в учебном стенде — SQLite-файл в volume `data/feedback/`, API сохраняет feedback и обеспечивает идемпотентность по `request_id`. В production — PostgreSQL. Артефакт модели монтируется read-only из `artifacts/`.
 
 ## 2. Dockerfile
 
@@ -112,24 +112,23 @@ Rollback:
 | Параметр | Значение |
 |---|---|
 | Image | `music-support-triage:local` |
-| Image ID | `sha256:636e5d0a28a072e2cea6c53608943f4837487b2b6b6462acc5e9f0d0ff30626f` |
 | Image size | 716 MB |
 | Model version | `search-logreg_word-20261114200534` |
 | Model type | `logreg_word` |
 | Threshold | 0.85 / 0.05 |
 | Compose services | api + prometheus + grafana, все healthy |
 | Smoke | 5/5 |
-| Docker load test | 20 RPS, 20 s, 400 requests, 0 errors, p95 55.46 ms |
+| Docker load test | 20 RPS, 20 s, 400 requests, 0 errors, p95 52.72 ms |
 
 ## 7. Чек-лист
 
 - [x] Dockerfile собирается: `docker compose build` — успешно.
-- [x] Compose поднимает api + Prometheus: `up -d --wait` — оба healthy.
+- [x] Compose поднимает api + Prometheus + Grafana: `up -d --wait` — все healthy.
 - [x] healthcheck.
 - [x] smoke — 5/5 (uvicorn и Docker).
 - [x] модель read-only volume.
 - [x] секреты не в образе.
 - [x] rollback описан.
 - [x] README-инструкция.
-- [x] Load test 20 RPS — p95 55.46 ms, 0 errors.
+- [x] Load test 20 RPS — p95 52.72 ms, 0 errors.
 - [ ] Проверка на чистой машине без `.venv` (Docker-путь уже не зависит от venv).

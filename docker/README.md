@@ -1,15 +1,11 @@
 # Docker
 
-Каталог для контейнеризации. Заполняется на этапе 5.
-
-Планируемые файлы:
+Реализовано:
 
 ```text
 docker/
 ├── Dockerfile
-├── docker-compose.yml
-└── prometheus/
-    └── prometheus.yml
+└── docker-compose.yml
 ```
 
 ## Требования
@@ -17,9 +13,17 @@ docker/
 - Multi-stage сборка.
 - Базовый образ `python:3.12-slim`.
 - Non-root пользователь.
-- Healthcheck на `/health/ready`.
-- Модель копируется в образ или монтируется read-only.
-- Секреты передаются через `.env`, не через образ.
+- Healthcheck на `/healthcheck`.
+- Модель копируется в образ и монтируется read-only.
+- Секреты не попадают в образ.
 - `docker compose up` поднимает API, Prometheus и Grafana.
+
+## Проверка
+
+```bash
+docker compose -f docker/docker-compose.yml up -d --wait
+python scripts/smoke.py --base-url http://127.0.0.1:8000
+docker compose -f docker/docker-compose.yml down
+```
 
 CI/CD на GitHub не используется: сборка и проверка выполняются локально.

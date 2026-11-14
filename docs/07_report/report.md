@@ -1,6 +1,6 @@
 # Итоговый отчёт: Music Support Triage
 
-**Версия:** черновик 0.4, 14.11.2026  
+**Версия:** 1.0, 15.11.2026, после аудита проекта  
 **Команда:** Максим Федулаев, Владимир Егоров, Айдар Мугизов, Евгений Кононов, Александр Аксенов  
 **Репозиторий:** https://github.com/NexPG/final-project-IAIiD  
 **Data card:** [`data_card.md`](../01_task/data_card.md) · **Model card:** [`model_card.md`](../03_experiments/model_card.md)
@@ -32,9 +32,9 @@
 | 1. Задача | Требования курса | Таксономия, метрики, границы, данные | `TZ.md`, `data.md`, `README.md` | закрыт |
 | 2. Архитектура | TZ, 7 классов | Монолит, API, routing, ADR | `architecture.md`, `api.md`, `openapi.json` | закрыт |
 | 3. Эксперименты | Данные + архитектура | 80/20, CV, HalvingRandomSearchCV, test | `experiments.md`, MLflow, `model_card.md` | закрыт |
-| 4. Тестирование | Модель + API | Data/model/API/contract tests | `tests/`, `testing.md` | базово закрыт |
-| 5. Деплой | Сервис | Docker, Compose, smoke, rollback | `deployment.md` | базово закрыт |
-| 6. Мониторинг | Сервис | Метрики, алерты, drift, runbook | `monitoring.md` | базово закрыт |
+| 4. Тестирование | Модель + API | Data/model/API/contract tests | `tests/`, `testing.md` | закрыт |
+| 5. Деплой | Сервис | Docker, Compose, smoke, rollback | `deployment.md` | закрыт |
+| 6. Мониторинг | Сервис | Метрики, алерты, drift, runbook | `monitoring.md` | закрыт |
 
 Подробная карта gates — [`stages.md`](../01_task/stages.md).
 
@@ -102,7 +102,7 @@
 | linear_svc (calibrated) | 0.775 | 0.012 |
 | complement_nb | 0.701 | 0.006 |
 
-Выбрана `logreg_word`: TF-IDF word (1,2), `min_df=2`, `max_features=50000`, C=32, `class_weight=balanced`.
+Выбрана `logreg_word`: TF-IDF word (1,2), `min_df=2`, `max_features=50000`, C=32, `class_weight=balanced`. Сильнее всего результат менял выбор семейства/признаков; `class_weight=balanced` важнее конкретного C, а C в диапазоне 4–32 давал лишь небольшие различия.
 
 ### 6.3. Финальный test
 
@@ -137,17 +137,17 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 
 **Проверки:** обязательные поля, классы/split/source, длины 10–5000, уникальность id, cross-split дубли, утечка `conversation_id`, PII. Отчёт — `data/processed/validation_report.json`. Great Expectations — **8/8** expectations на 13 427 строках.
 
-**Тесты:** **37 passed**. Покрыты очистка/PII, маппинг, стратифицированный split, дедупликация, data validation, routing, API, OpenAPI, error envelope, batch, feedback idempotency, `/metrics`, model quality (overall, per-class, robustness, edge, behavior, adversarial, subgroup). Локальный quality gate: `ruff`, `mypy`, `pytest`, smoke.
+**Тесты:** **37 passed**. Покрыты очистка/PII, маппинг, стратифицированный split, дедупликация, data validation, routing, API, OpenAPI, error envelope, batch, feedback idempotency, `/metrics`, model quality (overall, per-class, robustness, edge, behavior, adversarial, subgroup). Локальный quality gate: `ruff`, `mypy`, `pytest`, smoke. **Dirty copy** намеренно ломает данные и должна быть отклонена: GE поймал 4 нарушения из 8. **Load test:** 20 RPS, 30 s, 600 запросов, 0 ошибок, p95 9.74 ms.
 
 **Найденная проблема:** отрицание «I don't want to cancel my subscription, I need a receipt» → `subscription`, confidence 0.647, manual_review. Это и баг качества, и корректное безопасное поведение routing. Дополнительно: `content`/`recommendations` confusion.
 
 ## 8. Деплой
 
 - Multi-stage `docker/Dockerfile`, slim, non-root, healthcheck.
-- `docker/docker-compose.yml`: API + Prometheus, `API_PORT`.
-- Модель и конфиги монтируются read-only.
+- `docker/docker-compose.yml`: API + Prometheus + Grafana, `API_PORT`.
+- Модель и конфиги монтируются read-only; feedback — SQLite-volume.
 - Smoke `scripts/smoke.py`: healthcheck, model-info, classify, batch, metrics — **5/5** на uvicorn и в Docker.
-- Docker build/up проверены: api и Prometheus healthy.
+- Docker build/up проверены: api, Prometheus и Grafana healthy.
 - Rollback: предыдущий `model.joblib` + перезапуск.
 - CI/CD на GitHub не используется: локальный quality gate и ручной release.
 
@@ -157,13 +157,13 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 **Продукт:** запросы, auto-routed share, manual share, distribution тем.
 **Модель:** `model_loaded`, inference latency, confidence, drift.
 
-Метрики — `/metrics`; Prometheus scrape и 4 алерта: `TriageApiDown`, `TriageModelNotReady`, `TriageHigh5xxRate`, `TriageHighLatency`. Алерт проверен: после `docker compose stop api` `TriageApiDown` перешёл в **firing**, после запуска smoke снова 5/5.
+Метрики — `/metrics`; Prometheus scrape и 7 алертов: `TriageApiDown`, `TriageModelNotReady`, `TriageHigh5xxRate`, `TriageHighLatency`, `TriageManualReviewRateHigh`, `TriageOtherShareHigh`, `TriageConfidenceLow`. Grafana dashboard `Music Support Triage` показывает инфраструктуру, продукт и модель. Алерт проверен: после `docker compose stop api` `TriageApiDown` перешёл в **firing**, после запуска smoke снова 5/5.
 
 **Drift:** `scripts/drift_report.py`: PSI длины **0.003**, KS **0.020**, p = 0.346; `other_share` 44.1% в train и 44.5% в test. Стратифицированный split сохранил распределения; production drift требует реальных логов.
 
 ## 10. ИИ-ассистенты
 
-Использовались для: аудита TZ, исследования датасетов, pipeline, API, тестов, Docker, MLflow/GE, отчёта. Проверено вручную: все команды запущены, тесты и линтеры пройдены, метрики пересчитаны. Не делегировалось: таксономия, выводы экспериментов, этика и защита. Журнал — [`ai_usage.md`](../08_ai/ai_usage.md).
+Использовались для: аудита TZ, исследования датасетов, pipeline, API, тестов, Docker, MLflow/GE, отчёта. Проверено вручную: все команды запущены, тесты и линтеры пройдены, метрики пересчитаны, ссылки проверены. Что исправлено командой: порядок вероятностей классов, FastAPI dependency injection, формат `/metrics`, выбор модели и порог, конфликтующие версии артефактов. Не делегировалось: таксономия, выводы экспериментов, этика и защита. Журнал — [`ai_usage.md`](../08_ai/ai_usage.md).
 
 ## 11. Ограничения, drift и этика
 
@@ -176,21 +176,29 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 - Automation bias: интерфейс должен показывать confidence и top-3.
 - Лицензия TWCS требует уточнения; данные используются локально в учебных целях.
 
-## 12. Воспроизводимость
+## 12. Заключение
+
+Собран сквозной учебный кейс: от бизнес-задачи и архитектуры до экспериментов, тестов, Docker-деплоя и мониторинга. Все шесть gate-этапов закрыты и подтверждены артефактами. Работающий прототип классифицирует обращения в 7 тем, маршрутизирует их в очередь или `manual_review`, имеет OpenAPI-контракт, 37 тестов, Docker-стек, Grafana и 7 алертов.
+
+Ключевой результат: CV macro-F1 **0.855 ± 0.048**, test macro-F1 **0.855** с 95% CI **[0.791; 0.908]**, selective precision **0.989** при coverage **0.881**. На реальном TWCS качество ниже (0.739) — это ограничение weak-меток и смешанного test, которое честно указано.
+
+Следующий шаг — human-verified подвыборка и регулярное переобучение по дрейфу. Проект не является production-системой, но показывает полный инженерный путь и границы решения.
+
+## 13. Воспроизводимость
 
 ```bash
 python scripts/download_data.py --config configs/data.yaml
 python scripts/build_dataset.py --config configs/data.yaml
 python scripts/validate_data.py --config configs/data.yaml
 python scripts/validate_data_ge.py
-python scripts/search_models.py --n-iter 12
+python scripts/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
 python scripts/tune_threshold.py
 python scripts/drift_report.py
 uvicorn music_support_triage.api.app:app --port 8000
 python scripts/smoke.py
 ```
 
-## 13. Роли
+## 14. Роли
 
 | Участник | Этап | Вклад |
 |---|---|---|

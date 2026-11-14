@@ -4,6 +4,12 @@
 
 Проект показывает полный инженерный путь: задача → архитектура → эксперименты → тестирование → деплой → мониторинг. Это не коммерческий продукт, а воспроизводимый прототип с честно описанными ограничениями.
 
+## Материалы сдачи
+
+- [Отчёт (PDF)](docs/07_report/report.pdf) · [DOCX](docs/07_report/report.docx) · [Markdown](docs/07_report/report.md)
+- [Презентация (PDF)](docs/07_report/presentation.pdf) · [PPTX](docs/07_report/presentation.pptx)
+- [Роли команды](#команда-и-роли) · [Журнал ИИ-ассистентов](docs/08_ai/ai_usage.md)
+
 ## Задача
 
 Пользователи музыкального стримингового сервиса пишут в поддержку через приложение, сайт, email и чат. Обращения вручную сортируют операторы первой линии. Сервис должен по тексту обращения определить тему и направить его в нужную очередь, а при низкой уверенности — на ручную проверку.
@@ -34,7 +40,7 @@
 ├── docker/                   # Dockerfile и docker-compose (этап 5)
 ├── docs/                     # документация по этапам 01–08
 ├── monitoring/               # Prometheus/Grafana (этап 6)
-├── notebooks/                # EDA и демонстрационные ноутбуки
+├── notebooks/                # опциональные ноутбуки; основной код в src/scripts
 ├── scripts/                  # train/evaluate/validate
 ├── src/music_support_triage/ # исходный код сервиса
 │   ├── api/                  # FastAPI-роуты и схемы
@@ -76,6 +82,18 @@ uvicorn music_support_triage.api.app:app --reload
 python scripts/smoke.py
 ```
 
+Демонстрация одного запроса:
+
+```bash
+curl -X POST http://127.0.0.1:8000/v1/classify \
+  -H "Content-Type: application/json" \
+  -d "{\"text\":\"I was charged twice for my subscription\",\"channel\":\"app\"}"
+```
+
+Ответ содержит `topic`, `queue`, `confidence`, `margin`, `top_k` и
+`needs_human_review`; при confidence < 0.85 или margin < 0.05 очередь будет
+`manual_review`.
+
 Docker:
 
 ```bash
@@ -104,6 +122,7 @@ Grafana: `http://localhost:3000` (`admin` / `admin`), dashboard `Music Support T
 
 Документация разложена по этапам:
 
+- [`docs/00_audit/`](docs/00_audit/) — финальный аудит задания, плана и вебинаров.
 - [`docs/01_task/`](docs/01_task/) — TZ, источники, stages, data, data card, аудит.
 - [`docs/02_architecture/`](docs/02_architecture/) — архитектура, схема, API, OpenAPI.
 - [`docs/03_experiments/`](docs/03_experiments/) — эксперименты, model card.
@@ -123,7 +142,7 @@ Grafana: `http://localhost:3000` (`admin` / `admin`), dashboard `Music Support T
 | Евгений Кононов | 5. Деплой | DevOps / backend |
 | Александр Аксенов | 6. Мониторинг | MLOps / документация |
 
-Этап 1 «Задача» — вся команда. Распределение утверждено.
+Этап 1 «Задача» — вся команда. Распределение утверждено. Команда из 5 человек допускается по согласованию с преподавателем.
 
 ## Данные
 

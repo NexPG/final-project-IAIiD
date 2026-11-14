@@ -10,6 +10,8 @@ pytest -q   — 37 passed
 ruff check . — All checks passed
 mypy src     — Success: 19 source files
 smoke        — 5/5 (healthcheck, model-info, classify, batch, metrics)
+Great Expectations — 8/8 clean; dirty copy rejected (4/8 failed)
+load test    — 20 RPS, 30 s, 600 requests, 0 errors, p95 9.74 ms
 ```
 
 Покрыто: очистка/PII, маппинг меток, стратифицированный 80/20 split, дедупликация, data validation, routing (threshold/margin/`other`), API-контракт, OpenAPI, error envelope, `X-Request-ID`, batch, feedback idempotency, `/metrics`, model quality (overall macro-F1, per-class recall, robustness, edge, behavior, adversarial, subgroup). Найденные ошибки модели: отрицание («I don't want to cancel my subscription, I need a receipt» → `subscription`), `content`/`recommendations` confusion.

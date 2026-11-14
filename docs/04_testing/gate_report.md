@@ -6,7 +6,7 @@
 
 ## Что проверено
 
-- Data validation: pandas + 8/8 Great Expectations.
+- Data validation: pandas + 8/8 Great Expectations; dirty copy rejected.
 - Unit: очистка, PII, маппинг, split, dedup, routing.
 - Model: overall, per-class, robustness, edge, behavior, adversarial, subgroup.
 - API: contract, batch, feedback, 422/503, OpenAPI, error envelope.

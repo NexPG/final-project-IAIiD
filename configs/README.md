@@ -2,15 +2,13 @@
 
 Здесь хранятся конфигурации обучения и сервиса в YAML/JSON.
 
-Планируемые файлы:
+Файлы:
 
 ```text
 configs/
-├── base.yaml                 # общие параметры
-├── baseline.yaml             # TF-IDF + LogReg
-├── linear_svc.yaml           # LinearSVC/ComplementNB
-├── transformer.yaml          # optional DistilBERT/MiniLM experiment
-└── service.yaml              # пороги, лимиты, routing
+├── data.yaml       # источники, 80/20 split, seed
+├── baseline.yaml   # выбранная модель, порог, пути артефактов
+└── service.yaml    # пороги, лимиты, routing
 ```
 
 ## Правила

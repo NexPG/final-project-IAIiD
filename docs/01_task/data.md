@@ -90,7 +90,7 @@ stratum = source + "||" + label
 - PII-паттерны;
 - достаточность классов в test.
 
-Great Expectations: 8 expectations, отчёт `data/processed/ge_report.json`.
+Great Expectations: 8 expectations, отчёт `data/processed/ge_report.json`; `--dirty` копия должна быть отклонена (поймано 4 нарушения).
 
 ## 7. Приватность и версионирование
 

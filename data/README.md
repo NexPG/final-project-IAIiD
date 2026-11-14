@@ -1,40 +1,47 @@
 # Данные
 
-Каталог для локальных данных. Содержимое `raw/`, `interim/`, `processed/` и `feedback/` не коммитится, кроме `.gitkeep`.
+Содержимое `external/`, `raw/`, `interim/`, `processed/` и `feedback/` не коммитится,
+кроме `.gitkeep` и README.
 
 ```text
 data/
-├── raw/          # исходные данные, не изменяются вручную
-├── interim/      # промежуточные результаты очистки
-├── processed/    # train/validation/test после preprocessing
+├── external/     # TWCS, Bitext и другие локальные источники
+├── raw/          # исходные данные
+├── interim/      # промежуточные результаты
+├── processed/    # train/test после 80/20 split
 ├── feedback/     # подтверждения и исправления операторов
-└── manifest.json # checksum и версия датасета (создаётся скриптом)
+└── manifest.json # checksum и версия датасета
 ```
+
+## Текущий набор
+
+- TWCS SpotifyCares + Bitext.
+- 13 427 строк; 10 713 train / 2 714 test.
+- 80/20, стратификация по `(source, label)`.
+- Synthetic исключён.
+- Test frozen, открывается один раз.
 
 ## Правила
 
-1. Реальные PII не используются; синтетические данные маркируются.
-2. Test-выборка замораживается и не используется для подбора параметров.
-3. Синтетика запрещена в validation/test.
-4. Перед обучением запускается валидация данных.
+1. Реальные PII маскируются; сырые данные не коммитятся.
+2. Test замораживается и не используется для подбора.
+3. Synthetic/weak-метки не выдаются за human ground truth.
+4. Перед обучением запускается `validate_data.py` и `validate_data_ge.py`.
 5. Каждый эксперимент фиксирует версию датасета и checksum манифеста.
-6. Большие файлы не коммитятся; при необходимости используется внешнее хранилище.
+6. Большие файлы не коммитятся.
 
-## Ожидаемая схема
+## Схема
 
 | Поле | Тип | Обязательно |
 |---|---|---|
-| `ticket_id` | string | да |
+| `id` | string | да |
 | `text` | string | да |
-| `subject` | string | нет |
-| `channel` | enum | нет |
-| `locale` | string | нет |
-| `created_at` | datetime | нет |
 | `label` | enum | да |
-| `label_source` | enum | да |
+| `label_quality` | enum | да |
+| `source` | enum | да |
 | `split` | enum | да |
-| `annotator_ids` | list[string] | нет |
-| `pii_flags` | list[string] | нет |
-| `notes` | string | нет |
+| `conversation_id` | string | да |
+| `channel` | enum | да |
+| `locale` | enum | да |
 
-Подробности — в [`docs/TZ.md`](../docs/01_task/TZ.md), раздел 7.
+Подробности — в [`docs/01_task/data.md`](../docs/01_task/data.md).

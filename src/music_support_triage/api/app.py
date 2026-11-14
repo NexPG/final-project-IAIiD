@@ -8,6 +8,7 @@ import uuid
 from pathlib import Path
 from typing import Annotated, Any, cast
 
+import structlog
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -27,7 +28,12 @@ from music_support_triage.api.schemas import (
     TopKItem,
 )
 from music_support_triage.core.config import load_yaml, resolve_path
+from music_support_triage.core.logging import configure_logging
 from music_support_triage.services.classifier import ModelNotReadyError, TriageService
+from music_support_triage.services.feedback import FeedbackStore
+
+configure_logging(os.getenv("APP_LOG_LEVEL", "INFO"))
+logger = structlog.get_logger()
 
 REQUEST_COUNT = Counter(
     "http_requests_total", "HTTP requests", ["method", "path", "status"]
@@ -71,6 +77,7 @@ def create_app(
     model_path: Path | None = None,
     service: TriageService | None = None,
     config_path: Path | None = None,
+    feedback_store: FeedbackStore | None = None,
 ) -> FastAPI:
     """Create an application with injectable service, used by tests too."""
     config = _service_config(config_path)
@@ -87,7 +94,10 @@ def create_app(
     app.state.service = service or TriageService(
         resolved_model, threshold=threshold, margin_threshold=margin_threshold
     )
-    app.state.feedback_ids = set()
+    feedback_path = feedback_store or FeedbackStore(
+        Path(os.getenv("FEEDBACK_DB_PATH", "data/feedback/feedback.sqlite3"))
+    )
+    app.state.feedback_store = feedback_path
 
     if service is None:
         app.state.service.load()
@@ -106,8 +116,17 @@ def create_app(
             return response
         finally:
             path = request.url.path
+            latency = time.perf_counter() - started
             REQUEST_COUNT.labels(request.method, path, str(status)).inc()
-            REQUEST_LATENCY.labels(request.method, path).observe(time.perf_counter() - started)
+            REQUEST_LATENCY.labels(request.method, path).observe(latency)
+            logger.info(
+                "http_request",
+                request_id=request_id,
+                method=request.method,
+                path=path,
+                status=status,
+                latency_ms=round(latency * 1000.0, 2),
+            )
 
     def error_body(request: Request, code: str, message: str, **extra: Any) -> dict[str, Any]:
         return {
@@ -209,10 +228,13 @@ def create_app(
     ) -> FeedbackResponse:
         if not svc.ready:
             raise HTTPException(status_code=503, detail="Model is not ready")
-        if payload.request_id in app.state.feedback_ids:
-            return FeedbackResponse(status="already_accepted", request_id=payload.request_id)
-        app.state.feedback_ids.add(payload.request_id)
-        return FeedbackResponse(status="accepted", request_id=payload.request_id)
+        accepted = app.state.feedback_store.accept(
+            payload.request_id,
+            correct_topic=payload.correct_topic,
+            comment=payload.comment,
+        )
+        status_value = "accepted" if accepted else "already_accepted"
+        return FeedbackResponse(status=status_value, request_id=payload.request_id)
 
     @app.get("/metrics")
     def metrics() -> Response:

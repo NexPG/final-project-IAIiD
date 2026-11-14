@@ -1,111 +1,32 @@
 # Презентация: Music Support Triage
 
-**Формат:** 10–15 слайдов, 5 минут + 2 минуты вопросов (уточнить у преподавателя, если 7 минут).  
-**Статус:** черновик v0.1 к защите.
+**Формат:** 15 слайдов, выступление 5 минут + 2 минуты вопросов.  
+В вебинаре В01 указано 7 минут — уточнить у преподавателя.  
+**Файлы:** [`presentation.pdf`](presentation.pdf), [`presentation.pptx`](presentation.pptx).
 
-## Слайд 1. Титул
+## Слайды
 
-Music Support Triage — классификация обращений в поддержку музыкального сервиса.  
-Команда: Максим Федулаев, Владимир Егоров, Айдар Мугизов, Евгений Кононов, Александр Аксенов.
+1. Титул: Music Support Triage, команда.
+2. Проблема: ручная сортировка, задержка, ошибки маршрута.
+3. Задача: вход, выход, 7 классов, метрики.
+4. Данные: TWCS + Bitext, 13 427 строк, 80/20 stratified.
+5. Архитектура: общая схема команды.
+6. Техническая архитектура: PII, routing, Prometheus, ML-lifecycle.
+7. API и routing: endpoints, ошибки, SLA, OpenAPI.
+8. Эксперименты: 4 семейства, HalvingRandomSearchCV, CV-график.
+9. Финальный test: macro-F1 0.855, CI [0.791; 0.908].
+10. Тестирование: 37 тестов, GE, load test, найденный баг.
+11. Деплой: Docker/Compose/Grafana, smoke, rollback.
+12. Мониторинг: 3 уровня, 7 алертов, drift.
+13. ИИ-ассистенты, этика, ограничения.
+14. Ограничения и следующий шаг.
+15. Команда и роли.
 
-## Слайд 2. Проблема
+## Ключевые числа
 
-- Поддержка вручную сортирует тикеты.
-- Ошибки маршрутизации → задержка ответа.
-- Нужна тема + очередь + безопасный fallback.
-
-## Слайд 3. Задача и метрики
-
-- 7 классов, single-label.
-- Вход: текст; выход: тема, confidence, top-3, очередь, review flag.
-- Macro-F1, per-class recall, selective precision, coverage, p95 latency.
-
-## Слайд 4. Данные
-
-- TWCS SpotifyCares — реальный домен, dev 6 000.
-- Bitext — 26 872, вспомогательный домен.
-- Всего 13 427 строк.
-- 80/20 stratified by `(source, label)`: train 10 713, test 2 714.
-- Validation не выделяется: 5-fold CV на train.
-- Test-метки weak.
-
-## Слайд 5. Архитектура
-
-![Общая схема](../02_architecture/architecture_overview.png)
-
-- Модульный монолит FastAPI.
-- Online-инференс, embedded model.
-- Preprocessing → TF-IDF/LogReg → routing → queue/manual.
-- 3 узких места: модель, очередь, drift.
-- Техническая схема — [`architecture.png`](../02_architecture/architecture.png).
-
-## Слайд 6. API и routing
-
-- `POST /v1/classify`, batch, feedback.
-- `GET /healthcheck`, `/model-info`, `/metrics`.
-- threshold 0.85 + margin 0.05 → manual.
-- Низкая уверенность не маршрутизируется автоматически.
-
-## Слайд 7. Эксперименты
-
-| Семейство | CV macro-F1 |
-|---|---|
-| **LogReg word** | **0.855 ± 0.048** |
-| LogReg word+char | 0.848 ± 0.038 |
-| Calibrated SVC | 0.775 ± 0.012 |
-| ComplementNB | 0.701 ± 0.006 |
-
-HalvingRandomSearchCV: 120 кандидатов, 3 раунда. Выбор по CV, test один раз. Test: macro-F1 0.855, 95% CI [0.791; 0.908].
-
-## Слайд 8. Ошибки и ограничения
-
-- Отрицание: «I don't want to cancel my subscription, I need a receipt» → `subscription`, manual.
-- `content` ↔ `recommendations` confusion.
-- Test смешивает Bitext и TWCS; на TWCS macro-F1 = 0.739.
-- Weak labels и разный домен источников.
-
-## Слайд 9. Данные и валидация
-
-- PII-маскирование, дедупликация, group split.
-- 8/8 Great Expectations.
-- 37 тестов, `ruff`, `mypy`.
-- Drift: PSI 0.003, `other_share` 44.1% vs 44.5%.
-
-## Слайд 10. Деплой
-
-- Multi-stage Dockerfile, non-root.
-- Compose: api + Prometheus.
-- Docker build/up проверены, smoke 5/5.
-- Rollback: предыдущий артефакт + перезапуск.
-
-## Слайд 11. Мониторинг
-
-- 3 уровня метрик.
-- 4 алерта: API down, model not ready, 5xx, latency.
-- `TriageApiDown` проверен в firing.
-- Runbook и drift-план.
-
-## Слайд 12. ИИ-ассистенты и этика
-
-- Ассистенты: TZ, данные, код, тесты, отчёт.
-- Вручную: таксономия, проверка кода, метрики, выводы.
-- PII, bias, automation bias, лицензия TWCS.
-- Ограничение: учебный прототип, не production.
-
-## Слайд 13. Следующие шаги
-
-- Contract/load/adversarial тесты на финальном стенде.
-- Drift на реальных логах.
-- Отдельная human-verified подвыборка как future work.
-- Улучшение TWCS-качества и редких классов.
-- Презентация и защита.
-
-## Слайд 14. Итог
-
-- Полный путь: задача → архитектура → эксперименты → тесты → деплой → мониторинг.
-- Работающий сервис и воспроизводимый pipeline.
-- Честно показанные ограничения и следующий шаг.
-
-## Слайд 15. Вопросы
-
-Ссылки: репозиторий, README, report.md, data_card.md, model_card.md.
+- CV macro-F1: **0.855 ± 0.048**.
+- Test macro-F1: **0.855**, 95% CI **[0.791; 0.908]**.
+- TWCS отдельно: **0.739**.
+- Coverage 0.881, selective precision 0.989.
+- 37 тестов; Docker load test p95 52.72 ms.
+- 7 алертов; drift PSI 0.003.

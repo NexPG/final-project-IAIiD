@@ -8,6 +8,7 @@
 
 - Multi-stage Dockerfile, non-root, healthcheck.
 - Compose: api + Prometheus + Grafana, `API_PORT`.
+- Feedback хранится в SQLite-volume и переживает перезапуск API.
 - Model/config read-only.
 - Smoke 5/5 на uvicorn и в Docker.
 - Rollback: предыдущий artifact + перезапуск.
@@ -19,7 +20,7 @@
 docker compose build        — ok
 docker compose up -d --wait — api + prometheus healthy
 python scripts/smoke.py     — 5/5
-load test 20 RPS / 20 s     — 400 requests, 0 errors, p95 55.46 ms
+load test 20 RPS / 20 s     — 400 requests, 0 errors, p95 52.72 ms
 model-info                  — search-logreg_word-20261114200534
 image size                  — 716 MB
 ```

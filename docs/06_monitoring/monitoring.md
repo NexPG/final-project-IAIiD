@@ -56,14 +56,15 @@ Delayed macro-F1 / selective precision / ECE считаются офлайн и 
 
 ## 7. Логирование
 
+Реализовано в `src/music_support_triage/core/logging.py` и middleware `app.py`.
+
 Structured JSON:
 
 - timestamp, level, request_id;
-- status, latency_ms;
-- topic, confidence, queue, model_version;
-- PII маскируется.
+- method, path, status, latency_ms;
+- PII маскируется до логирования.
 
-Middleware на каждый запрос.
+Middleware пишет `http_request` на каждый запрос.
 
 ## 8. Drift
 

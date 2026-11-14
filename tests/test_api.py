@@ -1,8 +1,11 @@
+import tempfile
+from pathlib import Path
 from typing import Any
 
 from fastapi.testclient import TestClient
 
 from music_support_triage.api.app import create_app
+from music_support_triage.services.feedback import FeedbackStore
 
 
 class FakeService:
@@ -53,7 +56,8 @@ class FakeService:
 
 
 def client() -> TestClient:
-    return TestClient(create_app(service=FakeService()))
+    store = FeedbackStore(Path(tempfile.mkdtemp()) / "feedback.sqlite3")
+    return TestClient(create_app(service=FakeService(), feedback_store=store))
 
 
 def test_healthcheck_and_model_info() -> None:
