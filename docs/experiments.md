@@ -29,6 +29,29 @@
 
 **Важно:** test 84 примера, по 12 на класс, данные синтетические. Эти числа **не являются финальными** и не переносятся в отчёт как результат проекта. Они показывают только, что пайплайн MLflow и модель работают. На реальном TWCS ожидается заметно более низкий и более честный результат.
 
+### 2.1. Первый run на новых данных (provisional)
+
+Дата: 14.11.2026. Модель: TF-IDF word (1–2) + char_wb (3–5), LogisticRegression, `class_weight=balanced`, C=4.
+
+| Параметр | Значение |
+|---|---|
+| Train | 11 183 |
+| Validation | 327 |
+| Test | 439 |
+| Источники train | TWCS weak 4 713 + Bitext mapped 7 236 |
+| `other` в train | ≤ 35% после cap |
+| Метка test | weak (provisional) |
+
+| Метрика | Validation | Test | Balanced test (114) |
+|---|---|---|---|
+| Accuracy | 0.930 | 0.916 | 0.833 |
+| Macro-F1 | 0.809 | 0.660 | 0.680 |
+| Weighted-F1 | 0.929 | 0.914 | 0.817 |
+
+**Вывод:** на естественном test macro-F1 падает из-за редких классов. `recommendations` имеет 0 recall (4 примера), `content` — 0.33 recall (3 примера), `account` — 0.75, `app` — 0.89. `payment`, `subscription`, `other` работают устойчиво (F1 0.84–0.96). Это ожидаемый результат для слабых меток и сильного дисбаланса, а не финальная оценка.
+
+**Ограничение:** test использует weak labels, поэтому числа нельзя защищать как финальные. Нужна human-verified разметка и balanced stress subset с ≥25 примерами на класс.
+
 ## 3. Данные для новых экспериментов
 
 | Компонент | Объём | Роль |
@@ -120,11 +143,13 @@
 python scripts/download_data.py --config configs/data.yaml
 python scripts/build_dataset.py --config configs/data.yaml
 python scripts/validate_data.py --config configs/data.yaml
-python scripts/train.py --config configs/baseline.yaml
-python scripts/evaluate.py --run-id <id>
+python scripts/train.py --config configs/baseline.yaml --allow-provisional
+python scripts/make_balanced_test.py
+python scripts/evaluate.py --split test
+python scripts/evaluate.py --split test --balanced --data data/processed/test_balanced.csv
 ```
 
-Команды уточняются после реализации. README должен позволять повторить лучший run.
+После появления human-verified test убрать `--allow-provisional`: обучение должно падать, если eval содержит слабые метки.
 
 ## 10. Что не делаем
 

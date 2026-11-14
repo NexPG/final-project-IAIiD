@@ -1,0 +1,17 @@
+# Baseline training configuration.
+
+seed: 42
+data_path: data/processed/dataset.csv
+model_path: artifacts/model.joblib
+metrics_path: artifacts/metrics.json
+model_card_path: artifacts/model_card.md
+
+# Provisional while human-verified validation/test are not ready.
+allow_provisional: true
+threshold: 0.70
+margin_threshold: 0.10
+
+model:
+  word_max_features: 50000
+  char_max_features: 50000
+  c_value: 4.0

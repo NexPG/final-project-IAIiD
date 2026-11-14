@@ -25,21 +25,21 @@
 
 ## Статус
 
-**Этап 1 — Задача.** TZ v2.0 написан по заданию, плану проекта и 16 вебинарам. Проведён аудит черновиков, выбрана англоязычная стратегия данных на TWCS SpotifyCares + Bitext, зафиксированы роли этапов 2–6. Следующий шаг — конвейер загрузки/маппинга данных и этап 2 «Архитектура».
+**Этапы 1–3 в работе.** TZ и документация обновлены; собран data pipeline TWCS + Bitext; обучен первый TF-IDF baseline; реализованы FastAPI-сервис, Docker/Compose, Prometheus-метрики и алерты. Метрики пока provisional: validation/test используют weak labels. Следующий шаг — human-verified разметка 300/400 и финальные эксперименты.
 
 Этапы разработки взяты из слайда 3 проектного плана: **Задача → Архитектура → Эксперименты → Тестирование → Деплой → Мониторинг**.
 
-## Что уже есть и что переделываем
+## Что уже реализовано
 
-- 7 классов и сценарии из черновика — сохраняем после уточнения границ.
-- TWCS SpotifyCares — основной реальный домен; Bitext — вспомогательный train.
-- 420 синтетических обращений — только seed, не финальный test.
-- Старый TF-IDF baseline и MLflow — используем как отправную точку на новых данных.
-- Старые 84 test, метрика 0.929 и threshold 0.0 — не используем как финал.
-- Этапы 5 «Деплой» и 6 «Мониторинг» — пустые, делаем с нуля.
-- GitHub CI/CD — не используем по решению команды.
+- 7 классов и маршрутизация в 7 очередей + `manual_review`.
+- Data pipeline: загрузка TWCS/Bitext, очистка, PII-маскирование, дедупликация, weak labels, group split, manifest, validation.
+- TF-IDF word+char + LogisticRegression; артефакты в `artifacts/`.
+- FastAPI: `/v1/classify`, `/v1/classify/batch`, `/v1/feedback`, `/healthcheck`, `/model-info`, `/metrics`.
+- 26 тестов, `ruff`, `mypy`, smoke.
+- Dockerfile, Compose (api + Prometheus), alert rules.
+- Инструкция и скрипты разметки: `docs/annotation.md`.
 
-Подробно: [`docs/stage_audit.md`](docs/stage_audit.md).
+Подробно: [`docs/stage_audit.md`](docs/stage_audit.md), [`docs/report.md`](docs/report.md).
 
 ## Структура репозитория
 
@@ -68,33 +68,53 @@
 
 ## Быстрый старт
 
-Сейчас в репозитории находится каркас. Полный запуск появится после этапа 5.
+Сырые датасеты не коммитятся. Положите TWCS dev/pseudo CSV и Bitext CSV в пути из
+[`configs/data.yaml`](configs/data.yaml) (по умолчанию `data/external/twcs/` и
+`data/external/bitext/`). Для Bitext можно использовать `--fetch-bitext`.
 
 ```bash
 python -m venv .venv
 # Windows: .venv\Scripts\activate
 # Linux/macOS: source .venv/bin/activate
-pip install -e ".[dev]"
+pip install -e ".[dev,ml]"
+
+python scripts/download_data.py --config configs/data.yaml
+python scripts/build_dataset.py --config configs/data.yaml
+python scripts/train.py --config configs/baseline.yaml --allow-provisional
 pytest -q
 ```
 
-После реализации сервиса:
+Запуск API:
 
 ```bash
 uvicorn music_support_triage.api.app:app --reload
+python scripts/smoke.py
 ```
 
-После этапа 5:
+Docker:
 
 ```bash
 docker compose -f docker/docker-compose.yml up --build
 ```
+
+`--allow-provisional` нужен только пока validation/test размечены weak labels. После human-verified разметки запускайте без него.
+
+## Метрики (provisional)
+
+| Метрика | Validation | Test | Balanced test |
+|---|---|---|---|
+| Accuracy | 0.930 | 0.916 | 0.833 |
+| Macro-F1 | 0.809 | 0.660 | 0.680 |
+| Weighted-F1 | 0.929 | 0.914 | 0.817 |
+
+Данные: 11 183 train (TWCS 4 713 + Bitext 7 236), 327 validation, 439 test. Test — weak labels, поэтому числа не финальные. Подробно: [`docs/experiments.md`](docs/experiments.md).
 
 ## Документация
 
 - [`docs/TZ.md`](docs/TZ.md) — техническое задание v2.0, источник истины.
 - [`docs/sources.md`](docs/sources.md) — карта требований: задание, план, 16 вебинаров.
 - [`docs/data.md`](docs/data.md) — план данных, разметки и валидации.
+- [`docs/annotation.md`](docs/annotation.md) — аннотационная инструкция и kappa.
 - [`docs/stage_audit.md`](docs/stage_audit.md) — аудит текущих черновиков.
 - [`docs/architecture.md`](docs/architecture.md) — архитектура и ADR.
 - [`docs/api.md`](docs/api.md) — API-контракт.
@@ -103,7 +123,7 @@ docker compose -f docker/docker-compose.yml up --build
 - [`docs/deployment.md`](docs/deployment.md) — локальный запуск и runbook.
 - [`docs/monitoring.md`](docs/monitoring.md) — метрики, алерты, drift.
 - [`docs/ai_usage.md`](docs/ai_usage.md) — журнал ИИ-ассистентов.
-- [`docs/report.md`](docs/report.md) — структура отчёта.
+- [`docs/report.md`](docs/report.md) — итоговый отчёт (черновик v0.2).
 
 ## Команда и роли
 

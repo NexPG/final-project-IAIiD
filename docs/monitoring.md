@@ -1,6 +1,6 @@
 # Мониторинг и drift
 
-**Статус:** draft, заполняется на этапе 6  
+**Статус:** базовый мониторинг реализован, drift — план  
 **Источник требований:** [`TZ.md`](TZ.md), §12; вебинары В12–В13
 
 ## 1. Три уровня
@@ -27,16 +27,16 @@
 
 | ID | Условие | Severity | Действие |
 |---|---|---|---|
-| AL-01 | 5xx > 2% за 5 мин | Critical | Логи, rollback, manual queue |
-| AL-02 | p95 > 500 мс за 10 мин | Warning | CPU/RAM, масштабирование |
-| AL-03 | `model_loaded=0` | Critical | Артефакт, readiness, перезапуск |
-| AL-04 | `other_share` > 25% за 1 час | Warning | Drift, новые темы |
-| AL-05 | `confidence_mean` < 0.55 за 30 мин | Warning | Данные/модель |
-| AL-06 | `operator_override_rate` > 20% за 24 ч | Critical | Error analysis, переобучение |
-| AL-07 | `macro_f1_delayed` < 0.75 | Critical | Rollback, переобучение |
-| AL-08 | PII в логах > 0 | Critical | Остановить логи, инцидент |
+| ID | Alert | Условие | Severity | Действие |
+|---|---|---|---|---|
+| AL-01 | `TriageApiDown` | `up == 0` 2 мин | Critical | Проверить контейнер, логи, перезапуск |
+| AL-02 | `TriageModelNotReady` | `model_loaded == 0` 1 мин | Critical | Артефакт, readiness, rollback |
+| AL-03 | `TriageHigh5xxRate` | 5xx > 1% за 5 мин | Warning | Логи, rollback, manual queue |
+| AL-04 | `TriageHighLatency` | p95 > 500 мс за 5 мин | Warning | CPU/RAM, batch size |
 
-Пороги — по historical baseline / validation.
+Реализовано в `monitoring/alerts.yml`; Prometheus подключает rules через `prometheus.yml`. Пороги учебные; в production калибруются по historical baseline.
+
+**Продуктовые/модельные алерты (план):** `other_share`, `confidence_mean`, `operator_override_rate`, `macro_f1_delayed`, PII в логах.
 
 ## 6. Дашборд
 
@@ -75,4 +75,16 @@ Middleware на каждый запрос.
 
 ## 10. Демонстрация алерта
 
-Подать поток коротких/нерелевантных текстов → рост `other_share` или падение `confidence_mean` → показать алерт и действие по runbook.
+1. Запустить `docker compose -f docker/docker-compose.yml up --build`.
+2. Открыть Prometheus `http://localhost:9090/alerts`.
+3. Остановить api или подать поток ошибок → `TriageApiDown` / `TriageHigh5xxRate` переходит в firing.
+4. Выполнить действие по runbook: проверить `/healthcheck`, логи, перезапустить контейнер, при необходимости откатить модель.
+
+## 11. Runbook
+
+| Симптом | Проверка | Действие |
+|---|---|---|
+| 503 на classify | `/healthcheck`, `model_loaded` | Проверить `MODEL_PATH`, артефакт, перезапустить |
+| Рост 5xx | логи, `http_requests_total` | Rollback, manual queue |
+| Рост latency | CPU/RAM, размер batch | Уменьшить batch, увеличить CPU, перезапустить |
+| Падение confidence | распределение тем, drift | Error analysis, переобучение |

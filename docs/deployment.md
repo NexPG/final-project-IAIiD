@@ -1,6 +1,6 @@
 # Деплой и запуск
 
-**Статус:** draft, заполняется на этапе 5  
+**Статус:** реализовано (v1), этап 5  
 **Источник требований:** [`TZ.md`](TZ.md), §11; вебинары В10–В11
 
 ## 1. Учебный маршрут
@@ -12,7 +12,9 @@ CI/CD на GitHub не используется. Запуск и проверк�
 ```bash
 python -m venv .venv
 # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
+pip install -e ".[dev,ml]"
+python scripts/build_dataset.py --config configs/data.yaml
+python scripts/train.py --config configs/baseline.yaml --allow-provisional
 uvicorn music_support_triage.api.app:app --reload
 ```
 
@@ -25,9 +27,9 @@ docker compose -f docker/docker-compose.yml up --build
 | Сервис | Порт | Назначение |
 |---|---|---|
 | `api` | 8000 | FastAPI |
-| `db` | внутренний | feedback/logs |
-| `prometheus` | 9090 | Метрики |
-| `grafana` | 3000 | Дашборд |
+| `prometheus` | 9090 | Метрики и alert rules |
+
+`db`/`grafana` не входят в учебный минимум. Feedback хранится в памяти процесса; в production — PostgreSQL. Артефакт модели монтируется read-only из `artifacts/`.
 
 ## 2. Dockerfile
 
@@ -43,20 +45,20 @@ docker compose -f docker/docker-compose.yml up --build
 ## 3. Smoke
 
 ```bash
+python scripts/smoke.py --base-url http://127.0.0.1:8000
+```
+
+Проверяются `/healthcheck`, `/model-info`, `/v1/classify`, `/v1/classify/batch`, `/metrics`. Локально все проверки пройдены.
+
+Ручной пример:
+
+```bash
 curl -X POST http://localhost:8000/v1/classify \
   -H "Content-Type: application/json" \
-  -d "{\"text\":\"Списали деньги за подписку, хотя я её отменил\"}"
+  -d "{\"text\":\"I was charged twice for my subscription\"}"
 ```
 
 Ожидается `200`, `topic=payment`, `queue=billing`.
-
-Дополнительно:
-
-```bash
-curl http://localhost:8000/healthcheck
-curl http://localhost:8000/model-info
-curl http://localhost:8000/metrics
-```
 
 ## 4. Стратегия деплоя
 
@@ -100,11 +102,14 @@ Rollback:
 
 ## 6. Чек-лист
 
-- [ ] Dockerfile собирается.
-- [ ] Compose поднимает api+db.
-- [ ] healthcheck.
-- [ ] smoke.
-- [ ] модель read-only.
-- [ ] секреты не в образе.
-- [ ] rollback описан.
-- [ ] README-инструкция.
+- [x] Dockerfile написан (multi-stage, non-root, healthcheck).
+- [x] Compose описывает api + Prometheus.
+- [x] healthcheck.
+- [x] smoke — 5/5 проверок (локальный uvicorn).
+- [x] модель read-only volume.
+- [x] секреты не в образе.
+- [x] rollback описан.
+- [x] README-инструкция.
+- [ ] Docker build/up — не проверен: Docker daemon не запущен на текущей машине.
+- [ ] Проверка на чистой машине без `.venv`.
+- [ ] Load test 20 RPS.

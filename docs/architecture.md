@@ -1,6 +1,6 @@
 # Архитектура системы
 
-**Статус:** draft, заполняется на этапе 2  
+**Статус:** реализовано (v1), этап 2  
 **Источник требований:** [`TZ.md`](TZ.md), §7–§8; вебинары В01–В04
 
 ## 1. Контекст
@@ -83,17 +83,32 @@ flowchart LR
 | ADR-02 | Online-обработка | accepted |
 | ADR-03 | Embedded model | accepted |
 | ADR-04 | Classical ML без LLM в инференсе | accepted |
-| ADR-05 | 7 классов | proposed |
+| ADR-05 | 7 классов | accepted |
 | ADR-06 | Human-in-the-loop | accepted |
 | ADR-07 | MLflow локально | accepted |
 | ADR-08 | Без GitHub CI/CD | accepted |
 | ADR-09 | Без feature store | accepted |
 
-## 9. Что добавить
+## 9. Реализация
 
-- [ ] Схема в draw.io/Mermaid с подписями.
-- [ ] SLA и поведение при ошибках.
-- [ ] Версионирование API/модели/данных.
-- [ ] Три узких места с последствиями.
+| Элемент | Где |
+|---|---|
+| FastAPI app | `src/music_support_triage/api/app.py` |
+| Схемы запроса/ответа | `src/music_support_triage/api/schemas.py` |
+| Очистка и PII | `src/music_support_triage/data/text.py` |
+| Классификатор | `src/music_support_triage/services/classifier.py` |
+| Routing | `src/music_support_triage/services/routing.py` |
+| Модель | `src/music_support_triage/models/baseline.py` |
+| Метрики | `/metrics`, `monitoring/prometheus.yml` |
+
+**Версионирование:** API — `v1`; модель — `model_version` в артефакте; данные — `dataset_version` (SHA-256) в `data/manifest.json`.
+
+**SLA учебного стенда:** p95 ≤ 300 мс для TF-IDF, 5xx < 1%, readiness через `/healthcheck`. Модель не загружена → 503 и manual fallback.
+
+## 10. Что осталось
+
+- [ ] Human-verified test и финальные метрики.
+- [ ] Load test 20 RPS.
+- [ ] Grafana dashboard (Prometheus alert rules уже есть).
 - [ ] Production-маршрут: reverse proxy, replicas, registry, queue, DB, secrets.
-- [ ] Связь с 7 этапами ЖЦ.
+- [ ] Drift-отчёт на реальном потоке (план — `monitoring.md`).

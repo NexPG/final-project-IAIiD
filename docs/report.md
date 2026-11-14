@@ -1,100 +1,178 @@
-# Структура итогового отчёта
+# Итоговый отчёт: Music Support Triage
 
-**Требование:** 5–7 страниц.  
-**Статус:** заполняется к защите.  
-**Источник:** задание курса, [`TZ.md`](TZ.md), вебинар В16.
+**Версия:** черновик 0.2, 14.11.2026  
+**Команда:** Максим Федулаев, Владимир Егоров, Айдар Мугизов, Евгений Кононов, Александр Аксенов  
+**Репозиторий:** https://github.com/NexPG/final-project-IAIiD
 
-## 1. Задача и бизнес-контекст (0.5–0.75 стр.)
+> **Статус чисел.** Метрики раздела 4 получены на **weak labels** и являются предварительными. После human-verified разметки validation/test (300/400) таблица обновляется без изменения архитектуры и кода. Все числа воспроизводятся командами из раздела 10.
 
-- Проблема ручной сортировки.
-- Пользователи и очереди.
-- Метрики успеха.
-- Границы решения.
+## 1. Задача и бизнес-контекст
 
-## 2. Архитектура и компоненты (1–1.25 стр.)
+Музыкальный стриминговый сервис получает обращения в поддержку через приложение, сайт, e-mail, чат и Twitter. Первая линия вручную сортирует их по темам, из-за чего растёт время ответа, а часть тикетов попадает не в ту очередь.
 
-- Схема.
-- Поток запроса.
-- API-контракт.
-- ADR: монолит, online, embedded, classical ML, 7 классов.
-- 3 узких места.
-- Human-in-the-loop.
+Цель проекта — по тексту обращения определить одну из семи тем и предложить очередь маршрутизации. При низкой уверенности обращение уходит на ручную проверку, а не в случайную очередь.
 
-## 3. Технологический стек (0.5–0.75 стр.)
+| Класс | Очередь | Пример |
+|---|---|---|
+| `payment` | `billing` | «Списали дважды», «Где чек?» |
+| `subscription` | `subscriptions` | «Отключите автопродление» |
+| `account` | `account_support` | «Не приходит код входа» |
+| `app` | `technical_support` | «Трек зависает на 10 секунде» |
+| `recommendations` | `recommendations` | «Почему мне советуют это?» |
+| `content` | `content_support` | «Пропал альбом» |
+| `other` | `general_support` | «Хочу предложить сотрудничество» |
 
-- Python, FastAPI, Pydantic.
-- TF-IDF/LogReg, optional transformer.
-- MLflow, Great Expectations, pytest.
-- Docker Compose, Prometheus/Grafana.
-- Почему выбран каждый компонент.
+**Метрики успеха:** macro-F1 ≥ 0.80 на human-verified test (минимум 0.75 с обоснованием), recall каждого класса ≥ 0.65, selective precision ≥ 0.95, coverage ≥ 0.40, p95 latency ≤ 300 мс.
 
-## 4. Эксперименты (1–1.5 стр.)
+**Границы:** учебный прототип; нет реальной CRM, автоматических ответов и круглосуточной эксплуатации. Multi-topic обращения уходят в `manual_review`.
 
-Не менее трёх вариантов:
+## 2. Архитектура
 
-| Эксперимент | Гипотеза | Результат | Вывод |
+Выбран **модульный монолит** на FastAPI с моделью в процессе API:
+
+```text
+Client / CRM
+    │ POST /v1/classify
+    ▼
+FastAPI ── validation ── PII masking ── TF-IDF + LogReg ── routing
+    │                                              │
+    │                                              ├─ queue (auto)
+    │                                              └─ manual_review
+    ▼
+structured logs + Prometheus /metrics
+```
+
+**Почему монолит:** команда 5 человек, один потребитель, небольшая нагрузка. Отдельный model server дал бы лишнюю сетевую и эксплуатационную сложность. В production-маршруте модель можно вынести в model-as-a-service.
+
+**Почему online:** ответ нужен в момент обращения; batch-обработка не подходит для маршрутизации. **Почему classical ML:** TF-IDF + LogReg быстро обучается на CPU, интерпретируем и достаточен для 7 классов; LLM/agent — overengineering для узкой классификации.
+
+**Три узких места:**
+
+1. Модель не загрузилась → все запросы 503; митигация: readiness, checksum, rollback, manual fallback.
+2. Очередь/CRM недоступна → тикет не маршрутизируется; митигация: retry и manual queue.
+3. Drift входных данных → тихие ошибки; митигация: мониторинг распределений, drift-отчёт, переобучение.
+
+**API:** `POST /v1/classify`, `POST /v1/classify/batch`, `POST /v1/feedback`, `GET /healthcheck`, `GET /model-info`, `GET /metrics`. Ответ содержит `request_id`, тему, очередь, confidence, margin, top-3, флаг `needs_human_review` и версию модели.
+
+## 3. Технологический стек
+
+| Компонент | Выбор | Причина | Альтернатива |
 |---|---|---|---|
-| E0 | Keyword baseline | TBD | TBD |
-| E1 | TF-IDF word | TBD | TBD |
-| E2 | TF-IDF word+char | TBD | TBD |
-| E3 | LinearSVC/CNB | TBD | TBD |
-| E4 | Calibration/threshold | TBD | TBD |
-| E5 | TWCS vs TWCS+Bitext | TBD | TBD |
-| E6 | Cap `other` / class weights | TBD | TBD |
-| E7 | Transformer (optional) | TBD | TBD |
+| Язык | Python 3.12 | ML/NLP-экосистема | — |
+| API | FastAPI + Pydantic v2 | OpenAPI, валидация, TestClient | Flask |
+| Модель | TF-IDF + LogisticRegression | CPU, скорость, интерпретируемость | LinearSVC, DistilBERT |
+| Данные | pandas + PyYAML | Простой воспроизводимый pipeline | Spark |
+| Тесты | pytest + httpx | Unit/integration/contract | unittest |
+| Деплой | Docker + Compose | Воспроизводимость | venv |
+| Мониторинг | Prometheus + alert rules | Стандарт, демонстративно | logs only |
 
-Обязательно: macro-F1 на natural и balanced stress test, per-class recall, coverage, selective precision, latency, вывод. Отдельно — agreement слабых меток.
+## 4. Эксперименты
 
-## 5. Данные и тестирование (1–1.25 стр.)
+### 4.1. Данные
 
-- Источники: TWCS SpotifyCares (~38 тыс., реальный домен), Bitext (26 872, вспомогательный), 420 синтетических (seed).
-- Почему английский язык допустим для учебного проекта.
-- Train 15 000–20 000: слабые метки TWCS + Bitext + синтетика; `other` ≤ 35%.
-- Human-verified validation 300 и test 400; balanced stress subset.
-- Разметка и kappa; agreement слабых меток.
-- Data validation (8+ GE).
-- Тест-план.
-- Найденная проблема: отрицание/конкуренция признаков.
-- Что исправлено и что осталось.
+| Источник | Объём | Роль |
+|---|---|---|
+| TWCS SpotifyCares | 6 000 в dev-подкорпусе, ~38 тыс. в полном | Реальный домен |
+| Bitext Customer Support | 26 872, сэмпл 8 000 | Вспомогательный train |
+| 420 синтетических | 420 | Seed и edge cases |
+| Human-verified | 0 пока | Финальный validation/test |
 
-## 6. Деплой и контейнеризация (0.5–0.75 стр.)
+Собранный train: **11 183** примера (TWCS 4 713 + Bitext 7 236). Validation — 327, test — 439. `other` ограничен 35% в train. Классы: `other` 3 889, `payment` 2 146, `account` 2 061, `subscription` 1 564, `recommendations` 1 286, `app` 219, `content` 18.
 
-- Dockerfile, Compose.
-- Smoke.
-- Стратегия shadow/canary/rollback.
-- Честный учебный маршрут.
-- Production-маршрут.
+### 4.2. Модель
 
-## 7. Мониторинг (0.75–1 стр.)
+TF-IDF word (1–2) + char_wb (3–5), LogisticRegression, `class_weight=balanced`, C=4, seed 42.
 
-- 3 уровня метрик.
-- 3–5 алертов.
-- Drift: KS/PSI/Evidently.
-- Переобучение.
-- Runbook.
+| Метрика | Validation | Test | Balanced test (114) |
+|---|---|---|---|
+| Accuracy | 0.930 | 0.916 | 0.833 |
+| Macro-F1 | **0.809** | **0.660** | **0.680** |
+| Weighted-F1 | 0.929 | 0.914 | 0.817 |
 
-## 8. ИИ-ассистенты (0.5 стр.)
+**Вывод:** частые классы (`payment`, `subscription`, `other`) работают устойчиво, macro-F1 падает на редких (`recommendations` — 4 примера, recall 0; `content` — 3 примера, recall 0.33). Это ожидаемо для weak labels и дисбаланса. Числа не являются финальными.
 
-- Задачи.
-- Что проверено.
-- Что исправлено.
-- Что не делегировалось.
+### 4.3. Найденная проблема
 
-## 9. Ограничения, drift, этика (0.5–0.75 стр.)
+**Отрицание и конкурирующие признаки.** Пример: «I don't want to cancel my subscription, I need a receipt» → модель предсказывает `subscription` с confidence 0.647 и отправляет в `manual_review`, хотя ожидается `payment`. Причина: TF-IDF переоценивает слова `cancel/subscription`, не понимая отрицание. Это одновременно баг качества и пример безопасного поведения routing: низкая уверенность не приводит к неверной автоматической маршрутизации.
 
-- Ограничения прототипа.
-- Шум слабых меток TWCS и доменный сдвиг Bitext.
-- Дисбаланс `other`, редкие `content`/`recommendations`.
-- Drift.
-- PII, bias, fairness, transparency.
-- Automation bias.
-- Следующий шаг.
+Дополнительно: «Please bring back this album, it disappeared» → `recommendations` вместо `content`; «I want a feature to improve recommendations» → `other`. Эти ошибки показывают размытость границы `content`/`recommendations` и будут использованы в adversarial/behavior tests.
 
-## Требования
+## 5. Данные, валидация и тестирование
 
-- Все числа подтверждены артефактами.
-- Не выдавать синтетические метрики и старые 0.929 за реальные.
-- Указать, что train использует слабые метки, а test — human-verified.
-- Указать отклонение: CI/CD не используется.
-- Указать роли 5 участников в финальном распределении.
-- Объём 5–7 страниц без приложений.
+**Pipeline:** download → clean → PII masking → dedup → weak labeling → mapping → group split → manifest → validation.
+
+**Проверки:** обязательные поля, допустимые классы/split/source, длины 10–5000, уникальность id, отсутствие cross-split дублей, отсутствие утечки `conversation_id`, доля `other` ≤ 40%, доля синтетики ≤ 15%, human-verified в eval, PII-паттерны. Отчёт пишется в `data/processed/validation_report.json`.
+
+Текущий отчёт: `ok=true`, два предупреждения — provisional eval (766 строк) и низкая поддержка редких классов в test.
+
+**Тесты:** 26 passed. Покрыты очистка/PII, маппинг меток, group split, cap `other`, дедупликация, data validation, routing, API-контракт, batch, feedback idempotency, `/metrics`. Локальный quality gate: `ruff`, `mypy`, `pytest`, smoke.
+
+**План финальной проверки:** human-verified validation 300 и test 400, kappa ≥ 0.70, balanced stress subset ≥25 на класс (где возможно), contract test OpenAPI, load test 20 RPS, PII-тест логов, 503 при отсутствии модели.
+
+## 6. Деплой
+
+- Multi-stage `docker/Dockerfile`, slim-образ, non-root пользователь, healthcheck.
+- `docker/docker-compose.yml`: API + Prometheus.
+- Модель и конфиги монтируются read-only.
+- Smoke: `python scripts/smoke.py` проверяет healthcheck, model-info, classify, batch, metrics — 5/5 проверок пройдены локально на uvicorn.
+- **Ограничение:** Docker build/up на текущей машине не проверен, потому что Docker daemon не запущен. Это честно указано в `docs/deployment.md`; на машине с Docker достаточно выполнить `docker compose -f docker/docker-compose.yml up --build`.
+- Rollback: предыдущий `model.joblib` + перезапуск контейнера; модель версионируется, артефакт не коммитится.
+- CI/CD на GitHub не используется: локальный quality gate и ручной release.
+
+## 7. Мониторинг
+
+**Инфраструктура:** `up`, HTTP 5xx rate, p95 latency, CPU/RAM.
+**Продукт:** число запросов, доля auto-routed, доля manual, distribution тем.
+**Модель:** `model_loaded`, `model_inference_seconds`, confidence, drift.
+
+Метрики отдаются через `/metrics`. Prometheus scrape-конфиг и 4 алерта: `TriageApiDown`, `TriageModelNotReady`, `TriageHigh5xxRate`, `TriageHighLatency`. Минимальное требование «≥1 алерт» выполнено; алерты проверяются через Prometheus UI.
+
+Drift-план: PSI/KS по длине текста, доле языков, distribution предсказанных тем; Evidently-отчёт; переобучение при устойчивом падении macro-F1 или росте manual rate.
+
+## 8. ИИ-ассистенты
+
+ИИ-ассистенты использовались для:
+
+- аудита и переписывания TZ по 16 вебинарам;
+- исследования датасетов и проверки размеров/лицензий;
+- генерации каркаса data pipeline, API, тестов и Docker-файлов;
+- черновика отчёта и документации.
+
+Что проверено вручную: все команды запущены, тесты и линтеры пройдены, метрики пересчитаны, ссылки на источники сверены. Что не делегировалось: выбор таксономии, разметка, выводы экспериментов, этика и защита. Журнал — `docs/ai_usage.md`.
+
+## 9. Ограничения, drift и этика
+
+- Test пока weak; финальные выводы требуют human-verified разметки.
+- TWCS — публичные твиты с шумом, сарказмом, ссылками и PII; PII маскируется, сырые данные не коммитятся.
+- Bitext — другой домен (retail/support), поэтому его вес ниже, а оценка идёт только на TWCS.
+- `content` и `recommendations` редки; без human-written кейсов их recall ненадёжен.
+- Модель не понимает отрицания и сложные multi-topic обращения; такие случаи уходят в manual.
+- Возможен drift: новые темы, язык, длина, каналы. Нужны мониторинг и переобучение.
+- Automation bias: оператор не должен слепо доверять топ-1; интерфейс показывает confidence и top-3.
+- Лицензия TWCS требует уточнения; данные используются локально в учебных целях.
+
+## 10. Воспроизводимость
+
+```bash
+python scripts/download_data.py --config configs/data.yaml
+python scripts/build_dataset.py --config configs/data.yaml
+python scripts/validate_data.py --config configs/data.yaml
+python scripts/train.py --config configs/baseline.yaml --allow-provisional
+python scripts/make_balanced_test.py
+python scripts/evaluate.py --split test --balanced --data data/processed/test_balanced.csv
+uvicorn music_support_triage.api.app:app --port 8000
+python scripts/smoke.py
+```
+
+**Следующий шаг:** разметить 300 validation и 400 test, пересчитать метрики без `--allow-provisional`, добавить balanced stress subset и обновить раздел 4.
+
+## 11. Роли
+
+| Участник | Этап | Вклад |
+|---|---|---|
+| Максим Федулаев | 2. Архитектура | Схема, API-контракт, ADR |
+| Владимир Егоров | 3. Эксперименты | Данные, pipeline, модель, метрики |
+| Айдар Мугизов | 4. Тестирование | Тест-план, pytest, data validation |
+| Евгений Кононов | 5. Деплой | Docker, Compose, smoke, rollback |
+| Александр Аксенов | 6. Мониторинг | Метрики, алерты, drift, отчёт |
+| Вся команда | 1. Задача | TZ, таксономия, данные, защита |

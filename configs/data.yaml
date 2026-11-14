@@ -1,0 +1,30 @@
+# Data build configuration.
+# Raw files are local only and must never be committed.
+
+seed: 42
+
+paths:
+  twcs_dev: data/external/twcs/dev_cases.csv
+  twcs_pseudo: data/external/twcs/dev_cases_pseudo_labeled.csv
+  bitext: data/external/bitext/bitext.csv
+  synthetic: null
+  human: null
+  processed: data/processed/dataset.csv
+  manifest: data/manifest.json
+  validation_report: data/processed/validation_report.json
+
+sampling:
+  # TWCS is the domain source. The real stream is ~74% `other`,
+  # so training data caps it to keep rare classes learnable.
+  other_max_share: 0.35
+  twcs_max_rows: 12000
+  bitext_max_rows: 8000
+  synthetic_max_rows: 420
+
+splits:
+  validation_size: 300
+  test_size: 400
+  # Development mode allows weak labels in validation/test.
+  # It must be false for final experiments.
+  allow_weak_eval: true
+  min_test_per_class: 25

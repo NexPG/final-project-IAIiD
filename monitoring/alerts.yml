@@ -1,0 +1,45 @@
+groups:
+  - name: music-support-triage
+    rules:
+      - alert: TriageApiDown
+        expr: up{job="music-support-triage"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Triage API is down"
+          description: "Prometheus cannot scrape the API for 2 minutes."
+
+      - alert: TriageModelNotReady
+        expr: model_loaded == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Model artifact is not loaded"
+          description: "All classification requests will return 503."
+
+      - alert: TriageHigh5xxRate
+        expr: |
+          sum(rate(http_requests_total{status=~"5.."}[5m]))
+          /
+          clamp_min(sum(rate(http_requests_total[5m])), 0.001) > 0.01
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "More than 1% of requests fail with 5xx"
+          description: "Check model readiness, logs and upstream routing."
+
+      - alert: TriageHighLatency
+        expr: |
+          histogram_quantile(
+            0.95,
+            sum(rate(http_request_duration_seconds_bucket[5m])) by (le)
+          ) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "p95 latency is above 500 ms"
+          description: "Check CPU, batch size and model size."
