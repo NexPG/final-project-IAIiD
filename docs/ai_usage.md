@@ -27,6 +27,7 @@
 | 14.11.2026 | MLflow и GE | DeepSeek/OpenCode | 6 runs, 8 expectations, threshold tuning | Запуск MLflow UI/API, `ge_report.json`, сверка метрик | Исправлены file-store, порядок вероятностей и выбор модели |
 | 14.11.2026 | CV и RandomizedSearchCV | DeepSeek/OpenCode | Поиск по 4 семействам, 5-fold StratifiedGroupKFold, OOF-порог, bootstrap CI | `search_results.json`, MLflow, smoke, повторный запуск | Убрано отдельное validation; test открыт один раз; проверена утечка по группам |
 | 14.11.2026 | Gate 2 | DeepSeek/OpenCode | Единый error envelope, `X-Request-ID`, OpenAPI, SLA, ADR-10/11 | `pytest` 37, `openapi.json`, contract tests | Контракт приведён в соответствие с кодом |
+| 14.11.2026 | Gate 3 package | DeepSeek/OpenCode | Stratified 400 batch, merge/kappa, `check_gate3.py`, leak-check | Batch 400, скрипты, ручная проверка распределения | Human labels не сгенерированы ассистентом; это ответственность команды |
 | TBD | Архитектура | TBD | Схема и ADR | Обсуждение, сверка с В02–В03 | TBD |
 | TBD | API | TBD | Pydantic-схемы | Code review + pytest | TBD |
 | TBD | Данные | TBD | Синтетические примеры | Ручная проверка и разметка | TBD |

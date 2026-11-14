@@ -219,7 +219,7 @@ uvicorn music_support_triage.api.app:app --port 8000
 python scripts/smoke.py
 ```
 
-**Следующий шаг:** разметить 400 стратифицированных примеров из 20% test, пересчитать метрики без `--allow-provisional`, обновить CI и порог на human-verified данных.
+**Следующий шаг (Gate 3):** стратифицированные 400 примеров из 20% test уже выгружены в `data/annotation/batch_test_a.csv` и `batch_test_b.csv` (поддержка: payment 25, subscription 47, account 25, app 25, recommendations 11, content 5, other 262). После заполнения двумя разметчиками: `merge_annotations.py` → `check_gate3.py`; скрипт проверит kappa ≥ 0.70, отсутствие утечек и пересчитает метрики + CI без weak labels.
 
 ## 13. Роли
 

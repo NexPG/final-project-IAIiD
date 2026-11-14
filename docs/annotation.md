@@ -51,19 +51,38 @@
 
 ## 5. Команды
 
+Экспорт Gate 3: стратифицированные 400 примеров из 20% frozen test.
+
 ```bash
-python scripts/export_annotation_batch.py
-python scripts/merge_annotations.py --a data/annotation/batch_all_a.csv --b data/annotation/batch_all_b.csv
+python scripts/export_annotation_batch.py --split test --limit 400 --min-per-class 25
+```
+
+Текущий batch: 400 строк, поддержка классов `payment 25, subscription 47, account 25, app 25, recommendations 11, content 5, other 262`.
+
+Слияние:
+
+```bash
+python scripts/merge_annotations.py \
+  --a data/annotation/batch_test_a.csv \
+  --b data/annotation/batch_test_b.csv
 ```
 
 После арбитража:
 
 ```bash
 python scripts/merge_annotations.py \
-  --a data/annotation/batch_all_a.csv \
-  --b data/annotation/batch_all_b.csv \
+  --a data/annotation/batch_test_a.csv \
+  --b data/annotation/batch_test_b.csv \
   --adjudicated data/annotation/adjudicated.csv
 ```
+
+Проверка Gate 3:
+
+```bash
+python scripts/check_gate3.py
+```
+
+Скрипт проверяет 400 строк, kappa ≥ 0.70, отсутствие утечек из train и считает финальные метрики + 95% CI.
 
 ## 6. Критерии приёмки
 
@@ -72,7 +91,8 @@ python scripts/merge_annotations.py \
 | Cohen's kappa | ≥ 0.70 |
 | Доля разрешённых расхождений | ≥ 95% |
 | Покрытие классов в test | ≥ 25 на класс или явное ограничение |
-| Human-verified в test | 100% |
+| Human-verified в test-подвыборке | 100% |
+| Размер Gate 3-подвыборки | 400 |
 | Утечка conversation_id между split | 0 |
 
 ## 7. Что делать при низком kappa

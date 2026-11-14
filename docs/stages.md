@@ -67,9 +67,9 @@
 - bootstrap CI, balanced test, drift-отчёт;
 - MLflow runs, model card.
 
-**Gate 3:** CV и search воспроизводимы, test не использован для выбора, CI опубликован, MLflow заполнен.  
-**Статус:** **в работе** — механика выполнена, но test weak. Финальный gate требует human-verified test и повторного замера.  
-**Артефакты:** [`experiments.md`](experiments.md), [`model_card.md`](model_card.md), `artifacts/search_results.json`, MLflow.
+**Gate 3:** CV и search воспроизводимы, test не использован для выбора, CI опубликован, MLflow заполнен, human-verified 400 проверены kappa и leak-check.  
+**Статус:** **в работе** — машинная часть готова: 400 batch, `merge_annotations.py`, `check_gate3.py`, CV/search/CI. Осталось заполнить два annotation batch и прогнать `check_gate3.py`.  
+**Артефакты:** [`experiments.md`](experiments.md), [`model_card.md`](model_card.md), `artifacts/search_results.json`, `data/annotation/batch_test_a.csv`, `batch_test_b.csv`, MLflow.
 
 ## Этап 4. Тестирование
 
@@ -124,7 +124,7 @@
 
 - Gate 1 — закрыт.
 - Gate 2 — закрыт (контракт + OpenAPI + ошибки + SLA).
-- Gate 3 — в работе: осталось human-verified test 400 и повторный замер.
+- Gate 3 — в работе: 400 batch и проверочные скрипты готовы; осталось заполнить разметку и запустить `check_gate3.py`.
 - Gates 4–6 — базово закрыты, финальная приёмка после Gate 3.
 
 ## Что нельзя делать раньше
