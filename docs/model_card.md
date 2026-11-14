@@ -1,6 +1,6 @@
 # Model card: selected pipeline
 
-**Версия:** `search-logreg_word-20261114172115`  
+**Версия:** `search-logreg_word-20261114174846`  
 **Дата:** 14.11.2026  
 **Владелец:** Владимир Егоров
 
@@ -12,13 +12,13 @@
 
 | Параметр | Значение |
 |---|---|
-| Train | 11 325 |
-| Test | 439 |
-| Источники | TWCS SpotifyCares (4 580), Bitext (7 184) |
+| Train | 11 004 |
+| Test | 1 163 (20% домена TWCS) |
+| Источники train | TWCS SpotifyCares 3 725 + Bitext 7 279 |
 | Метки | weak (100%) |
-| Dataset version | `sha256:b85ccc381543b4868c277da34a1f3bfae45e60cff1c9e0586b9db6d4cdb150d8` |
+| Dataset version | `sha256:fdda88fa7292ac32ba56a09719c7e47531a33042ca805af30f2ffd00ec0763a1` |
 
-Validation отдельно не выделяется. Модель выбирается через `StratifiedGroupKFold` CV на train; test используется один раз после фиксации модели и порога.
+Домен TWCS делится 80/20. Bitext добавлен только в train. Validation не выделяется: модель выбирается через `StratifiedGroupKFold` CV на train; test используется один раз.
 
 ## 3. Модель
 
@@ -32,28 +32,28 @@ Validation отдельно не выделяется. Модель выбира
 
 | Метрика | Значение |
 |---|---|
-| CV macro-F1 (train) | 0.869 ± 0.035 |
-| Test accuracy | 0.920 |
-| Test macro-F1 | 0.657 |
+| CV macro-F1 (train) | **0.875 ± 0.025** |
+| Test accuracy | 0.917 |
+| Test macro-F1 | **0.726** |
 | Test weighted-F1 | 0.916 |
-| Bootstrap 95% CI для test macro-F1 | [0.564; 0.739] |
-| Test coverage (auto-routed) | 0.734 |
-| Test selective precision | 0.975 |
-| Test review rate | 0.266 |
-| Balanced test macro-F1 | 0.680 |
+| Bootstrap 95% CI для test macro-F1 | **[0.645; 0.797]** |
+| Test coverage (auto-routed) | 0.742 |
+| Test selective precision | **0.979** |
+| Test review rate | 0.258 |
+| Balanced test macro-F1 | 0.760 |
 
-Per-class test recall: `payment` 0.74, `subscription` 0.88, `account` 0.75, `app` 0.83, `recommendations` 0.00, `content` 0.33, `other` 0.97.
+Per-class test recall: `payment` 0.75, `subscription` 0.87, `account` 0.69, `app` 0.82, `recommendations` 0.45, `content` 0.40, `other` 0.96.
 
-**Важно:** test использует weak labels. Числа provisional, но CI и routing-метрики уже показывают профессиональную картину: selective precision 0.975 при coverage 0.734.
+**Важно:** test использует weak labels. Числа provisional, но CI и routing-метрики уже показывают профессиональную картину: selective precision 0.979 при coverage 0.742.
 
 ## 5. Сравнение семейств (CV macro-F1 на train)
 
 | Семейство | CV macro-F1 | Std |
 |---|---|---|
-| **logreg_word** | **0.869** | **0.035** |
-| logreg_word_char | 0.865 | 0.031 |
-| linear_svc (calibrated) | 0.807 | 0.038 |
-| complement_nb | 0.711 | 0.009 |
+| **logreg_word** | **0.875** | **0.025** |
+| logreg_word_char | 0.862 | 0.035 |
+| linear_svc (calibrated) | 0.816 | 0.022 |
+| complement_nb | 0.704 | 0.011 |
 
 Test не использовался для выбора семейства или гиперпараметров.
 
@@ -61,8 +61,8 @@ Test не использовался для выбора семейства ил
 
 - Не понимает отрицания: «I don't want to cancel my subscription, I need a receipt» → `subscription`, confidence 0.647, manual_review.
 - Путает `content` и `recommendations`.
-- Редкие классы имеют мало примеров и низкий recall.
-- Domain shift: train `other` 34.8%, test 74.5%; PSI длины 0.868.
+- Редкие классы имеют мало примеров: `recommendations` 11 test, `content` 5 test; их recall нестабилен.
+- Domain shift: train `other` 34.7%, test 73.2%; PSI длины 0.883.
 - Не поддерживает русский язык в финальной модели.
 - Не заменяет оператора; низкая уверенность → manual.
 

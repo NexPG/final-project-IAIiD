@@ -63,7 +63,7 @@ Middleware на каждый запрос.
 - PSI > 0.2 — сигнал; KS p-value < 0.05 — сигнал.
 - Отчёт: `python scripts/drift_report.py` → `artifacts/drift_report.json`.
 
-**Первый offline-отчёт (train vs test):** PSI длины 0.904, KS 0.386, p < 0.001; `other_share` 34.8% vs 74.5%. Причина — cap `other` в train и естественное распределение test. Это ожидаемый shift, но он показывает, что production-мониторинг `other_share` и длины обязателен. Offline-отчёт демонстрационный: для реального drift нужны логи запросов.
+**Первый offline-отчёт (train vs test):** PSI длины 0.883, KS 0.404, p < 0.001; `other_share` 34.7% vs 73.2%. Причина — cap `other` в train и естественное распределение test. Это ожидаемый shift, но он показывает, что production-мониторинг `other_share` и длины обязателен. Offline-отчёт демонстрационный: для реального drift нужны логи запросов.
 
 ## 9. Переобучение
 

@@ -106,16 +106,16 @@ $env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 
 | Метрика | Значение |
 |---|---|
-| CV macro-F1 (5-fold) | 0.869 ± 0.035 |
-| Test macro-F1 | 0.657 |
-| Bootstrap 95% CI | [0.564; 0.739] |
-| Test accuracy | 0.920 |
+| CV macro-F1 (5-fold) | 0.875 ± 0.025 |
+| Test macro-F1 | 0.726 |
+| Bootstrap 95% CI | [0.645; 0.797] |
+| Test accuracy | 0.917 |
 | Test weighted-F1 | 0.916 |
-| Test coverage | 0.734 |
-| Test selective precision | 0.975 |
-| Balanced test macro-F1 | 0.680 |
+| Test coverage | 0.742 |
+| Test selective precision | 0.979 |
+| Balanced test macro-F1 | 0.760 |
 
-Данные: 11 325 train (TWCS 4 580 + Bitext 7 184), 439 test. Validation не выделяется: модель выбирается через `StratifiedGroupKFold` CV на train, test открывается один раз. Test — weak labels, поэтому числа не финальные. Подробно: [`docs/experiments.md`](docs/experiments.md).
+Данные: домен TWCS делится 80/20 — 11 004 train (TWCS 3 725 + Bitext 7 279), 1 163 test. Validation не выделяется: модель выбирается через `StratifiedGroupKFold` CV на train, test открывается один раз. Test — weak labels, поэтому числа не финальные. Подробно: [`docs/experiments.md`](docs/experiments.md).
 
 ## Документация
 

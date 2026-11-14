@@ -22,11 +22,11 @@ sampling:
   synthetic_max_rows: 420
 
 splits:
-  # Model selection and hyperparameter tuning use StratifiedGroupKFold CV
-  # on train. A separate validation split is not needed; the test split is
-  # frozen and touched once after the best pipeline is selected.
-  validation_size: 0
-  test_size: 400
+  # 80/20 split of the domain data (TWCS SpotifyCares):
+  # 80% train for CV/search, 20% frozen test.
+  # Bitext is auxiliary and is added to train only (never test).
+  test_fraction: 0.2
+  validation_fraction: 0.0
   # Development mode allows weak labels in test.
   # It must be false for final experiments.
   allow_weak_eval: true

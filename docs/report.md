@@ -42,7 +42,9 @@
 
 ## 3. Архитектура
 
-Выбран **модульный монолит** на FastAPI с моделью в процессе API:
+Выбран **модульный монолит** на FastAPI с моделью в процессе API. Схема — [`architecture.png`](architecture.png), исходная Mermaid-версия — в [`architecture.md`](architecture.md).
+
+![Архитектура Music Support Triage](architecture.png)
 
 ```text
 Client / CRM
@@ -89,17 +91,20 @@ structured logs + Prometheus /metrics
 | Bitext Customer Support | 26 872, сэмпл 8 000 | Вспомогательный train |
 | 420 синтетических | 420 | Seed (пока не подключены) |
 
-Итог: **train 11 325**, **test 439**, всего 11 764. Train — TWCS 4 580 + Bitext 7 184. `other` в train ограничен 35%.
+Домен TWCS делится **80/20**: train 80%, frozen test 20%. Bitext добавлен только в train, поэтому в test его нет.
+
+Итог: **train 11 004**, **test 1 163**, всего 12 167. Train — TWCS 3 725 + Bitext 7 279. `other` в train ограничен 35%.
 
 ### 5.1. Почему train + CV + test, а не train/validation/test
 
 Отдельный validation не нужен, если есть корректная CV:
 
-- **train** — единственный источник для обучения, выбора семейства, гиперпараметров и порога;
+- **80% домена** — train: единственный источник для обучения, выбора семейства, гиперпараметров и порога;
 - **StratifiedGroupKFold(5)** на train даёт out-of-fold оценки, сохраняя целые `conversation_id` в одном фолде;
 - **RandomizedSearchCV** перебирает гиперпараметры по CV;
 - порог и margin выбираются по OOF-предсказаниям train;
-- **test** заморожен и открывается один раз после фиксации модели и порога.
+- **20% домена** — frozen test: открывается один раз после фиксации модели и порога;
+- Bitext — вспомогательный источник, только train, чтобы не подменять реальный домен в test.
 
 Это честнее, чем отдельный validation: больше данных для CV, нет соблазна подбирать модель по test, а стоимость ошибки оценивается на независимой выборке.
 
@@ -118,10 +123,10 @@ structured logs + Prometheus /metrics
 
 | Семейство | CV macro-F1 | Std |
 |---|---|---|
-| **logreg_word** | **0.869** | **0.035** |
-| logreg_word_char | 0.865 | 0.031 |
-| linear_svc (calibrated) | 0.807 | 0.038 |
-| complement_nb | 0.711 | 0.009 |
+| **logreg_word** | **0.875** | **0.025** |
+| logreg_word_char | 0.862 | 0.035 |
+| linear_svc (calibrated) | 0.816 | 0.022 |
+| complement_nb | 0.704 | 0.011 |
 
 Выбрано **logreg_word**: TF-IDF word (1–2), `min_df=2`, `max_features=100000`, `sublinear_tf=True`, C=32, `class_weight=balanced`.
 
@@ -129,15 +134,15 @@ structured logs + Prometheus /metrics
 
 | Метрика | Значение |
 |---|---|
-| Accuracy | 0.920 |
-| Macro-F1 | **0.657** |
+| Accuracy | 0.917 |
+| Macro-F1 | **0.726** |
 | Weighted-F1 | 0.916 |
-| Bootstrap 95% CI для macro-F1 | **[0.564; 0.739]** |
-| Balanced test macro-F1 | 0.680 |
+| Bootstrap 95% CI для macro-F1 | **[0.645; 0.797]** |
+| Balanced test macro-F1 | 0.760 |
 
-Per-class recall: `payment` 0.74, `subscription` 0.88, `account` 0.75, `app` 0.83, `recommendations` 0.00, `content` 0.33, `other` 0.97.
+Per-class recall: `payment` 0.75, `subscription` 0.87, `account` 0.69, `app` 0.82, `recommendations` 0.45, `content` 0.40, `other` 0.96.
 
-**Вывод:** частые классы устойчивы, macro-F1 ограничен редкими классами. `recommendations` имеет 4 тестовых примера, `content` — 3; их per-class вывод предварительный, CI широкий. Это не скрывается и выносится в ограничения.
+**Вывод:** частые классы устойчивы, macro-F1 ограничен редкими классами. `recommendations` имеет 11 тестовых примеров, `content` — 5; их per-class вывод остаётся широким, но 20% test даёт более устойчивую общую оценку. Цель 0.80 **не достигнута** (0.726); причины — weak labels, редкие классы и domain shift. Это честно фиксируется, а не маскируется.
 
 ### 6.4. Threshold и routing
 
@@ -146,19 +151,19 @@ Per-class recall: `payment` 0.74, `subscription` 0.88, `account` 0.75, `app` 0.8
 | Параметр | Значение |
 |---|---|
 | Threshold / margin | 0.85 / 0.05 |
-| OOF coverage | 0.878 |
-| OOF selective precision | 0.990 |
-| Test coverage | 0.734 |
-| Test selective precision | **0.975** |
-| Test review rate | 0.266 |
+| OOF coverage | 0.887 |
+| OOF selective precision | 0.989 |
+| Test coverage | 0.742 |
+| Test selective precision | **0.979** |
+| Test review rate | 0.258 |
 
-Selective precision 0.975 ≥ 0.95 и coverage 0.734 ≥ 0.40 — целевые показатели выполнены. OOF и test отличаются из-за distribution shift, поэтому в production порог пересматривается на human-verified данных.
+Selective precision 0.979 ≥ 0.95 и coverage 0.742 ≥ 0.40 — целевые показатели выполнены. OOF и test отличаются из-за distribution shift, поэтому в production порог пересматривается на human-verified данных.
 
 ## 7. Данные, валидация и тестирование
 
 **Pipeline:** download → clean → PII masking → dedup → weak labeling → mapping → group split → manifest → validation.
 
-**Проверки:** обязательные поля, классы/split/source, длины 10–5000, уникальность id, cross-split дубли, утечка `conversation_id`, `other` ≤ 40%, синтетика ≤ 15%, human-verified в eval, PII. Отчёт — `data/processed/validation_report.json`. Great Expectations — **8/8** expectations на 11 764 строках.
+**Проверки:** обязательные поля, классы/split/source, длины 10–5000, уникальность id, cross-split дубли, утечка `conversation_id`, `other` ≤ 40%, синтетика ≤ 15%, human-verified в eval, PII. Отчёт — `data/processed/validation_report.json`. Great Expectations — **8/8** expectations на 12 167 строках.
 
 **Тесты:** **37 passed**. Покрыты очистка/PII, маппинг, group split, cap `other`, дедупликация, data validation, routing, API, batch, feedback idempotency, `/metrics`, model quality (overall, per-class, robustness, edge, behavior, adversarial, subgroup). Локальный quality gate: `ruff`, `mypy`, `pytest`, smoke.
 
@@ -182,7 +187,7 @@ Selective precision 0.975 ≥ 0.95 и coverage 0.734 ≥ 0.40 — целевые
 
 Метрики — `/metrics`; Prometheus scrape и 4 алерта: `TriageApiDown`, `TriageModelNotReady`, `TriageHigh5xxRate`, `TriageHighLatency`. Алерт проверен: после `docker compose stop api` `TriageApiDown` перешёл в **firing**, после запуска smoke снова 5/5.
 
-**Drift:** `scripts/drift_report.py`: PSI длины **0.868**, KS **0.377**, p < 0.001; `other_share` 34.8% в train против 74.5% в test. Причина — cap `other` и естественное распределение test. Это ожидаемый shift, но он требует production-мониторинга `other_share` и длины.
+**Drift:** `scripts/drift_report.py`: PSI длины **0.883**, KS **0.404**, p < 0.001; `other_share` 34.7% в train против 73.2% в test. Причина — cap `other` и естественное распределение test. Это ожидаемый shift, но он требует production-мониторинга `other_share` и длины.
 
 ## 10. ИИ-ассистенты
 
@@ -195,7 +200,7 @@ Selective precision 0.975 ≥ 0.95 и coverage 0.734 ≥ 0.40 — целевые
 - Bitext — другой домен (retail/support); вес ниже, оценка только на TWCS.
 - `content` и `recommendations` редки; без human-written кейсов их recall ненадёжен.
 - Модель не понимает отрицания и сложные multi-topic обращения; такие случаи уходят в manual.
-- Distribution shift train/test: `other_share` 34.8% vs 74.5%, PSI длины 0.868.
+- Distribution shift train/test: `other_share` 34.7% vs 73.2%, PSI длины 0.883.
 - Automation bias: интерфейс должен показывать confidence и top-3.
 - Лицензия TWCS требует уточнения; данные используются локально в учебных целях.
 
@@ -214,7 +219,7 @@ uvicorn music_support_triage.api.app:app --port 8000
 python scripts/smoke.py
 ```
 
-**Следующий шаг:** разметить 400 test, пересчитать CV/test без `--allow-provisional`, обновить CI и порог на human-verified данных.
+**Следующий шаг:** разметить 400 стратифицированных примеров из 20% test, пересчитать метрики без `--allow-provisional`, обновить CI и порог на human-verified данных.
 
 ## 13. Роли
 

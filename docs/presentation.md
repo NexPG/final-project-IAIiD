@@ -25,8 +25,9 @@ Music Support Triage — классификация обращений в под
 - TWCS SpotifyCares — реальный домен, ~38 тыс., dev 6 000.
 - Bitext — 26 872, вспомогательный train.
 - 420 синтетических — seed.
-- Train 11 325, test 439.
+- TWCS 80/20: train 11 004, test 1 163.
 - Validation не выделяется: 5-fold CV на train.
+- Bitext только в train.
 - Test пока weak → метрики provisional.
 
 ## Слайд 5. Архитектура
@@ -47,12 +48,12 @@ Music Support Triage — классификация обращений в под
 
 | Семейство | CV macro-F1 |
 |---|---|
-| **LogReg word** | **0.869 ± 0.035** |
-| LogReg word+char | 0.865 ± 0.031 |
-| Calibrated SVC | 0.807 ± 0.038 |
-| ComplementNB | 0.711 ± 0.009 |
+| **LogReg word** | **0.875 ± 0.025** |
+| LogReg word+char | 0.862 ± 0.035 |
+| Calibrated SVC | 0.816 ± 0.022 |
+| ComplementNB | 0.704 ± 0.011 |
 
-Выбор по CV на train, не по test. Test: macro-F1 0.657, 95% CI [0.564; 0.739].
+Выбор по CV на train, не по test. Test: macro-F1 0.726, 95% CI [0.645; 0.797].
 
 ## Слайд 8. Ошибки и ограничения
 
@@ -66,7 +67,7 @@ Music Support Triage — классификация обращений в под
 - PII-маскирование, дедупликация, group split.
 - 8/8 Great Expectations.
 - 34 теста, `ruff`, `mypy`.
-- Drift: PSI длины 0.868, `other_share` 34.8% vs 74.5%.
+- Drift: PSI длины 0.883, `other_share` 34.7% vs 73.2%.
 
 ## Слайд 10. Деплой
 

@@ -35,8 +35,8 @@ def sha256_file(path: Path) -> str:
 
 def assign_group_splits(
     frame: pd.DataFrame,
-    validation_size: int,
-    test_size: int,
+    validation_fraction: float,
+    test_fraction: float,
     seed: int,
 ) -> pd.DataFrame:
     """Assign whole TWCS conversations to splits, stratified by weak label."""
@@ -49,8 +49,8 @@ def assign_group_splits(
     if total == 0:
         return frame
 
-    test_ratio = min(1.0, test_size / total)
-    validation_ratio = min(1.0, validation_size / total)
+    test_ratio = min(1.0, test_fraction)
+    validation_ratio = min(1.0 - test_ratio, validation_fraction)
     assignment: dict[str, str] = {}
 
     for label in LABELS:
@@ -134,8 +134,8 @@ def build_dataset(config: dict[str, Any]) -> tuple[pd.DataFrame, dict[str, Any]]
     twcs = load_twcs(paths["twcs_dev"], paths["twcs_pseudo"])
     twcs = assign_group_splits(
         twcs,
-        validation_size=int(split_config["validation_size"]),
-        test_size=int(split_config["test_size"]),
+        validation_fraction=float(split_config.get("validation_fraction", 0.0)),
+        test_fraction=float(split_config.get("test_fraction", 0.2)),
         seed=seed,
     )
 

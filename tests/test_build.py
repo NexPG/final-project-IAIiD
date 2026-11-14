@@ -23,7 +23,9 @@ def make_frame(size: int = 30) -> pd.DataFrame:
 
 
 def test_group_split_keeps_conversations_whole() -> None:
-    frame = assign_group_splits(make_frame(), validation_size=5, test_size=5, seed=42)
+    frame = assign_group_splits(
+        make_frame(), validation_fraction=0.2, test_fraction=0.2, seed=42
+    )
     assert set(frame["split"]) == {"train", "validation", "test"}
     assert frame.groupby("conversation_id")["split"].nunique().max() == 1
 

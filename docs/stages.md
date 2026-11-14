@@ -58,12 +58,12 @@
 
 **Сделано:**
 
-- train 11 325, test 439;
+- домен TWCS 80/20: train 11 004, test 1 163;
 - 5-fold `StratifiedGroupKFold` по `conversation_id`;
 - `RandomizedSearchCV(n_iter=12)` по 4 семействам;
 - выбор по mean CV macro-F1, test не используется;
 - OOF-порог 0.85/0.05;
-- одно измерение на test: macro-F1 0.657, 95% CI [0.564; 0.739];
+- одно измерение на test: macro-F1 0.726, 95% CI [0.645; 0.797];
 - bootstrap CI, balanced test, drift-отчёт;
 - MLflow runs, model card.
 
@@ -113,7 +113,7 @@
 - `/metrics`, Prometheus;
 - 4 алерта: API down, model not ready, 5xx, latency;
 - алерт `TriageApiDown` проверен в firing;
-- drift-отчёт: PSI 0.868, KS 0.377, `other_share` 34.8% vs 74.5%;
+- drift-отчёт: PSI 0.883, KS 0.404, `other_share` 34.7% vs 73.2%;
 - runbook и стратегия переобучения.
 
 **Gate 6:** 3 уровня метрик, ≥1 алерт, drift-отчёт, runbook.  

@@ -34,6 +34,10 @@
 
 ## 4. Схема
 
+![Music Support Triage — архитектура](architecture.png)
+
+Диаграмма: `docs/architecture.png` (D2). Ниже — та же схема в Mermaid для чтения в diff.
+
 ```mermaid
 flowchart LR
     A[Канал / backend] --> B[FastAPI]

@@ -18,12 +18,12 @@
 
 | Компонент | Объём | Роль |
 |---|---|---|
-| Train | 11 325 | CV, search, refit, OOF-порог |
-| Test | 439 | Одно финальное измерение |
-| TWCS weak | 4 580 | Реальный домен |
-| Bitext mapped | 7 184 | Вспомогательный train |
+| Train | 11 004 | CV, search, refit, OOF-порог |
+| Test | 1 163 | 20% домена, одно финальное измерение |
+| TWCS weak | 3 725 | Реальный домен |
+| Bitext mapped | 7 279 | Вспомогательный train |
 
-Validation отдельно не выделяется. Это осознанное решение: CV на train заменяет validation, а test остаётся независимым.
+Домен TWCS делится 80/20. Bitext добавляется только в train. Validation отдельно не выделяется: CV на train заменяет validation, а test остаётся независимым.
 
 Подробно: [`data.md`](data.md), [`data_card.md`](data_card.md).
 
@@ -60,10 +60,10 @@ train ── StratifiedGroupKFold(5) ── RandomizedSearchCV (n_iter=12)
 
 | Семейство | CV macro-F1 | Std | Выбрано |
 |---|---|---|---|
-| **logreg_word** | **0.869** | **0.035** | да |
-| logreg_word_char | 0.865 | 0.031 | нет |
-| linear_svc (calibrated) | 0.807 | 0.038 | нет |
-| complement_nb | 0.711 | 0.009 | нет |
+| **logreg_word** | **0.875** | **0.025** | да |
+| logreg_word_char | 0.862 | 0.035 | нет |
+| linear_svc (calibrated) | 0.816 | 0.022 | нет |
+| complement_nb | 0.704 | 0.011 | нет |
 
 Лучшие параметры `logreg_word`: `ngram_range=(1,2)`, `min_df=2`, `max_features=100000`, `sublinear_tf=True`, `C=32`, `class_weight=balanced`.
 
@@ -73,18 +73,18 @@ train ── StratifiedGroupKFold(5) ── RandomizedSearchCV (n_iter=12)
 
 | Метрика | Значение |
 |---|---|
-| Accuracy | 0.920 |
-| Macro-F1 | **0.657** |
+| Accuracy | 0.917 |
+| Macro-F1 | **0.726** |
 | Weighted-F1 | 0.916 |
-| Bootstrap 95% CI для macro-F1 | **[0.564; 0.739]** |
-| Balanced test macro-F1 | 0.680 |
-| Test coverage | 0.734 |
-| Test selective precision | **0.975** |
-| Test review rate | 0.266 |
+| Bootstrap 95% CI для macro-F1 | **[0.645; 0.797]** |
+| Balanced test macro-F1 | 0.760 |
+| Test coverage | 0.742 |
+| Test selective precision | **0.979** |
+| Test review rate | 0.258 |
 
-Per-class recall: `payment` 0.74, `subscription` 0.88, `account` 0.75, `app` 0.83, `recommendations` 0.00, `content` 0.33, `other` 0.97.
+Per-class recall: `payment` 0.75, `subscription` 0.87, `account` 0.69, `app` 0.82, `recommendations` 0.45, `content` 0.40, `other` 0.96.
 
-**Вывод:** частые классы устойчивы; macro-F1 ограничен редкими классами. `recommendations` (4 test) и `content` (3 test) дают широкий CI и не позволяют делать уверенный per-class вывод. Это ограничение, а не повод удалять классы.
+**Вывод:** частые классы устойчивы; macro-F1 ограничен редкими классами. `recommendations` (11 test) и `content` (5 test) дают широкий CI и не позволяют делать уверенный per-class вывод. Это ограничение, а не повод удалять классы.
 
 ## 7. Threshold и routing
 
@@ -93,9 +93,9 @@ Per-class recall: `payment` 0.74, `subscription` 0.88, `account` 0.75, `app` 0.8
 | Параметр | OOF train | Test |
 |---|---|---|
 | Threshold / margin | 0.85 / 0.05 | 0.85 / 0.05 |
-| Coverage | 0.878 | 0.734 |
-| Selective precision | 0.990 | 0.975 |
-| Review rate | 0.122 | 0.266 |
+| Coverage | 0.887 | 0.742 |
+| Selective precision | 0.989 | 0.979 |
+| Review rate | 0.113 | 0.258 |
 
 Разница OOF/test ожидаема из-за distribution shift. Порог фиксируется в `configs/service.yaml`; после human-verified test пересчитывается.
 
@@ -105,19 +105,19 @@ Per-class recall: `payment` 0.74, `subscription` 0.88, `account` 0.75, `app` 0.8
 
 | Показатель | Train | Test |
 |---|---|---|
-| Средняя длина | 63.9 | 83.4 |
-| p95 длины | 132 | 151 |
-| Доля `other` | 34.8% | 74.5% |
+| Средняя длина | 62.6 | 86.3 |
+| p95 длины | 130 | 176 |
+| Доля `other` | 34.7% | 73.2% |
 
-PSI длины = **0.868**, KS = **0.377**, p < 0.001. Причина — cap `other` в train и естественное распределение test. Следствие: natural test отражает реальный поток, balanced test — редкие классы; публикуются оба.
+PSI длины = **0.883**, KS = **0.404**, p < 0.001. Причина — cap `other` в train и естественное распределение test. Следствие: natural test отражает реальный поток, balanced test — редкие классы; публикуются оба.
 
 ## 9. Error analysis
 
 - Отрицание: «I don't want to cancel my subscription, I need a receipt» → `subscription`, confidence 0.647, manual_review.
 - `content` ↔ `recommendations` confusion: «Please bring back this album» → `recommendations`.
-- `recommendations` recall 0 на 4 test.
-- `content` recall 0.33 на 3 test.
-- `other` доминирует в test (327/439), поэтому weighted-F1 (0.916) выглядит лучше macro-F1 (0.657).
+- `recommendations` recall 0.45 на 11 test.
+- `content` recall 0.40 на 5 test.
+- `other` доминирует в test (851/1163), поэтому weighted-F1 (0.916) выглядит лучше macro-F1 (0.726).
 
 ## 10. MLflow
 

@@ -104,7 +104,7 @@
 | — Synthetic | 420 | 420 |
 | — Human-verified train | 0 | 300–500 |
 | Validation | не выделяется | CV на train |
-| Test, human-verified | 350 | 400 |
+| Test, human-verified | 350 | 400 (стратифицированная подвыборка 20% test) |
 | Test на класс в balanced subset | 25 | 30–40 |
 | `other` в train | ≤ 40% | ≤ 35% |
 | Синтетика в train | ≤ 15% | ≤ 10% |
