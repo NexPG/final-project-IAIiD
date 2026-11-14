@@ -8,7 +8,7 @@
 |---|---|---|---|
 | 1. Задача | закрыт | задача, таксономия, метрики, данные | `TZ.md`, `README.md`, `data.md` |
 | 2. Архитектура | закрыт | схема, API-контракт, OpenAPI, SLA, ADR | `architecture.md`, `api.md`, `openapi.json` |
-| 3. Эксперименты | закрыт | 80/20, CV, RandomizedSearchCV, test один раз, CI, MLflow | `experiments.md`, `search_results.json`, `model_card.md` |
+| 3. Эксперименты | закрыт | 80/20, CV, HalvingRandomSearchCV, test один раз, CI, MLflow | `experiments.md`, `search_results.json`, `model_card.md` |
 | 4. Тестирование | закрыт | data/model/API/contract tests, найденная проблема | `tests/`, `testing.md` |
 | 5. Деплой | закрыт | Docker build/up, smoke, rollback | `Dockerfile`, `docker-compose.yml`, `deployment.md` |
 | 6. Мониторинг | закрыт | метрики, ≥1 алерт, drift, runbook | `monitoring/`, `monitoring.md` |
@@ -23,7 +23,7 @@
 - 7 классов и очереди;
 - метрики: macro-F1 + CI, selective precision, coverage;
 - границы: учебный прототип, manual review;
-- данные: TWCS + Bitext + synthetic, объединённый пул, 80/20, CV вместо validation;
+- данные: TWCS + Bitext, объединённый пул, 80/20, CV вместо validation;
 - роли 5 участников.
 
 **Gate 1:** задача, вход/выход, метрики, ограничения и роли согласованы.  
@@ -78,6 +78,7 @@
 - model: overall, per-class, robustness, edge, behavior, adversarial, subgroup;
 - API: contract, batch, feedback, 422/503, OpenAPI, error envelope;
 - 37 тестов, `ruff`, `mypy`, smoke;
+- load test: 20 RPS, 30 s, 600 requests, 0 errors, p95 9.74 ms;
 - найдены: отрицание, `content`/`recommendations`, mixed-source test.
 
 **Gate 4:** критические сценарии покрыты, найденная проблема описана, quality gate зелёный.  

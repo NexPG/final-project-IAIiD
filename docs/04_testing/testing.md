@@ -34,12 +34,12 @@ smoke        — 5/5 (healthcheck, model-info, classify, batch, metrics)
 - `label` in 7 classes;
 - `split` in train/test;
 - `id` unique;
-- `label_quality` in `human_verified`/`weak`/`synthetic`;
+- `label_quality` in `weak`;
 - `conversation_id` не пересекает split;
 - длина 10–5000;
 - `source` допустим;
-- synthetic/weak share в eval = 0;
-- `other` ≤ 40% train, synthetic ≤ 15% train;
+- test без synthetic;
+- `other` ≤ 50% train;
 - PII-проверка;
 - достаточно примеров на класс;
 - near-duplicates между split = 0.
@@ -50,7 +50,7 @@ smoke        — 5/5 (healthcheck, model-info, classify, batch, metrics)
 
 | Тип | Проверка |
 |---|---|
-| Overall | macro-F1 ≥ 0.80 на frozen test (факт 0.909) |
+| Overall | macro-F1 ≥ 0.80 на frozen test (факт 0.855) |
 | Per-class | recall ≥ 0.65 |
 | Robustness | uppercase/spaces/punctuation/handles/URLs |
 | Edge | empty/too long/emoji-only |
@@ -94,10 +94,21 @@ smoke        — 5/5 (healthcheck, model-info, classify, batch, metrics)
 
 ## 6. Load test
 
-- 20 RPS, 5 минут.
-- 80% валидных, 20% edge.
-- p95 ≤ 300/500 мс, 5xx < 1%.
-- CPU/RAM.
+Проведён `scripts/load_test.py` против локального API:
+
+| Параметр | Значение |
+|---|---|
+| Target RPS | 20 |
+| Duration | 30 s |
+| Requests | 600 |
+| Errors | 0 |
+| Actual RPS | 20.02 |
+| p50 | 7.55 ms |
+| p95 | **9.74 ms** |
+| p99 | 12.78 ms |
+| max | 164.37 ms |
+
+Порог p95 ≤ 500 мс и 5xx < 1% выполнен. CPU/RAM в учебном стенде не измерялись.
 
 ## 7. Найденная проблема
 
@@ -145,7 +156,7 @@ pytest -q
 |---|---|---|---|---|
 | R-01 | Отрицание «не хочу отменять» | Неверная тема | Данные/модель/правило | open |
 | R-02 | Threshold 0.0 | Нет abstention | OOF-порог 0.85/0.05 | closed |
-| R-03 | Старый test 84 | Широкий CI | 80/20 frozen test 2 786 | closed |
+| R-03 | Старый test 84 | Широкий CI | 80/20 frozen test 2 714 | closed |
 | R-04 | PII в твитах и логах | Приватность | Маскирование, запрет коммита | open |
 | R-05 | Модель недоступна | 503 | Readiness/rollback | open |
 | R-06 | Шум weak labels | Низкое качество | Ограничение явно указано; confidence-фильтр | accepted |

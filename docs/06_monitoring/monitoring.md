@@ -63,7 +63,7 @@ Middleware на каждый запрос.
 - PSI > 0.2 — сигнал; KS p-value < 0.05 — сигнал.
 - Отчёт: `python scripts/drift_report.py` → `artifacts/drift_report.json`.
 
-**Первый offline-отчёт (train vs test):** PSI длины 0.002, KS 0.012, p = 0.917; `other_share` 43.3% vs 43.3%. Стратифицированный 80/20 split сохранил распределения, поэтому drift на train/test не обнаружен. Production drift требует реальных логов.
+**Первый offline-отчёт (train vs test):** PSI длины 0.003, KS 0.020, p = 0.346; `other_share` 44.1% vs 44.5%. Стратифицированный 80/20 split сохранил распределения, поэтому drift на train/test не обнаружен. Production drift требует реальных логов.
 
 ## 9. Переобучение
 

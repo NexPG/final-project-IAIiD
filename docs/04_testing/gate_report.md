@@ -11,6 +11,7 @@
 - Model: overall, per-class, robustness, edge, behavior, adversarial, subgroup.
 - API: contract, batch, feedback, 422/503, OpenAPI, error envelope.
 - Smoke: 5/5.
+- Load: 20 RPS / 30 s / 600 requests, 0 errors, p95 9.74 ms.
 
 ## Результат
 
@@ -19,6 +20,7 @@ pytest -q   — 37 passed
 ruff        — passed
 mypy        — passed
 GE          — 8/8
+load test   — 20 RPS, 30 s, 600 requests, 0 errors, p95 9.74 ms
 ```
 
 ## Найденные проблемы

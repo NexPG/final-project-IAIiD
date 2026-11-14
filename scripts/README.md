@@ -14,6 +14,7 @@ CLI-скрипты для воспроизводимых операций.
 | `evaluate.py` | метрики на frozen test |
 | `export_openapi.py` | выгрузка OpenAPI в docs |
 | `drift_report.py` | offline PSI/KS-отчёт |
+| `load_test.py` | HTTP load test: RPS, p50/p95/p99, error rate |
 | `smoke.py` | smoke-проверка запущенного API |
 
 ## Порядок

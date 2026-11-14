@@ -25,9 +25,9 @@
 | 14.11.2026 | Docker и мониторинг | DeepSeek/OpenCode | Dockerfile, Compose, Prometheus rules, drift script | `docker compose build/up`, smoke 5/5, alert firing | Проверено вручную, порт API параметризован |
 | 14.11.2026 | Отчёт v0.2 | DeepSeek/OpenCode | Черновик 5–7 страниц с реальными числами | Сверка с `artifacts/metrics.json`, manifest, Docker logs | Явно помечены provisional-метрики и ограничения |
 | 14.11.2026 | MLflow и GE | DeepSeek/OpenCode | 6 runs, 8 expectations, threshold tuning | Запуск MLflow UI/API, `ge_report.json`, сверка метрик | Исправлены file-store, порядок вероятностей и выбор модели |
-| 14.11.2026 | CV и RandomizedSearchCV | DeepSeek/OpenCode | Поиск по 4 семействам, 5-fold StratifiedGroupKFold, OOF-порог, bootstrap CI | `search_results.json`, MLflow, smoke, повторный запуск | Убрано отдельное validation; test открыт один раз; проверена утечка по группам |
+| 14.11.2026 | CV и HalvingRandomSearchCV | DeepSeek/OpenCode | Поиск по 4 семействам, 120 кандидатов, 5-fold StratifiedGroupKFold, OOF-порог, bootstrap CI | `search_results.json`, MLflow, smoke, повторный запуск | Убрано отдельное validation; test открыт один раз; проверена утечка по группам |
 | 14.11.2026 | Gate 2 | DeepSeek/OpenCode | Единый error envelope, `X-Request-ID`, OpenAPI, SLA, ADR-10/11 | `pytest` 37, `openapi.json`, contract tests | Контракт приведён в соответствие с кодом |
-| 14.11.2026 | Единый 80/20 split | DeepSeek/OpenCode | Объединение TWCS+Bitext+synthetic, стратификация `(source,label)`, group split | `validate_data.py`, `pytest` 37, `manifest.json` | Убран внешний/balanced test; только один frozen test |
+| 14.11.2026 | Единый 80/20 split | DeepSeek/OpenCode | Объединение TWCS+Bitext, стратификация `(source,label)`, group split | `validate_data.py`, `pytest` 37, `manifest.json` | Убран synthetic и внешний/balanced test; только один frozen test |
 | 14.11.2026 | Документация по этапам | DeepSeek/OpenCode | Разложение docs на 01_task…08_ai, обновление ссылок | Проверка ссылок и структуры | Удалены лишние annotation/external артефакты |
 | TBD | Презентация | TBD | Слайды | Сверка с отчётом | TBD |
 
