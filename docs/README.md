@@ -12,7 +12,7 @@
 | [`api.md`](api.md) | API-контракт и OpenAPI | реализовано, v1 |
 | [`experiments.md`](experiments.md) | Журнал экспериментов и выводы | первый provisional run |
 | [`model_card.md`](model_card.md) | Model card и ограничения | v1 provisional |
-| [`testing.md`](testing.md) | Тест-план, пограничные случаи, найденные проблемы | 26 тестов, v1 |
+| [`testing.md`](testing.md) | Тест-план, пограничные случаи, найденные проблемы | 34 теста, v1 |
 | [`deployment.md`](deployment.md) | Локальный запуск, Docker, runbook | проверено в Docker |
 | [`monitoring.md`](monitoring.md) | Метрики, алерты, drift, действия | базовый мониторинг + drift-отчёт |
 | [`ai_usage.md`](ai_usage.md) | Журнал использования ИИ-ассистентов | ведётся постоянно |

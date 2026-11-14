@@ -21,7 +21,7 @@
 | 14.11.2026 | Исследование датасетов | DeepSeek/OpenCode | Сравнение TWCS, Bitext, Tobi-Bueck, Audio Retailer; размеры и лицензии | Проверка карточек Hugging Face и первичный анализ CSV | Tobi-Bueck отклонён как основной; выбраны TWCS + Bitext |
 | 14.11.2026 | Анализ дисбаланса TWCS | DeepSeek/OpenCode | Подсчёт 7 классов на 6 000 примерах | Повторный подсчёт pandas | Зафиксирован cap `other` 35% и balanced stress subset |
 | 14.11.2026 | Data pipeline | DeepSeek/OpenCode | Модули загрузки, очистки, маппинга, split, validation | Запуск на реальных CSV, 16 тестов, ручная проверка маппинга | Исправлены NaN в Bitext sampling и группа в split |
-| 14.11.2026 | Baseline и API | DeepSeek/OpenCode | TF-IDF + LogReg, FastAPI, routing, тесты | `pytest` 26 passed, `ruff`, `mypy`, smoke | Исправлены FastAPI DI и формат metrics |
+| 14.11.2026 | Baseline и API | DeepSeek/OpenCode | TF-IDF + LogReg, FastAPI, routing, тесты | `pytest` (тогда 26 passed), `ruff`, `mypy`, smoke | Исправлены FastAPI DI и формат metrics |
 | 14.11.2026 | Docker и мониторинг | DeepSeek/OpenCode | Dockerfile, Compose, Prometheus rules, drift script | `docker compose build/up`, smoke 5/5, alert firing | Проверено вручную, порт API параметризован |
 | 14.11.2026 | Отчёт v0.2 | DeepSeek/OpenCode | Черновик 5–7 страниц с реальными числами | Сверка с `artifacts/metrics.json`, manifest, Docker logs | Явно помечены provisional-метрики и ограничения |
 | 14.11.2026 | MLflow и GE | DeepSeek/OpenCode | 6 runs, 8 expectations, threshold tuning | Запуск MLflow UI/API, `ge_report.json`, сверка метрик | Исправлены file-store, порядок вероятностей и выбор модели |
