@@ -17,18 +17,21 @@
 
 ## 2. Data validation
 
-Минимум 5 expectations:
+Минимум 8 expectations:
 
 - `text` not null;
 - `label` in 7 classes;
 - `split` in train/validation/test;
 - `id` unique;
-- `scenario_id` не пересекает split;
+- `label_quality` in `human_verified`/`weak`/`synthetic`;
+- `conversation_id` не пересекает split;
 - длина 10–5000;
 - `source` допустим;
-- synthetic share в eval = 0;
+- synthetic/weak share в eval = 0;
+- `other` ≤ 40% train, synthetic ≤ 15% train;
 - PII-проверка;
-- достаточно примеров на класс.
+- достаточно примеров на класс;
+- near-duplicates между split = 0.
 
 Дополнительно: dirty copy, JSON/DataDocs, остановка обучения при провале.
 
@@ -36,14 +39,15 @@
 
 | Тип | Проверка |
 |---|---|
-| Overall | macro-F1 ≥ 0.80 |
+| Overall | macro-F1 ≥ 0.80 на natural test, ≥ 0.70 на balanced stress |
 | Per-class | recall ≥ 0.65 |
-| Robustness | uppercase/spaces/punctuation |
-| Edge | empty/too long |
-| Subgroup | channel/length/language |
+| Robustness | uppercase/spaces/punctuation/handles/URLs |
+| Edge | empty/too long/emoji-only |
+| Subgroup | channel/length/source |
 | Behavior | negation example |
 | Adversarial | typo/synonym |
 | Routing | low confidence → manual |
+| Label noise | ошибки на weak-label subset не скрываются |
 
 ## 4. System tests
 
@@ -63,17 +67,19 @@
 - пустой текст, пробелы, один символ;
 - только эмодзи;
 - CAPS и повторы;
-- mixed RU/EN, транслит;
+- mixed EN/RU, транслит;
 - опечатки, сленг;
 - HTML/JSON;
 - длинный текст;
 - несколько тем;
 - спам;
 - оскорбления;
-- PII;
+- PII (handle, email, телефон, ссылка);
 - неподдерживаемый язык;
-- дубли;
-- обрезанный текст.
+- дубли и near-duplicates;
+- обрезанный текст;
+- твит с @mention и URL;
+- цитата трека/исполнителя с нецензурной лексикой.
 
 ## 6. Load test
 
@@ -86,7 +92,7 @@
 
 **Отрицание и конкурирующие признаки.**
 
-Пример: «Подписку отменять не хочу, нужен чек об оплате» → `subscription`, ожидается `payment`.
+Исторический пример: «Подписку отменять не хочу, нужен чек об оплате» → `subscription`, ожидается `payment`. Английский аналог для нового test: «I don't want to cancel my subscription, I need a receipt» → ожидается `payment`.
 
 Требование:
 
@@ -99,8 +105,10 @@
 
 - старый threshold 0.0;
 - confidence не калиброван;
-- test 84, по 12 на класс;
-- automation disabled.
+- старый test 84, по 12 на класс;
+- automation disabled;
+- weak labels TWCS могут содержать шум;
+- `content` и `recommendations` редки в реальном потоке.
 
 ## 8. Локальный quality gate
 
@@ -126,6 +134,10 @@ pytest -q
 |---|---|---|---|---|
 | R-01 | Отрицание «не хочу отменять» | Неверная тема | Данные/модель/правило | open |
 | R-02 | Threshold 0.0 | Нет abstention | Калибровка/margin | open |
-| R-03 | Test 84 | Широкий CI | Human-verified test | open |
-| R-04 | PII в логах | Приватность | Маскирование | open |
+| R-03 | Старый test 84 | Широкий CI | Human-verified 350–400 | open |
+| R-04 | PII в твитах и логах | Приватность | Маскирование, запрет коммита | open |
 | R-05 | Модель недоступна | 503 | Readiness/rollback | open |
+| R-06 | Шум weak labels TWCS | Низкое качество | Аудит 500, agreement, confidence-фильтр | open |
+| R-07 | Дисбаланс `other` | Модель всё относит к `other` | Cap 35%, class weights, macro-F1 | open |
+| R-08 | Мало `content`/`recommendations` | Низкий recall | Human-written, balanced stress subset | open |
+| R-09 | Неясная лицензия TWCS | Юридический риск | Сырые данные локально, data card | open |

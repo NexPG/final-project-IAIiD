@@ -39,16 +39,20 @@
 | E2 | TF-IDF word+char | TBD | TBD |
 | E3 | LinearSVC/CNB | TBD | TBD |
 | E4 | Calibration/threshold | TBD | TBD |
-| E5 | Transformer (optional) | TBD | TBD |
+| E5 | TWCS vs TWCS+Bitext | TBD | TBD |
+| E6 | Cap `other` / class weights | TBD | TBD |
+| E7 | Transformer (optional) | TBD | TBD |
 
-Обязательно: macro-F1, per-class recall, coverage, selective precision, latency, вывод.
+Обязательно: macro-F1 на natural и balanced stress test, per-class recall, coverage, selective precision, latency, вывод. Отдельно — agreement слабых меток.
 
 ## 5. Данные и тестирование (1–1.25 стр.)
 
-- Источники и объём.
-- Human-verified test/validation.
-- Разметка и kappa.
-- Data validation (5+ GE).
+- Источники: TWCS SpotifyCares (~38 тыс., реальный домен), Bitext (26 872, вспомогательный), 420 синтетических (seed).
+- Почему английский язык допустим для учебного проекта.
+- Train 15 000–20 000: слабые метки TWCS + Bitext + синтетика; `other` ≤ 35%.
+- Human-verified validation 300 и test 400; balanced stress subset.
+- Разметка и kappa; agreement слабых меток.
+- Data validation (8+ GE).
 - Тест-план.
 - Найденная проблема: отрицание/конкуренция признаков.
 - Что исправлено и что осталось.
@@ -79,7 +83,8 @@
 ## 9. Ограничения, drift, этика (0.5–0.75 стр.)
 
 - Ограничения прототипа.
-- Синтетика/малый test.
+- Шум слабых меток TWCS и доменный сдвиг Bitext.
+- Дисбаланс `other`, редкие `content`/`recommendations`.
 - Drift.
 - PII, bias, fairness, transparency.
 - Automation bias.
@@ -88,7 +93,8 @@
 ## Требования
 
 - Все числа подтверждены артефактами.
-- Не выдавать синтетические метрики за реальные.
+- Не выдавать синтетические метрики и старые 0.929 за реальные.
+- Указать, что train использует слабые метки, а test — human-verified.
 - Указать отклонение: CI/CD не используется.
-- Указать роли 5 участников.
+- Указать роли 5 участников в финальном распределении.
 - Объём 5–7 страниц без приложений.

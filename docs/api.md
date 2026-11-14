@@ -28,10 +28,10 @@
 
 ```json
 {
-  "text": "Списали деньги за подписку, хотя я её отменил вчера.",
-  "subject": "Повторное списание",
+  "text": "I was charged for a subscription I cancelled yesterday.",
+  "subject": "Duplicate charge",
   "channel": "app",
-  "locale": "ru"
+  "locale": "en"
 }
 ```
 
@@ -39,8 +39,8 @@
 
 - `text`: 10–5000;
 - `subject`: 0–300;
-- `channel`: `app`, `web`, `email`, `chat`;
-- `locale`: `ru`, `en`, `mixed`;
+- `channel`: `twitter`, `app`, `web`, `email`, `chat`;
+- `locale`: `en`, `ru`, `mixed`;
 - неизвестные поля запрещены.
 
 ## 4. Ответ

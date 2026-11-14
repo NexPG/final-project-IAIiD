@@ -77,12 +77,17 @@ $RECYCLE.BIN/
 # ---------------------------------------------------------------------------
 data/raw/*
 !data/raw/.gitkeep
+data/external/*
+!data/external/.gitkeep
+!data/external/README.md
 data/interim/*
 !data/interim/.gitkeep
 data/processed/*
 !data/processed/.gitkeep
 data/feedback/*
 !data/feedback/.gitkeep
+# Raw public corpora must never be committed.
+!data/external/README.md
 /models/
 /artifacts/
 /mlruns/
@@ -115,7 +120,6 @@ diary.md
 /Четвертый этап/
 /Пятый этап/
 /Шестой этап/
-diary.md
 
 # ---------------------------------------------------------------------------
 # Temporary and OS-level files

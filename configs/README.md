@@ -9,7 +9,7 @@ configs/
 ├── base.yaml                 # общие параметры
 ├── baseline.yaml             # TF-IDF + LogReg
 ├── linear_svc.yaml           # LinearSVC/ComplementNB
-├── transformer.yaml          # ruBERT fine-tune
+├── transformer.yaml          # optional DistilBERT/MiniLM experiment
 └── service.yaml              # пороги, лимиты, routing
 ```
 
