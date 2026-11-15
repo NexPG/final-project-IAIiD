@@ -8,7 +8,7 @@
 
 - [Отчёт (PDF)](docs/07_report/report.pdf) · [DOCX](docs/07_report/report.docx) · [Markdown](docs/07_report/report.md)
 - [Презентация (PDF)](docs/07_report/presentation.pdf) · [PPTX](docs/07_report/presentation.pptx)
-- [Речь на 5 минут](docs/07_report/speech.md) · [Model card](docs/03_experiments/model_card.md)
+- [Model card](docs/03_experiments/model_card.md)
 - [BPMN жизненного цикла](docs/03_experiments/model_bpmn.png) · [BPMN переобучения](docs/06_monitoring/retrain_bpmn.png)
 - [Роли команды](#команда-и-роли) · [Журнал ИИ-ассистентов](docs/08_ai/ai_usage.md)
 
@@ -140,7 +140,7 @@ Grafana: `http://localhost:3000` (`admin` / `admin`), dashboard `Music Support T
 - [`docs/04_testing/`](docs/04_testing/) — тест-план и найденные проблемы.
 - [`docs/05_deployment/`](docs/05_deployment/) — Docker, запуск, runbook.
 - [`docs/06_monitoring/`](docs/06_monitoring/) — метрики, алерты, drift, BPMN переобучения.
-- [`docs/07_report/`](docs/07_report/) — отчёт, презентация и речь.
+- [`docs/07_report/`](docs/07_report/) — отчёт и презентация.
 - [`docs/08_ai/`](docs/08_ai/) — журнал ИИ-ассистентов.
 
 ## Команда и роли
