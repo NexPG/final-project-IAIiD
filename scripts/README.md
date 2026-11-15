@@ -28,6 +28,7 @@ scripts/
 | `train/tune_threshold.py` | показать OOF threshold/margin из результатов поиска |
 | `train/train.py` | обучение выбранной конфигурации |
 | `train/evaluate.py` | метрики на frozen test |
+| `train/routing_report.py` | coverage / selective precision при фиксированном пороге |
 
 ## service
 
@@ -60,6 +61,7 @@ python scripts/data/validate_data.py --config configs/data.yaml
 python scripts/data/validate_data_ge.py
 python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
 python scripts/train/tune_threshold.py
+python scripts/train/routing_report.py --threshold 0.70
 python scripts/train/evaluate.py --split test
 ```
 

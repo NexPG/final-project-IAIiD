@@ -118,7 +118,7 @@ Rollback:
 | Image size | 716 MB |
 | Model version | `search-logreg_word-20261114200534` |
 | Model type | `logreg_word` |
-| Threshold | 0.85 / 0.05 |
+| Threshold | 0.70 / 0.05 |
 | Compose services | api + prometheus + grafana, все healthy |
 | Smoke | 5/5 |
 | Docker load test | 20 RPS, 20 s, 400 requests, 0 errors, p95 52.72 ms |

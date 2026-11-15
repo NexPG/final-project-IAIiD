@@ -37,7 +37,7 @@
 - TF-IDF word (1,2), `min_df=2`, `max_features=50000`, `sublinear_tf=False`.
 - LogisticRegression, C=32, `class_weight=balanced`, `max_iter=2000`, seed 42.
 - Поиск: `HalvingRandomSearchCV`, 120 кандидатов, factor=2, resources 2000→4000→8000, 5-fold CV.
-- Threshold/margin: 0.85 / 0.05 по OOF train.
+- Threshold/margin: 0.70 / 0.05; OOF coverage 0.941, selective precision 0.979.
 
 ## 4. Метрики
 
@@ -48,9 +48,9 @@
 | Test macro-F1 | **0.855** |
 | Test weighted-F1 | 0.963 |
 | Bootstrap 95% CI для macro-F1 | **[0.791; 0.908]** |
-| Test coverage | 0.881 |
-| Test selective precision | **0.989** |
-| Test review rate | 0.119 |
+| Test coverage | 0.948 |
+| Test selective precision | **0.979** |
+| Test review rate | 0.052 |
 
 ### Test по источникам (диагностика)
 
@@ -101,6 +101,7 @@ Test не использовался для выбора модели или г�
 python scripts/data/build_dataset.py --config configs/data.yaml
 python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
 python scripts/train/tune_threshold.py
+python scripts/train/routing_report.py --threshold 0.70
 ```
 
 ## 11. Владение и лицензия

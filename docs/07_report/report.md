@@ -114,9 +114,9 @@
 | Macro-F1 | **0.855** |
 | Weighted-F1 | 0.963 |
 | Bootstrap 95% CI | **[0.791; 0.908]** |
-| Coverage | 0.881 |
-| Selective precision | **0.989** |
-| Review rate | 0.119 |
+| Coverage | 0.948 |
+| Selective precision | **0.979** |
+| Review rate | 0.052 |
 
 Per-class recall: `payment` 0.97, `subscription` 0.92, `account` 0.96, `app` 0.69, `recommendations` 0.98, `content` 0.40, `other` 0.98.
 
@@ -131,7 +131,7 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 
 ### 6.4. Threshold
 
-Порог 0.85 / margin 0.05 выбран по OOF: coverage 0.878, selective precision 0.989. На test — 0.881 и 0.989. Целевые показатели selective precision ≥ 0.95 и coverage ≥ 0.40 выполнены.
+Порог 0.70 / margin 0.05 задан для сервиса; на OOF coverage 0.941, selective precision 0.979. На test — 0.948 и 0.979. Целевые показатели selective precision ≥ 0.95 и coverage ≥ 0.40 выполнены.
 
 ## 7. Данные, валидация и тестирование
 
@@ -182,7 +182,7 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 
 Собран сквозной учебный кейс: от бизнес-задачи и архитектуры до экспериментов, тестов, Docker-деплоя и мониторинга. Все шесть gate-этапов закрыты и подтверждены артефактами. Работающий прототип классифицирует обращения в 7 тем, маршрутизирует их в очередь или `manual_review`, имеет OpenAPI-контракт, 38 тестов, Docker-стек, Grafana и 7 алертов.
 
-Ключевой результат: CV macro-F1 **0.855 ± 0.048**, test macro-F1 **0.855** с 95% CI **[0.791; 0.908]**, selective precision **0.989** при coverage **0.881**. На реальном TWCS качество ниже (0.739) — это ограничение weak-меток и смешанного test, которое честно указано.
+Ключевой результат: CV macro-F1 **0.855 ± 0.048**, test macro-F1 **0.855** с 95% CI **[0.791; 0.908]**, selective precision **0.979** при coverage **0.948**. На реальном TWCS качество ниже (0.739) — это ограничение weak-меток и смешанного test, которое честно указано.
 
 Следующий шаг — human-verified подвыборка и регулярное переобучение по дрейфу. Проект не является production-системой, но показывает полный инженерный путь и границы решения.
 
@@ -195,6 +195,7 @@ python scripts/data/validate_data.py --config configs/data.yaml
 python scripts/data/validate_data_ge.py
 python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
 python scripts/train/tune_threshold.py
+python scripts/train/routing_report.py --threshold 0.70
 python scripts/monitoring/drift_report.py
 uvicorn music_support_triage.api.app:app --port 8000
 python scripts/service/smoke.py

@@ -326,7 +326,7 @@ def slide_task(prs: Presentation) -> None:
         add_chip(slide, x, 4.15, width, 0.5, name, fill=BLUE_LIGHT, color=BLUE, size=11)
     add_rect(slide, 0.75, 5.25, 11.8, 0.85, fill=AMBER_LIGHT, line=None, radius=0.12)
     add_text(slide, 1.0, 5.43, 11.3, 0.5,
-             "confidence < 0.85  или  margin < 0.05   →   manual_review",
+             "confidence < 0.70  или  margin < 0.05   →   manual_review",
              size=15, bold=True, color=AMBER, align=PP_ALIGN.CENTER)
     add_footer(slide, 3)
 
@@ -473,8 +473,8 @@ def slide_test(prs: Presentation) -> None:
     kpis = [
         ("0.855", "Macro-F1", BLUE, "95% CI [0.791; 0.908]"),
         ("0.963", "Accuracy", MINT, "weighted-F1 0.963"),
-        ("0.989", "Selective precision", AMBER, "на auto-routed"),
-        ("0.881", "Coverage", SKY, "review rate 0.119"),
+        ("0.979", "Selective precision", AMBER, "на auto-routed"),
+        ("0.948", "Coverage", SKY, "review rate 0.052"),
     ]
     for index, (value, label, color, sub) in enumerate(kpis):
         add_kpi(slide, 0.55 + index * 3.12, 1.7, 2.9, 1.55, value, label, accent=color, sub=sub)
@@ -776,7 +776,7 @@ SPEECH: list[tuple[str, str]] = [
     (
         "Задача",
         "На входе — текст обращения и опциональные метаданные. Модель возвращает тему, уверенность, "
-        "top-3 и очередь. Если уверенность ниже 0.85 или отрыв от второго класса меньше 0.05, тикет "
+        "top-3 и очередь. Если уверенность ниже 0.70 или отрыв от второго класса меньше 0.05, тикет "
         "уходит в manual_review. Семь тем покрывают основные сценарии поддержки.",
     ),
     (
@@ -811,7 +811,7 @@ SPEECH: list[tuple[str, str]] = [
     ),
     (
         "Результат на test",
-        "На test macro-F1 0.855, accuracy 0.963, selective precision 0.989 при coverage 0.881. "
+        "На test macro-F1 0.855, accuracy 0.963, selective precision 0.979 при coverage 0.948. "
         "Bootstrap 95% интервал — от 0.791 до 0.908. Но overall смешивает источники: на реальном "
         "TWCS macro-F1 0.739. Это важная граница, а не красивый результат.",
     ),

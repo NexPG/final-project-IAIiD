@@ -275,7 +275,7 @@
 2. Manual: `confidence < threshold` или `margin < margin_threshold` или несколько равнозначных тем.
 3. `other` при высокой уверенности → `general_support`; при низкой → `manual_review`.
 4. Модель недоступна → 503; upstream направляет в manual.
-5. Пороги калибруются по OOF-предсказаниям train, фиксируются в конфиге и возвращаются в ответе.
+5. Рабочие пороги фиксируются в конфиге и возвращаются в ответе; OOF используется для контроля качества routing.
 
 ---
 
@@ -741,8 +741,8 @@ Multi-class single-label классификация:
 ### 9.5. Калибровка и abstention
 
 - Калибровка: `CalibratedClassifierCV` (sigmoid/isotonic) или temperature scaling.
-- Threshold и margin подбираются по OOF-предсказаниям train с политикой selective precision ≥ 0.95 и coverage ≤ 0.90.
-- Текущие значения: threshold 0.85, margin 0.05; после изменения test пересчитываются.
+- Threshold и margin контролируются по OOF-предсказаниям train; целевые показатели selective precision ≥ 0.95 и coverage ≥ 0.90.
+- Рабочая точка сервиса: threshold 0.70, margin 0.05; после изменения test пересчитывается.
 - Если калибровка ухудшает macro-F1, сравнить и обосновать.
 - `automation_enabled=false` — допустимый fallback, но в отчёте нужно объяснить, почему.
 

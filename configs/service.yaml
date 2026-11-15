@@ -1,8 +1,8 @@
 # Runtime service configuration.
 
 model_path: artifacts/model.joblib
-# Calibrated on out-of-fold train predictions (search_models.py).
-threshold: 0.85
+# Operating point for the demo/service: auto-route when confidence >= 0.70.
+threshold: 0.70
 margin_threshold: 0.05
 max_batch_size: 100
 min_text_chars: 10

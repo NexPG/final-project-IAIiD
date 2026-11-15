@@ -8,7 +8,7 @@ model_card_path: artifacts/model_card.md
 
 # Test uses weak/synthetic labels; metrics are reported as such.
 allow_provisional: true
-threshold: 0.85
+threshold: 0.70
 margin_threshold: 0.05
 
 model:

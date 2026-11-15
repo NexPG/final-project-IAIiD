@@ -28,6 +28,6 @@
 - CV macro-F1: **0.855 ± 0.048**.
 - Test macro-F1: **0.855**, 95% CI **[0.791; 0.908]**.
 - TWCS отдельно: **0.739**.
-- Coverage 0.881, selective precision 0.989.
+- Coverage 0.948, selective precision 0.979.
 - 38 тестов; Docker load test p95 52.72 ms.
 - 7 алертов; drift PSI 0.003.

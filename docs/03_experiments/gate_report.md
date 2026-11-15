@@ -44,7 +44,7 @@
 - `scoring="f1_macro"`.
 - `random_state=42`.
 - После выбора: refit на полном train.
-- Порог: OOF-предсказания train, 0.85/0.05.
+- Порог: рабочий 0.70/0.05; OOF-контроль coverage 0.941, selective precision 0.979.
 - Test: один раз.
 
 Итого fits:
@@ -80,9 +80,9 @@
 | Macro-F1 | **0.855** |
 | Weighted-F1 | 0.963 |
 | Bootstrap 95% CI | **[0.791; 0.908]** |
-| Coverage | 0.881 |
-| Selective precision | **0.989** |
-| Review rate | 0.119 |
+| Coverage | 0.948 |
+| Selective precision | **0.979** |
+| Review rate | 0.052 |
 
 Per-class recall: `payment` 0.97, `subscription` 0.92, `account` 0.96, `app` 0.69, `recommendations` 0.98, `content` 0.40, `other` 0.98.
 

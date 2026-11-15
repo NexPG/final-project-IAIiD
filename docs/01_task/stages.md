@@ -60,7 +60,7 @@
 - 5-fold `StratifiedGroupKFold` на train, стратификация по `(source, label)`;
 - `HalvingRandomSearchCV`: 120 кандидатов, factor=2, resources 2000→4000→8000;
 - выбор по mean CV macro-F1, test не используется;
-- OOF-порог 0.85/0.05;
+- Рабочий порог 0.70/0.05 (OOF-контроль: coverage 0.941, selective precision 0.979);
 - одно измерение на test: macro-F1 0.855, 95% CI [0.791; 0.908];
 - MLflow runs, model card.
 

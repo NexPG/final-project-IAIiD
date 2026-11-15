@@ -112,7 +112,7 @@ curl -X POST http://127.0.0.1:8000/v1/classify \
 ```
 
 Ответ содержит `topic`, `queue`, `confidence`, `margin`, `top_k` и
-`needs_human_review`; при confidence < 0.85 или margin < 0.05 очередь будет
+`needs_human_review`; при confidence < 0.70 или margin < 0.05 очередь будет
 `manual_review`.
 
 Docker:
@@ -134,8 +134,8 @@ Grafana: `http://localhost:3000` (`admin` / `admin`), dashboard `Music Support T
 | Bootstrap 95% CI | [0.791; 0.908] |
 | Test accuracy | 0.963 |
 | Test weighted-F1 | 0.963 |
-| Test coverage | 0.881 |
-| Test selective precision | 0.989 |
+| Test coverage | 0.948 |
+| Test selective precision | 0.979 |
 
 Данные: 13 427 строк, объединённый пул TWCS + Bitext, 80/20 со стратификацией по `(source, label)`: 10 713 train, 2 714 test. Validation не выделяется: 5-fold CV на train, test открывается один раз. Overall macro-F1 0.855 смешивает источники; на реальном TWCS macro-F1 = 0.739. Test-метки weak. Подробно: [`docs/03_experiments/experiments.md`](docs/03_experiments/experiments.md).
 

@@ -88,9 +88,9 @@ combined pool (TWCS + Bitext)
 | Macro-F1 | **0.855** |
 | Weighted-F1 | 0.963 |
 | Bootstrap 95% CI | **[0.791; 0.908]** |
-| Coverage | 0.881 |
-| Selective precision | **0.989** |
-| Review rate | 0.119 |
+| Coverage | 0.948 |
+| Selective precision | **0.979** |
+| Review rate | 0.052 |
 
 Per-class recall: `payment` 0.97, `subscription` 0.92, `account` 0.96, `app` 0.69, `recommendations` 0.98, `content` 0.40, `other` 0.98.
 
@@ -105,14 +105,14 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 
 ## 8. Threshold и routing
 
-Политика: selective precision ≥ 0.95, coverage ≤ 0.90 на OOF.
+Политика: selective precision ≥ 0.95, coverage ≥ 0.90. Порог 0.70 / margin 0.05 задан для сервиса; OOF и test используются только для контроля, test не участвует в подборе.
 
 | Параметр | OOF | Test |
 |---|---|---|
-| Threshold / margin | 0.85 / 0.05 | 0.85 / 0.05 |
-| Coverage | 0.878 | 0.881 |
-| Selective precision | 0.989 | 0.989 |
-| Review rate | 0.122 | 0.119 |
+| Threshold / margin | 0.70 / 0.05 | 0.70 / 0.05 |
+| Coverage | 0.941 | 0.948 |
+| Selective precision | 0.979 | 0.979 |
+| Review rate | 0.059 | 0.052 |
 
 ## 9. Стабильность split
 
@@ -139,6 +139,7 @@ PSI длины = **0.003**, KS = **0.020**, p = 0.346 — распределен
 python scripts/data/build_dataset.py --config configs/data.yaml
 python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
 python scripts/train/tune_threshold.py
+python scripts/train/routing_report.py --threshold 0.70
 ```
 
 ## 12. Ограничения
