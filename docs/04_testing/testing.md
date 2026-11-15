@@ -1,12 +1,12 @@
 # Тестирование и найденные проблемы
 
-**Статус:** реализовано (37 тестов), Gate 4 закрыт  
+**Статус:** реализовано (38 тестов), Gate 4 закрыт  
 **Источник требований:** [`TZ.md`](../01_task/TZ.md), §10; вебинары В06–В08
 
 ## 0. Текущий результат
 
 ```text
-pytest -q   — 37 passed
+pytest -q   — 38 passed
 ruff check . — All checks passed
 mypy src     — Success: 19 source files
 smoke        — 5/5 (healthcheck, model-info, classify, batch, metrics)

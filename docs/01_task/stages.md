@@ -77,7 +77,7 @@
 - unit: очистка, PII, маппинг, split, dedup, routing;
 - model: overall, per-class, robustness, edge, behavior, adversarial, subgroup;
 - API: contract, batch, feedback, 422/503, OpenAPI, error envelope;
-- 37 тестов, `ruff`, `mypy`, smoke;
+- 38 тестов, `ruff`, `mypy`, smoke;
 - load test: 20 RPS, 30 s, 600 requests, 0 errors, p95 9.74 ms;
 - найдены: отрицание, `content`/`recommendations`, mixed-source test.
 

@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Music Support Triage</title>
+    <style>
+      :root {
+        --ink: #0f172a;
+        --muted: #64748b;
+        --line: #e2e8f0;
+        --blue: #2563eb;
+        --sky: #93c5fd;
+        --mint: #10b981;
+        --amber: #d97706;
+        --paper: #f8fafc;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at 15% 10%, #dbeafe 0, transparent 32rem),
+          radial-gradient(circle at 90% 85%, #d1fae5 0, transparent 30rem),
+          linear-gradient(160deg, #f8fafc 0%, #eef4ff 100%);
+      }
+
+      .shell {
+        width: min(760px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 56px 0 40px;
+      }
+
+      .hero {
+        margin-bottom: 28px;
+      }
+
+      .logo {
+        width: 48px;
+        height: 48px;
+        display: grid;
+        place-items: center;
+        border-radius: 14px;
+        background: var(--ink);
+        color: white;
+        font-size: 25px;
+        margin-bottom: 18px;
+      }
+
+      .eyebrow {
+        margin: 0 0 10px;
+        font-size: 12px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--blue);
+      }
+
+      h1 {
+        margin: 0;
+        font-size: clamp(32px, 6vw, 52px);
+        line-height: 1.03;
+        letter-spacing: -0.035em;
+        max-width: 14ch;
+      }
+
+      .lede {
+        margin: 16px 0 0;
+        max-width: 58ch;
+        color: var(--muted);
+        font-size: 16px;
+        line-height: 1.55;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.9);
+        border: 1px solid rgba(226, 232, 240, 0.9);
+        border-radius: 24px;
+        padding: 26px;
+        box-shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+        backdrop-filter: blur(12px);
+      }
+
+      label {
+        display: block;
+        margin-bottom: 10px;
+        font-size: 13px;
+        font-weight: 700;
+      }
+
+      textarea {
+        width: 100%;
+        min-height: 132px;
+        resize: vertical;
+        border: 1px solid var(--line);
+        border-radius: 16px;
+        padding: 16px;
+        font: inherit;
+        font-size: 15px;
+        line-height: 1.5;
+        color: var(--ink);
+        background: var(--paper);
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+
+      textarea:focus {
+        border-color: var(--blue);
+        box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+      }
+
+      textarea::placeholder {
+        color: #94a3b8;
+      }
+
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 14px;
+      }
+
+      .hint {
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      button {
+        font: inherit;
+        cursor: pointer;
+      }
+
+      .submit {
+        border: 0;
+        border-radius: 14px;
+        padding: 13px 20px;
+        background: var(--blue);
+        color: white;
+        font-size: 14px;
+        font-weight: 700;
+        white-space: nowrap;
+        transition: transform 0.15s, background 0.15s, opacity 0.15s;
+      }
+
+      .submit:hover {
+        background: #1d4ed8;
+        transform: translateY(-1px);
+      }
+
+      .submit:disabled {
+        cursor: wait;
+        opacity: 0.65;
+        transform: none;
+      }
+
+      .examples {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-top: 18px;
+        padding-top: 16px;
+        border-top: 1px solid var(--line);
+      }
+
+      .examples span {
+        color: var(--muted);
+        font-size: 12px;
+        margin-right: 2px;
+      }
+
+      .example {
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 7px 11px;
+        background: white;
+        color: #334155;
+        font-size: 12px;
+        transition: border-color 0.15s, color 0.15s;
+      }
+
+      .example:hover {
+        border-color: var(--sky);
+        color: var(--blue);
+      }
+
+      .error {
+        margin-top: 18px;
+        border-radius: 14px;
+        padding: 14px 16px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        color: #991b1b;
+        font-size: 14px;
+      }
+
+      .result {
+        margin-top: 22px;
+        padding-top: 22px;
+        border-top: 1px solid var(--line);
+      }
+
+      .result-label {
+        margin: 0 0 6px;
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .queue {
+        margin: 0;
+        font-size: clamp(28px, 5vw, 40px);
+        letter-spacing: -0.03em;
+      }
+
+      .raw {
+        margin: 6px 0 20px;
+        color: var(--muted);
+        font-size: 12px;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      }
+
+      .meta {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+
+      .meta div {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 12px;
+        background: var(--paper);
+      }
+
+      .meta span {
+        display: block;
+        color: var(--muted);
+        font-size: 11px;
+        margin-bottom: 4px;
+      }
+
+      .meta strong {
+        font-size: 14px;
+      }
+
+      .review {
+        margin: 14px 0 0;
+        border-radius: 14px;
+        padding: 12px 14px;
+        background: #fffbeb;
+        border: 1px solid #fde68a;
+        color: #92400e;
+        font-size: 13px;
+      }
+
+      .review.auto {
+        background: #ecfdf5;
+        border-color: #a7f3d0;
+        color: #047857;
+      }
+
+      .alternatives {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 14px;
+      }
+
+      .alt {
+        border-radius: 999px;
+        padding: 6px 10px;
+        background: #eff6ff;
+        color: #1e40af;
+        font-size: 11px;
+        font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+      }
+
+      footer {
+        margin-top: 22px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      footer a {
+        color: var(--blue);
+        text-decoration: none;
+      }
+
+      footer a:hover {
+        text-decoration: underline;
+      }
+
+      @media (max-width: 560px) {
+        .shell {
+          padding-top: 32px;
+        }
+
+        .card {
+          padding: 20px;
+        }
+
+        .row {
+          align-items: stretch;
+          flex-direction: column;
+        }
+
+        .submit {
+          width: 100%;
+        }
+
+        .meta {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <div class="logo" aria-hidden="true">♪</div>
+        <p class="eyebrow">Music Support Triage</p>
+        <h1>Describe your issue. We'll route it to the right team.</h1>
+        <p class="lede">
+          Type a support message below. The model predicts the topic and recommends a queue.
+          If it is not confident, the request goes to a human reviewer.
+        </p>
+      </section>
+
+      <section class="card">
+        <form id="triage-form">
+          <label for="issue">Your message</label>
+          <textarea
+            id="issue"
+            maxlength="5000"
+            placeholder="Example: I was charged twice for my subscription this month and I need a refund."
+            required
+          ></textarea>
+          <div class="row">
+            <span class="hint" id="hint">At least 10 characters.</span>
+            <button class="submit" id="submit" type="submit">Find my queue →</button>
+          </div>
+          <div class="examples">
+            <span>Try:</span>
+            <button class="example" type="button" data-text="I was charged twice for my subscription this month.">Billing</button>
+            <button class="example" type="button" data-text="I cannot log in to my account after changing my password.">Account</button>
+            <button class="example" type="button" data-text="The app crashes every time I play a song.">App</button>
+          </div>
+        </form>
+
+        <div class="error" id="error" role="alert" hidden></div>
+
+        <section class="result" id="result" aria-live="polite" hidden>
+          <p class="result-label">Recommended queue</p>
+          <h2 class="queue" id="queue">—</h2>
+          <p class="raw" id="queue-raw"></p>
+          <div class="meta">
+            <div>
+              <span>Topic</span>
+              <strong id="topic">—</strong>
+            </div>
+            <div>
+              <span>Confidence</span>
+              <strong id="confidence">—</strong>
+            </div>
+            <div>
+              <span>Status</span>
+              <strong id="status">—</strong>
+            </div>
+          </div>
+          <p class="review" id="review" hidden></p>
+          <div class="alternatives" id="alternatives"></div>
+        </section>
+      </section>
+
+      <footer>
+        Local demo for the FastAPI service ·
+        <a href="/docs">API documentation</a>
+      </footer>
+    </main>
+
+    <script>
+      const QUEUES = {
+        billing: "Billing & Payments",
+        subscriptions: "Subscriptions",
+        account_support: "Account & Access",
+        technical_support: "Technical Support",
+        recommendations: "Recommendations",
+        content_support: "Content & Catalog",
+        general_support: "General Support",
+        manual_review: "Manual Review"
+      };
+
+      const form = document.getElementById("triage-form");
+      const issue = document.getElementById("issue");
+      const submit = document.getElementById("submit");
+      const hint = document.getElementById("hint");
+      const errorBox = document.getElementById("error");
+      const result = document.getElementById("result");
+      const queueEl = document.getElementById("queue");
+      const queueRawEl = document.getElementById("queue-raw");
+      const topicEl = document.getElementById("topic");
+      const confidenceEl = document.getElementById("confidence");
+      const statusEl = document.getElementById("status");
+      const reviewEl = document.getElementById("review");
+      const alternativesEl = document.getElementById("alternatives");
+
+      function humanize(value) {
+        return String(value || "")
+          .replaceAll("_", " ")
+          .replace(/\b\w/g, (char) => char.toUpperCase());
+      }
+
+      function resetResult() {
+        errorBox.hidden = true;
+        result.hidden = true;
+        alternativesEl.replaceChildren();
+        reviewEl.hidden = true;
+        reviewEl.classList.remove("auto");
+      }
+
+      function showError(message) {
+        errorBox.textContent = message;
+        errorBox.hidden = false;
+      }
+
+      function render(data) {
+        const queue = data.queue || "manual_review";
+        queueEl.textContent = QUEUES[queue] || humanize(queue);
+        queueRawEl.textContent = `queue: ${queue} · model: ${data.model_version || "unknown"}`;
+        topicEl.textContent = humanize(data.topic);
+        confidenceEl.textContent = `${Math.round((data.confidence || 0) * 100)}%`;
+        statusEl.textContent = data.needs_human_review ? "Human review" : "Auto-routed";
+
+        reviewEl.textContent = data.needs_human_review
+          ? "A support agent will review this request before it is routed."
+          : "The request was routed automatically to the predicted queue.";
+        reviewEl.classList.toggle("auto", !data.needs_human_review);
+        reviewEl.hidden = false;
+
+        for (const item of data.top_k || []) {
+          if (item.label === data.topic) continue;
+          const chip = document.createElement("span");
+          chip.className = "alt";
+          chip.textContent = `${item.label} ${Math.round(item.confidence * 100)}%`;
+          alternativesEl.appendChild(chip);
+        }
+
+        result.hidden = false;
+        result.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+
+      async function classify(text) {
+        resetResult();
+        submit.disabled = true;
+        submit.textContent = "Routing…";
+        hint.textContent = "Calling the model…";
+
+        try {
+          const response = await fetch("/v1/classify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ text, channel: "web", locale: "en" })
+          });
+
+          let payload = null;
+          try {
+            payload = await response.json();
+          } catch {
+            payload = null;
+          }
+
+          if (!response.ok) {
+            const message =
+              payload?.error?.message ||
+              payload?.detail ||
+              `The service returned HTTP ${response.status}.`;
+            throw new Error(message);
+          }
+
+          render(payload);
+          hint.textContent = "Prediction is ready.";
+        } catch (error) {
+          showError(
+            error instanceof Error
+              ? `${error.message} Is the API running on this address?`
+              : "Could not reach the API."
+          );
+          hint.textContent = "Request failed.";
+        } finally {
+          submit.disabled = false;
+          submit.textContent = "Find my queue →";
+        }
+      }
+
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const text = issue.value.trim();
+        if (text.length < 10) {
+          resetResult();
+          showError("Please enter at least 10 characters so the model has enough context.");
+          issue.focus();
+          return;
+        }
+        classify(text);
+      });
+
+      for (const button of document.querySelectorAll(".example")) {
+        button.addEventListener("click", () => {
+          issue.value = button.dataset.text || "";
+          issue.focus();
+          resetResult();
+        });
+      }
+
+      issue.addEventListener("keydown", (event) => {
+        if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+          form.requestSubmit();
+        }
+      });
+    </script>
+  </body>
+</html>

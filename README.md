@@ -49,7 +49,7 @@
 │   ├── monitoring/           # drift-отчёт
 │   └── report/               # отчёт, презентация, BPMN
 ├── src/music_support_triage/ # исходный код сервиса
-│   ├── api/                  # FastAPI-роуты и схемы
+│   ├── api/                  # FastAPI-роуты, схемы и demo-страница
 │   ├── core/                 # конфигурация и логирование
 │   ├── data/                 # загрузка, валидация, preprocessing
 │   ├── models/               # baseline, transformer, inference
@@ -92,6 +92,16 @@ pytest -q
 uvicorn music_support_triage.api.app:app --reload
 python scripts/service/smoke.py
 ```
+
+## Demo page
+
+After starting the API, open **http://127.0.0.1:8000/** (or `/demo`).
+The page is in English: type a support message, press **Find my queue**, and it shows the
+recommended queue, topic, confidence, top alternatives and whether a human review is needed.
+
+The page calls `POST /v1/classify` from the same origin, so no separate frontend build,
+Node.js or external services are required. The same page is available in Docker after
+`docker compose up` at `http://127.0.0.1:8000/`.
 
 Демонстрация одного запроса:
 

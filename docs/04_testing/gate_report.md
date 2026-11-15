@@ -16,7 +16,7 @@
 ## Результат
 
 ```text
-pytest -q   — 37 passed
+pytest -q   — 38 passed
 ruff        — passed
 mypy        — passed
 GE          — 8/8

@@ -70,6 +70,16 @@ def test_healthcheck_and_model_info() -> None:
     assert info.json()["model_version"] == "fake-1"
 
 
+def test_demo_page_is_served() -> None:
+    api = client()
+    for path in ("/", "/demo"):
+        response = api.get(path)
+        assert response.status_code == 200
+        assert "text/html" in response.headers["content-type"]
+        assert "Find my queue" in response.text
+        assert "/v1/classify" in response.text
+
+
 def test_classify_contract() -> None:
     api = client()
     response = api.post(

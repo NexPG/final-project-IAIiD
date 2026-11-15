@@ -30,7 +30,7 @@
 | 14.11.2026 | Черновики pandas/GE-проверок | 8 expectations | `ge_report.json`, dirty-copy | пороги длины, набор классов, dirty-сценарий |
 | 14.11.2026 | Обвязка CV-поиска | HalvingRandomSearchCV, MLflow-логирование | `search_results.json`, повторный запуск | убрано отдельное validation, test открыт один раз |
 | 14.11.2026 | Шаблон FastAPI | роуты, Pydantic-схемы, error envelope | `pytest`, contract tests, `openapi.json` | dependency injection, формат `/metrics`, `X-Request-ID` |
-| 14.11.2026 | Черновики автотестов | unit/integration/model заготовки | 37 тестов, ручная проверка assertions | edge cases, mock-сервис, изоляция feedback |
+| 14.11.2026 | Черновики автотестов | unit/integration/model заготовки | 38 тестов, ручная проверка assertions | edge cases, mock-сервис, изоляция feedback |
 | 14.11.2026 | Поиск багов | прогон тестов и анализ падений | воспроизведение каждого падения | отрицание в тексте, редкие классы, ложный routing |
 | 14.11.2026 | Docker/Compose boilerplate | Dockerfile, healthcheck, compose | `build/up`, smoke 5/5, load test | non-root, read-only volumes, SQLite-volume |
 | 14.11.2026 | Шаблоны метрик и алертов | Prometheus counters/histograms, 7 rules | `/metrics`, alert firing, Grafana | имена метрик, пороги, панели дашборда |

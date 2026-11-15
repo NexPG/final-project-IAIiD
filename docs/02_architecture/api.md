@@ -24,6 +24,11 @@
 | GET | `/healthcheck` | Liveness/readiness | Must |
 | GET | `/model-info` | Версия модели, метрики, пороги | Must |
 | GET | `/metrics` | Prometheus | Must |
+| GET | `/` | Браузерная demo-страница (HTML) | Optional |
+| GET | `/demo` | Алиас demo-страницы | Optional |
+
+Demo-страница не входит в OpenAPI-схему: это тонкий UI поверх `POST /v1/classify`.
+Она собирается из одного HTML-файла и не требует отдельного frontend-билда.
 
 ## 3. Запрос
 

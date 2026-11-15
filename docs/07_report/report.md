@@ -52,7 +52,7 @@
 2. Очередь/CRM недоступна → retry и manual queue.
 3. Drift входных данных → мониторинг, drift-отчёт, переобучение.
 
-**API:** `/v1/classify`, `/v1/classify/batch`, `/v1/feedback`, `/healthcheck`, `/model-info`, `/metrics`. Ответ содержит `request_id`, тему, очередь, confidence, margin, top-3, `needs_human_review`, версию модели. Ошибки — единый конверт с `request_id`; OpenAPI — [`openapi.json`](../02_architecture/openapi.json).
+**API:** `/v1/classify`, `/v1/classify/batch`, `/v1/feedback`, `/healthcheck`, `/model-info`, `/metrics`. Ответ содержит `request_id`, тему, очередь, confidence, margin, top-3, `needs_human_review`, версию модели. Ошибки — единый конверт с `request_id`; OpenAPI — [`openapi.json`](../02_architecture/openapi.json). Браузерная demo-страница `/` (алиас `/demo`) — тонкий HTML-клиент к `/v1/classify`; запускается вместе с API.
 
 ## 4. Технологический стек
 
@@ -139,7 +139,7 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 
 **Проверки:** обязательные поля, классы/split/source, длины 10–5000, уникальность id, cross-split дубли, утечка `conversation_id`, PII. Отчёт — `data/processed/validation_report.json`. Great Expectations — **8/8** expectations на 13 427 строках.
 
-**Тесты:** **37 passed**. Покрыты очистка/PII, маппинг, стратифицированный split, дедупликация, data validation, routing, API, OpenAPI, error envelope, batch, feedback idempotency, `/metrics`, model quality (overall, per-class, robustness, edge, behavior, adversarial, subgroup). Локальный quality gate: `ruff`, `mypy`, `pytest`, smoke. **Dirty copy** намеренно ломает данные и должна быть отклонена: GE поймал 4 нарушения из 8. **Load test:** 20 RPS, 30 s, 600 запросов, 0 ошибок, p95 9.74 ms.
+**Тесты:** **38 passed**. Покрыты очистка/PII, маппинг, стратифицированный split, дедупликация, data validation, routing, API, OpenAPI, error envelope, batch, feedback idempotency, `/metrics`, model quality (overall, per-class, robustness, edge, behavior, adversarial, subgroup). Локальный quality gate: `ruff`, `mypy`, `pytest`, smoke. **Dirty copy** намеренно ломает данные и должна быть отклонена: GE поймал 4 нарушения из 8. **Load test:** 20 RPS, 30 s, 600 запросов, 0 ошибок, p95 9.74 ms.
 
 **Найденная проблема:** отрицание «I don't want to cancel my subscription, I need a receipt» → `subscription`, confidence 0.647, manual_review. Это и баг качества, и корректное безопасное поведение routing. Дополнительно: `content`/`recommendations` confusion.
 
@@ -180,7 +180,7 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 
 ## 12. Заключение
 
-Собран сквозной учебный кейс: от бизнес-задачи и архитектуры до экспериментов, тестов, Docker-деплоя и мониторинга. Все шесть gate-этапов закрыты и подтверждены артефактами. Работающий прототип классифицирует обращения в 7 тем, маршрутизирует их в очередь или `manual_review`, имеет OpenAPI-контракт, 37 тестов, Docker-стек, Grafana и 7 алертов.
+Собран сквозной учебный кейс: от бизнес-задачи и архитектуры до экспериментов, тестов, Docker-деплоя и мониторинга. Все шесть gate-этапов закрыты и подтверждены артефактами. Работающий прототип классифицирует обращения в 7 тем, маршрутизирует их в очередь или `manual_review`, имеет OpenAPI-контракт, 38 тестов, Docker-стек, Grafana и 7 алертов.
 
 Ключевой результат: CV macro-F1 **0.855 ± 0.048**, test macro-F1 **0.855** с 95% CI **[0.791; 0.908]**, selective precision **0.989** при coverage **0.881**. На реальном TWCS качество ниже (0.739) — это ограничение weak-меток и смешанного test, которое честно указано.
 

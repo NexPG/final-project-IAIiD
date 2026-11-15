@@ -14,6 +14,7 @@
 | Материалы экспериментов | `docs/03_experiments/`, `artifacts/search_results.json`, MLflow | выполнено |
 | Описание архитектуры | `docs/02_architecture/architecture.md`, `architecture_business.png`, `architecture.png` | выполнено |
 | API/контракт | `docs/02_architecture/api.md`, `openapi.json` | выполнено |
+| Браузерная demo-страница | `/`, `/demo` — HTML поверх `/v1/classify` | выполнено |
 | Деплой и мониторинг | `docs/05_deployment/`, `docs/06_monitoring/` | выполнено |
 | Отчёт 5–7 страниц | `docs/07_report/report.pdf`, `.docx`, `.md` — 5 страниц PDF | выполнено |
 | Презентация 10–15 слайдов | `docs/07_report/presentation.pdf`, `.pptx` — 15 слайдов | выполнено |
@@ -43,7 +44,7 @@
 | 1. Задача | TZ, data, README | закрыт | выполнено |
 | 2. Архитектура | architecture, API, OpenAPI | закрыт | выполнено |
 | 3. Эксперименты | CV, HalvingRandomSearchCV, test, CI, MLflow | закрыт | выполнено |
-| 4. Тестирование | 37 тестов, GE, dirty copy, load | закрыт | выполнено |
+| 4. Тестирование | 38 тестов, GE, dirty copy, load | закрыт | выполнено |
 | 5. Деплой | Docker, Compose, smoke, rollback | закрыт | выполнено |
 | 6. Мониторинг | Prometheus, Grafana, 7 алертов, drift | закрыт | выполнено |
 
@@ -86,6 +87,7 @@
 14. **Скрипты и тесты лежали вперемешку.** Разложены по `scripts/{data,train,service,monitoring,report}` и `tests/{unit,data,model,integration}`; пути и ссылки обновлены.
 15. **Презентация была текстовой.** Переработана в визуальный deck: KPI-карточки, схемы, графики, короткие тезисы; добавлена речь по слайдам и заметки докладчика.
 16. **Описание ИИ-ассистента было смещено.** Переписано: агент — рутина, команда — решения, проверка и выводы.
+17. **Не было браузерной демонстрации.** Добавлена demo-страница `/` и `/demo` на английском; один HTML-файл, без отдельного frontend-билда.
 
 ## 6. Осознанные отклонения
 

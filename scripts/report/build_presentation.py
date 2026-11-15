@@ -547,7 +547,7 @@ def slide_errors(prs: Presentation) -> None:
 
 def slide_testing(prs: Presentation) -> None:
     slide = prs.slides.add_slide(prs.slide_layouts[6])
-    add_header(slide, "10 · Тестирование", "37 тестов закрывают весь путь",
+    add_header(slide, "10 · Тестирование", "38 тестов закрывают весь путь",
                "Unit, data, model и integration — плюс data validation и load test.")
     columns = [
         ("01", "Unit", "текст, PII, маппинг", "split, dedup, routing", BLUE),
@@ -564,7 +564,7 @@ def slide_testing(prs: Presentation) -> None:
 
     add_rect(slide, 0.65, 4.45, 12.1, 1.3, fill=PAPER, line=LINE, radius=0.06)
     metrics = [
-        ("37", "тестов"),
+        ("38", "тестов"),
         ("8/8", "GE clean"),
         ("4/8", "dirty поймано"),
         ("5/5", "smoke"),
@@ -824,7 +824,7 @@ SPEECH: list[tuple[str, str]] = [
     ),
     (
         "Тестирование",
-        "Тестирование: 37 тестов — unit, data, model и integration. Great Expectations 8 из 8; "
+        "Тестирование: 38 тестов — unit, data, model и integration. Great Expectations 8 из 8; "
         "на испорченной копии ловит 4 нарушения. Smoke 5 из 5, load test 20 запросов в секунду без "
         "ошибок, p95 52.72 миллисекунды в Docker. CI/CD не используем — quality gate локальный.",
     ),

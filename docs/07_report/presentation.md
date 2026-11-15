@@ -17,7 +17,7 @@
 8. Эксперименты: 4 семейства, 120 кандидатов, CV-график.
 9. Результат: macro-F1 0.855, KPI-карточки, bootstrap CI.
 10. Error analysis: per-class recall, найденный баг с отрицанием.
-11. Тестирование: 37 тестов, GE 8/8, dirty 4/8, smoke, load test.
+11. Тестирование: 38 тестов, GE 8/8, dirty 4/8, smoke, load test.
 12. Деплой: Docker → image → Compose, KPI, rollback.
 13. Мониторинг: 3 уровня, 7 алертов, drift.
 14. ИИ-ассистенты: агент — рутина, команда — решения.
@@ -29,5 +29,5 @@
 - Test macro-F1: **0.855**, 95% CI **[0.791; 0.908]**.
 - TWCS отдельно: **0.739**.
 - Coverage 0.881, selective precision 0.989.
-- 37 тестов; Docker load test p95 52.72 ms.
+- 38 тестов; Docker load test p95 52.72 ms.
 - 7 алертов; drift PSI 0.003.

@@ -12,7 +12,7 @@ import structlog
 from fastapi import Depends, FastAPI, HTTPException, Request, Response
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from prometheus_client import CONTENT_TYPE_LATEST, Counter, Gauge, Histogram, generate_latest
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
@@ -57,6 +57,7 @@ PREDICTION_CONFIDENCE = Histogram(
 )
 
 DEFAULT_CONFIG = Path("configs/service.yaml")
+DEMO_PAGE = Path(__file__).resolve().parent / "static" / "index.html"
 
 
 def get_service(request: Request) -> TriageService:
@@ -177,6 +178,21 @@ def create_app(
     @app.get("/model-info", response_model=ModelInfoResponse)
     def model_info(svc: Annotated[TriageService, Depends(get_service)]) -> dict[str, Any]:
         return svc.model_info()
+
+    def _demo_page() -> FileResponse:
+        if not DEMO_PAGE.exists():
+            raise HTTPException(status_code=500, detail="Demo page not found")
+        return FileResponse(DEMO_PAGE, media_type="text/html")
+
+    @app.get("/", include_in_schema=False)
+    def demo() -> FileResponse:
+        """Serve the browser demo page."""
+        return _demo_page()
+
+    @app.get("/demo", include_in_schema=False)
+    def demo_alias() -> FileResponse:
+        """Alias for the browser demo page."""
+        return _demo_page()
 
     def _classify(request_id: str, payload: ClassifyRequest, svc: TriageService) -> ClassifyResponse:
         try:

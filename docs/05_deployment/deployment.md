@@ -55,6 +55,9 @@ $env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 python scripts/service/smoke.py --base-url http://127.0.0.1:8000
 ```
 
+Demo page: `http://127.0.0.1:8000/` (or `/demo`). The page sends `POST /v1/classify` and
+shows the predicted queue, confidence and whether human review is required.
+
 Проверяются `/healthcheck`, `/model-info`, `/v1/classify`, `/v1/classify/batch`, `/metrics`. Локально все проверки пройдены.
 
 Ручной пример:

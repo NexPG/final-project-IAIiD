@@ -69,7 +69,7 @@
 
 *~25–30 секунд*
 
-Тестирование: 37 тестов — unit, data, model и integration. Great Expectations 8 из 8; на испорченной копии ловит 4 нарушения. Smoke 5 из 5, load test 20 запросов в секунду без ошибок, p95 52.72 миллисекунды в Docker. CI/CD не используем — quality gate локальный.
+Тестирование: 38 тестов — unit, data, model и integration. Great Expectations 8 из 8; на испорченной копии ловит 4 нарушения. Smoke 5 из 5, load test 20 запросов в секунду без ошибок, p95 52.72 миллисекунды в Docker. CI/CD не используем — quality gate локальный.
 
 ## Слайд 12. Деплой
 
