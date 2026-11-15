@@ -13,8 +13,8 @@ CI/CD на GitHub не используется. Запуск и проверк�
 python -m venv .venv
 # Windows: .venv\Scripts\activate
 pip install -e ".[dev,ml]"
-python scripts/build_dataset.py --config configs/data.yaml
-python scripts/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
+python scripts/data/build_dataset.py --config configs/data.yaml
+python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
 uvicorn music_support_triage.api.app:app --reload
 ```
 
@@ -52,7 +52,7 @@ $env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 ## 3. Smoke
 
 ```bash
-python scripts/smoke.py --base-url http://127.0.0.1:8000
+python scripts/service/smoke.py --base-url http://127.0.0.1:8000
 ```
 
 Проверяются `/healthcheck`, `/model-info`, `/v1/classify`, `/v1/classify/batch`, `/metrics`. Локально все проверки пройдены.

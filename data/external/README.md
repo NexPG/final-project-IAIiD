@@ -14,7 +14,7 @@ data/external/
 
 Rules:
 
-- Download with `scripts/download_data.py` and verify SHA-256.
+- Download with `scripts/data/download_data.py` and verify SHA-256.
 - Do not commit raw tweets or any PII.
 - Mask handles, emails, phones and URLs before annotation.
 - Record source URL, license and checksum in `data/manifest.json` and the data card.

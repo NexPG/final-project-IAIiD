@@ -8,6 +8,17 @@
 
 Классификация обращений поддержки музыкального стриминга в 7 тем и маршрутизация в очередь. Учебный прототип, не production-система.
 
+### 1.1. Границы применения
+
+| Входит | Не входит |
+|---|---|
+| англоязычный текст обращения | генерация ответа пользователю |
+| одна тема на обращение | multi-label и иерархическая таксономия |
+| маршрутизация в очередь или `manual_review` | автоматическое закрытие тикета |
+| батч до 100 обращений | потоковая обработка Kafka |
+
+Модель — помощник первой линии: финальное решение и спорные случаи остаются за оператором.
+
 ## 2. Данные
 
 | Параметр | Значение |
@@ -69,10 +80,32 @@ Test не использовался для выбора модели или г�
 - `content` и `app` редки.
 - Модель не заменяет оператора; низкая уверенность → manual.
 
-## 7. Воспроизводимость
+## 7. Мониторинг
+
+- Технические метрики: RPS, 5xx, p95, `model_loaded`.
+- Метрики модели: confidence median, распределение тем, manual review rate.
+- Drift: PSI > 0.2 или KS p-value < 0.05 — сигнал на разбор.
+- Алерты: 7 правил в `monitoring/alerts.yml`; проверено firing для `TriageApiDown`.
+
+## 8. Переобучение
+
+Триггеры: PSI > 0.2, падение delayed macro-F1 более чем на 5 п.п., manual review > 30%, median confidence < 0.60. Процесс — на схеме [`retrain_bpmn.png`](../06_monitoring/retrain_bpmn.png): мониторинг → разбор → новая разметка → переобучение → валидация → shadow/canary → promotion или rollback.
+
+## 9. BPMN жизненного цикла
+
+![BPMN жизненного цикла модели](model_bpmn.png)
+
+## 10. Воспроизводимость
 
 ```bash
-python scripts/build_dataset.py --config configs/data.yaml
-python scripts/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
-python scripts/tune_threshold.py
+python scripts/data/build_dataset.py --config configs/data.yaml
+python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
+python scripts/train/tune_threshold.py
 ```
+
+## 11. Владение и лицензия
+
+- Владелец модели: Владимир Егоров (этап 3).
+- Приёмка: вся команда; эксплуатация — этапы 5–6.
+- Код проекта — MIT, автор NexPG.
+- Датасеты TWCS и Bitext не входят в лицензию проекта.

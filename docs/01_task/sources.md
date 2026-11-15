@@ -18,15 +18,16 @@
 | Связь бизнес-задачи, архитектуры, экспериментов, тестирования, деплоя, мониторинга | TZ §1–§14 |
 | Репозиторий, отчёт, презентация | TZ §16–§18 |
 | README по шаблону | `README.md` |
-| Код или Colab-ноутбук | `src/`, `notebooks/` |
+| Код или Colab-ноутбук | `src/`, `scripts/` |
 | Тесты или тест-план | `tests/`, `docs/04_testing/testing.md` |
 | Материалы экспериментов | `docs/03_experiments/experiments.md`, MLflow |
 | Описание архитектуры | `docs/02_architecture/architecture.md` |
 | API/контракт | `docs/02_architecture/api.md`, OpenAPI |
 | Деплой и мониторинг | `docs/05_deployment/deployment.md`, `docs/06_monitoring/monitoring.md` |
 | Отчёт 5–7 страниц | `docs/07_report/report.md` |
-| Презентация 10–15 слайдов | отдельный файл |
+| Презентация 10–15 слайдов | `docs/07_report/presentation.pdf`, `presentation.pptx` |
 | Роли участников | `README.md`, TZ §2 |
+| Лицензия | `LICENSE` (MIT, NexPG) |
 | Честное использование ИИ-ассистентов | `docs/08_ai/ai_usage.md`, TZ §13 |
 | Ограничения, drift, этика | TZ §1.4, §12, §13 |
 | Доступность материалов по ссылке | TZ §16 |

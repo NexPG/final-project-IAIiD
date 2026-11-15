@@ -8,7 +8,8 @@ version = "0.1.0"
 description = "Classification of music streaming support tickets into routing queues"
 readme = "README.md"
 requires-python = ">=3.12"
-authors = [{ name = "final-project-IAIiD team" }]
+authors = [{ name = "NexPG" }]
+license = { text = "MIT" }
 keywords = ["nlp", "text-classification", "support", "fastapi", "mlops"]
 
 dependencies = [

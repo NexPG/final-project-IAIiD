@@ -72,7 +72,7 @@ Middleware пишет `http_request` на каждый запрос.
 - KS-тест, PSI, Evidently.
 - Reference: OOF train / последняя стабильная неделя.
 - PSI > 0.2 — сигнал; KS p-value < 0.05 — сигнал.
-- Отчёт: `python scripts/drift_report.py` → `artifacts/drift_report.json`.
+- Отчёт: `python scripts/monitoring/drift_report.py` → `artifacts/drift_report.json`.
 
 **Первый offline-отчёт (train vs test):** PSI длины 0.003, KS 0.020, p = 0.346; `other_share` 44.1% vs 44.5%. Стратифицированный 80/20 split сохранил распределения, поэтому drift на train/test не обнаружен. Production drift требует реальных логов.
 
@@ -85,6 +85,10 @@ Middleware пишет `http_request` на каждый запрос.
 | Непрерывное | Быстрый дрейф, уровень 2 |
 
 **Решение:** по событию + раз в месяц; только подтверждённый feedback; не обучаться на своих предсказаниях.
+
+![BPMN переобучения по дрейфу](retrain_bpmn.png)
+
+**Триггеры:** PSI > 0.2, KS p < 0.05, падение delayed macro-F1 более чем на 5 п.п., manual review > 30%, median confidence < 0.60. После переобучения — валидация, shadow/canary 5–10% и promotion только при метриках не хуже текущей; иначе rollback.
 
 ## 10. Демонстрация алерта
 

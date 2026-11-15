@@ -1,6 +1,6 @@
 """CLI: show the selected threshold/margin and its OOF/test metrics.
 
-Threshold tuning itself is part of ``scripts/search_models.py``: it uses
+Threshold tuning itself is part of ``scripts/train/search_models.py``: it uses
 out-of-fold probabilities on train, so test is never touched during tuning.
 """
 
@@ -20,7 +20,7 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     if not args.results.exists():
-        raise SystemExit(f"Run scripts/search_models.py first: {args.results}")
+        raise SystemExit(f"Run scripts/train/search_models.py first: {args.results}")
     payload = json.loads(args.results.read_text(encoding="utf-8"))
     summary = {
         "model_version": payload.get("model_version"),

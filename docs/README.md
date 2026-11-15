@@ -25,7 +25,9 @@
 | Документ | Назначение |
 |---|---|
 | [`architecture.md`](02_architecture/architecture.md) | Архитектура, компоненты, ADR |
-| [`architecture.png`](02_architecture/architecture.png) | Схема архитектуры |
+| [`architecture_business.png`](02_architecture/architecture_business.png) | Чистовая бизнес-схема |
+| [`architecture.png`](02_architecture/architecture.png) | Техническая схема |
+| [`architecture_overview.png`](02_architecture/architecture_overview.png) | Исходный командный набросок |
 | [`api.md`](02_architecture/api.md) | API-контракт, ошибки, SLA |
 | [`openapi.json`](02_architecture/openapi.json) | OpenAPI-схема |
 | [`gate_report.md`](02_architecture/gate_report.md) | Детальный отчёт Gate 2 |
@@ -36,6 +38,7 @@
 |---|---|
 | [`experiments.md`](03_experiments/experiments.md) | CV, HalvingRandomSearchCV, test, CI |
 | [`model_card.md`](03_experiments/model_card.md) | Model card и ограничения |
+| [`model_bpmn.png`](03_experiments/model_bpmn.png) | BPMN жизненного цикла модели |
 | [`gate_report.md`](03_experiments/gate_report.md) | Детальный отчёт Gate 3: модели, поиск, выбор |
 
 ## 04. Тестирование
@@ -57,6 +60,7 @@
 | Документ | Назначение |
 |---|---|
 | [`monitoring.md`](06_monitoring/monitoring.md) | Метрики, алерты, drift, runbook |
+| [`retrain_bpmn.png`](06_monitoring/retrain_bpmn.png) | BPMN переобучения по дрейфу |
 | [`gate_report.md`](06_monitoring/gate_report.md) | Детальный отчёт Gate 6 |
 
 ## 07. Отчёт и защита
@@ -64,7 +68,10 @@
 | Документ | Назначение |
 |---|---|
 | [`report.md`](07_report/report.md) | Итоговый отчёт 5–7 страниц |
+| [`report.pdf`](07_report/report.pdf) · [`report.docx`](07_report/report.docx) | Готовый отчёт |
 | [`presentation.md`](07_report/presentation.md) | План презентации 10–15 слайдов |
+| [`presentation.pdf`](07_report/presentation.pdf) · [`presentation.pptx`](07_report/presentation.pptx) | Готовая презентация |
+| [`speech.md`](07_report/speech.md) | Речь на 5 минут по слайдам |
 
 ## 08. ИИ-ассистенты
 

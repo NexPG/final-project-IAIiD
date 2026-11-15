@@ -96,7 +96,7 @@ load test    — 20 RPS, 30 s, 600 requests, 0 errors, p95 9.74 ms
 
 ## 6. Load test
 
-Проведён `scripts/load_test.py` против локального API:
+Проведён `scripts/service/load_test.py` против локального API:
 
 | Параметр | Значение |
 |---|---|

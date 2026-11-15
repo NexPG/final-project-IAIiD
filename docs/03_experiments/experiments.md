@@ -116,7 +116,7 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 
 ## 9. Стабильность split
 
-`python scripts/drift_report.py`:
+`python scripts/monitoring/drift_report.py`:
 
 | Показатель | Train | Test |
 |---|---|---|
@@ -136,9 +136,9 @@ PSI длины = **0.003**, KS = **0.020**, p = 0.346 — распределен
 ## 11. Воспроизводимость
 
 ```bash
-python scripts/build_dataset.py --config configs/data.yaml
-python scripts/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
-python scripts/tune_threshold.py
+python scripts/data/build_dataset.py --config configs/data.yaml
+python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
+python scripts/train/tune_threshold.py
 ```
 
 ## 12. Ограничения

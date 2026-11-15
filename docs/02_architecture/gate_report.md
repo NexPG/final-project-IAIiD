@@ -16,7 +16,8 @@
 - ADR-01…ADR-11.
 - OpenAPI выгружен.
 - Схемы:
-  - `architecture_overview.png` — business overview команды;
+  - `architecture_business.png` — чистовая бизнес-схема;
+  - `architecture_overview.png` — исходный набросок команды;
   - `architecture.png` — техническая D2.
 
 ## Артефакты
@@ -24,6 +25,7 @@
 - [`architecture.md`](architecture.md)
 - [`api.md`](api.md)
 - [`openapi.json`](openapi.json)
+- [`architecture_business.png`](architecture_business.png)
 - [`architecture.png`](architecture.png)
 - [`architecture_overview.png`](architecture_overview.png)
 

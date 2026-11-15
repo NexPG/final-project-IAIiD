@@ -22,7 +22,7 @@ docker/
 
 ```bash
 docker compose -f docker/docker-compose.yml up -d --wait
-python scripts/smoke.py --base-url http://127.0.0.1:8000
+python scripts/service/smoke.py --base-url http://127.0.0.1:8000
 docker compose -f docker/docker-compose.yml down
 ```
 

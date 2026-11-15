@@ -76,10 +76,11 @@ PSI = 0.003, KS = 0.020, p = 0.346. Drift на train/test не обнаруже�
 ## 7. Артефакты
 
 - [`monitoring.md`](monitoring.md)
+- [`retrain_bpmn.png`](retrain_bpmn.png)
 - `monitoring/prometheus.yml`
 - `monitoring/alerts.yml`
 - `monitoring/grafana/`
-- `scripts/drift_report.py`
+- `scripts/monitoring/drift_report.py`
 
 ## Gate 6
 

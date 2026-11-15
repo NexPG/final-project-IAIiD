@@ -115,7 +115,7 @@
 - runbook и стратегия переобучения.
 
 **Gate 6:** 3 уровня метрик, ≥1 алерт, drift-отчёт, runbook.  
-**Артефакты:** [`monitoring.md`](../06_monitoring/monitoring.md), [`gate_report.md`](../06_monitoring/gate_report.md), `monitoring/`, `scripts/drift_report.py`.
+**Артефакты:** [`monitoring.md`](../06_monitoring/monitoring.md), [`gate_report.md`](../06_monitoring/gate_report.md), `monitoring/`, `scripts/monitoring/drift_report.py`.
 
 ## Что нельзя делать раньше
 

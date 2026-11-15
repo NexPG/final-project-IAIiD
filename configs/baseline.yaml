@@ -15,7 +15,7 @@ model:
   word_max_features: 50000
   char_max_features: 30000
   c_value: 32.0
-  # Selected by HalvingRandomSearchCV in scripts/search_models.py.
+  # Selected by HalvingRandomSearchCV in scripts/train/search_models.py.
   use_char: false
   word_ngram: [1, 2]
   word_min_df: 2

@@ -36,9 +36,9 @@
 
 ### 4.1. Общая схема (business overview)
 
-![Общая схема Music Support Triage](architecture_overview.png)
+![Общая схема Music Support Triage](architecture_business.png)
 
-Эта схема из второго варианта команды показывает путь пользователя: приложение → API Gateway → сервис классификации (preprocessing → модель → routing) → 7 классов. Она хороша для презентации и объяснения бизнес-логики.
+Чистовая бизнес-схема показывает путь пользователя: приложение → API Gateway → сервис классификации (preprocessing → модель → routing) → 7 очередей. Исходный командный набросок сохранён в [`architecture_overview.png`](architecture_overview.png).
 
 ### 4.2. Техническая схема
 

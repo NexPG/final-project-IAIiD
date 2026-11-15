@@ -14,7 +14,6 @@ htmlcov
 .vscode
 data
 docs
-notebooks
 tests
 *.md
 !README.md

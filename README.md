@@ -8,6 +8,8 @@
 
 - [Отчёт (PDF)](docs/07_report/report.pdf) · [DOCX](docs/07_report/report.docx) · [Markdown](docs/07_report/report.md)
 - [Презентация (PDF)](docs/07_report/presentation.pdf) · [PPTX](docs/07_report/presentation.pptx)
+- [Речь на 5 минут](docs/07_report/speech.md) · [Model card](docs/03_experiments/model_card.md)
+- [BPMN жизненного цикла](docs/03_experiments/model_bpmn.png) · [BPMN переобучения](docs/06_monitoring/retrain_bpmn.png)
 - [Роли команды](#команда-и-роли) · [Журнал ИИ-ассистентов](docs/08_ai/ai_usage.md)
 
 ## Задача
@@ -38,10 +40,14 @@
 ├── configs/                  # конфигурации обучения и сервиса
 ├── data/                     # локальные данные: raw/interim/processed/feedback
 ├── docker/                   # Dockerfile и docker-compose (этап 5)
-├── docs/                     # документация по этапам 01–08
+├── docs/                     # документация по этапам 00–08
 ├── monitoring/               # Prometheus/Grafana (этап 6)
-├── notebooks/                # опциональные ноутбуки; основной код в src/scripts
-├── scripts/                  # train/evaluate/validate
+├── scripts/
+│   ├── data/                 # загрузка, сборка, валидация
+│   ├── train/                # поиск, обучение, порог, оценка
+│   ├── service/              # smoke, load test, OpenAPI
+│   ├── monitoring/           # drift-отчёт
+│   └── report/               # отчёт, презентация, BPMN
 ├── src/music_support_triage/ # исходный код сервиса
 │   ├── api/                  # FastAPI-роуты и схемы
 │   ├── core/                 # конфигурация и логирование
@@ -49,9 +55,14 @@
 │   ├── models/               # baseline, transformer, inference
 │   ├── monitoring/           # метрики и drift
 │   └── services/             # классификация и routing
-├── tests/                    # unit/integration/contract tests
+├── tests/
+│   ├── unit/                 # текст, PII, маппинг, routing
+│   ├── data/                 # сборка, split, validation
+│   ├── model/                # качество и robustness
+│   └── integration/          # API, contract, feedback
 ├── .env.example
 ├── .gitignore
+├── LICENSE
 ├── pyproject.toml
 └── README.md
 ```
@@ -68,10 +79,10 @@ python -m venv .venv
 # Linux/macOS: source .venv/bin/activate
 pip install -e ".[dev,ml]"
 
-python scripts/download_data.py --config configs/data.yaml
-python scripts/build_dataset.py --config configs/data.yaml
-python scripts/validate_data_ge.py
-python scripts/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
+python scripts/data/download_data.py --config configs/data.yaml
+python scripts/data/build_dataset.py --config configs/data.yaml
+python scripts/data/validate_data_ge.py
+python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
 pytest -q
 ```
 
@@ -79,7 +90,7 @@ pytest -q
 
 ```bash
 uvicorn music_support_triage.api.app:app --reload
-python scripts/smoke.py
+python scripts/service/smoke.py
 ```
 
 Демонстрация одного запроса:
@@ -123,13 +134,13 @@ Grafana: `http://localhost:3000` (`admin` / `admin`), dashboard `Music Support T
 Документация разложена по этапам:
 
 - [`docs/00_audit/`](docs/00_audit/) — финальный аудит задания, плана и вебинаров.
-- [`docs/01_task/`](docs/01_task/) — TZ, источники, stages, data, data card, аудит.
+- [`docs/01_task/`](docs/01_task/) — TZ, источники, stages, data, data card.
 - [`docs/02_architecture/`](docs/02_architecture/) — архитектура, схема, API, OpenAPI.
-- [`docs/03_experiments/`](docs/03_experiments/) — эксперименты, model card.
+- [`docs/03_experiments/`](docs/03_experiments/) — эксперименты, model card, BPMN жизненного цикла.
 - [`docs/04_testing/`](docs/04_testing/) — тест-план и найденные проблемы.
 - [`docs/05_deployment/`](docs/05_deployment/) — Docker, запуск, runbook.
-- [`docs/06_monitoring/`](docs/06_monitoring/) — метрики, алерты, drift.
-- [`docs/07_report/`](docs/07_report/) — отчёт и презентация.
+- [`docs/06_monitoring/`](docs/06_monitoring/) — метрики, алерты, drift, BPMN переобучения.
+- [`docs/07_report/`](docs/07_report/) — отчёт, презентация и речь.
 - [`docs/08_ai/`](docs/08_ai/) — журнал ИИ-ассистентов.
 
 ## Команда и роли
@@ -142,7 +153,7 @@ Grafana: `http://localhost:3000` (`admin` / `admin`), dashboard `Music Support T
 | Евгений Кононов | 5. Деплой | DevOps / backend |
 | Александр Аксенов | 6. Мониторинг | MLOps / документация |
 
-Этап 1 «Задача» — вся команда. Распределение утверждено. Команда из 5 человек допускается по согласованию с преподавателем.
+Этап 1 «Задача» — вся команда. Распределение утверждено, состав команды из 5 человек согласован с преподавателем.
 
 ## Данные
 
@@ -166,4 +177,9 @@ Train 10 713, test 2 714. Test-метки weak, поэтому overall 0.855 с�
 
 ## Использование ИИ-ассистентов
 
-ИИ-ассистенты применяются только в разработке. Команда проверяет сгенерированный код, данные и текст. Фактический журнал — в [`docs/08_ai/ai_usage.md`](docs/08_ai/ai_usage.md).
+ИИ-ассистент применялся к рутинным задачам: шаблонный код, склейка шагов pipeline в единый запуск, черновики автотестов, прогон проверок и поиск багов. Задачи, данные, таксономию, архитектуру, эксперименты, выводы и защиту делала команда. Каждый сгенерированный фрагмент проверялся запуском кода, тестами и сверкой с артефактами. Фактический журнал — в [`docs/08_ai/ai_usage.md`](docs/08_ai/ai_usage.md).
+
+## Лицензия
+
+Код проекта распространяется по лицензии [MIT](LICENSE), автор — **NexPG**.  
+Датасеты TWCS и Bitext не входят в лицензию проекта и используются локально в учебных целях.

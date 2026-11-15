@@ -1,6 +1,6 @@
 # Итоговый отчёт: Music Support Triage
 
-**Версия:** 1.0, 15.11.2026, после аудита проекта  
+**Версия:** 1.1, 15.11.2026, после аудита и реструктуризации  
 **Команда:** Максим Федулаев, Владимир Егоров, Айдар Мугизов, Евгений Кононов, Александр Аксенов  
 **Репозиторий:** https://github.com/NexPG/final-project-IAIiD  
 **Data card:** [`data_card.md`](../01_task/data_card.md) · **Model card:** [`model_card.md`](../03_experiments/model_card.md)
@@ -40,7 +40,7 @@
 
 ## 3. Архитектура
 
-Выбран **модульный монолит** на FastAPI с моделью в процессе API. Общая схема — [`architecture_overview.png`](../02_architecture/architecture_overview.png), техническая — [`architecture.png`](../02_architecture/architecture.png), Mermaid-версия — в [`architecture.md`](../02_architecture/architecture.md).
+Выбран **модульный монолит** на FastAPI с моделью в процессе API. Бизнес-схема — [`architecture_business.png`](../02_architecture/architecture_business.png), техническая — [`architecture.png`](../02_architecture/architecture.png), исходный набросок — [`architecture_overview.png`](../02_architecture/architecture_overview.png), Mermaid-версия — в [`architecture.md`](../02_architecture/architecture.md).
 
 ![Архитектура Music Support Triage](../02_architecture/architecture.png)
 
@@ -92,6 +92,8 @@
 - выбор по mean CV macro-F1; test не используется;
 - после выбора — refit на полном train и OOF-порог;
 - **одно** измерение на test + 95% bootstrap CI.
+
+Жизненный цикл модели и артефакты — [`model_card.md`](../03_experiments/model_card.md) и [`model_bpmn.png`](../03_experiments/model_bpmn.png).
 
 ### 6.2. Результаты CV
 
@@ -146,7 +148,7 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 - Multi-stage `docker/Dockerfile`, slim, non-root, healthcheck.
 - `docker/docker-compose.yml`: API + Prometheus + Grafana, `API_PORT`.
 - Модель и конфиги монтируются read-only; feedback — SQLite-volume.
-- Smoke `scripts/smoke.py`: healthcheck, model-info, classify, batch, metrics — **5/5** на uvicorn и в Docker.
+- Smoke `scripts/service/smoke.py`: healthcheck, model-info, classify, batch, metrics — **5/5** на uvicorn и в Docker.
 - Docker build/up проверены: api, Prometheus и Grafana healthy.
 - Rollback: предыдущий `model.joblib` + перезапуск.
 - CI/CD на GitHub не используется: локальный quality gate и ручной release.
@@ -159,11 +161,11 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 
 Метрики — `/metrics`; Prometheus scrape и 7 алертов: `TriageApiDown`, `TriageModelNotReady`, `TriageHigh5xxRate`, `TriageHighLatency`, `TriageManualReviewRateHigh`, `TriageOtherShareHigh`, `TriageConfidenceLow`. Grafana dashboard `Music Support Triage` показывает инфраструктуру, продукт и модель. Алерт проверен: после `docker compose stop api` `TriageApiDown` перешёл в **firing**, после запуска smoke снова 5/5.
 
-**Drift:** `scripts/drift_report.py`: PSI длины **0.003**, KS **0.020**, p = 0.346; `other_share` 44.1% в train и 44.5% в test. Стратифицированный split сохранил распределения; production drift требует реальных логов.
+**Drift:** `scripts/monitoring/drift_report.py`: PSI длины **0.003**, KS **0.020**, p = 0.346; `other_share` 44.1% в train и 44.5% в test. Стратифицированный split сохранил распределения; production drift требует реальных логов. Процесс переобучения — [`retrain_bpmn.png`](../06_monitoring/retrain_bpmn.png).
 
 ## 10. ИИ-ассистенты
 
-Использовались для: аудита TZ, исследования датасетов, pipeline, API, тестов, Docker, MLflow/GE, отчёта. Проверено вручную: все команды запущены, тесты и линтеры пройдены, метрики пересчитаны, ссылки проверены. Что исправлено командой: порядок вероятностей классов, FastAPI dependency injection, формат `/metrics`, выбор модели и порог, конфликтующие версии артефактов. Не делегировалось: таксономия, выводы экспериментов, этика и защита. Журнал — [`ai_usage.md`](../08_ai/ai_usage.md).
+Ассистент выполнял рутину: шаблонный код, склейку шагов data pipeline в единый запуск, черновики автотестов, повторяющиеся команды Docker/Compose, вёрстку таблиц и прогон проверок. Команда ставила задачу, выбирала данные, таксономию, архитектуру, модель и порог, интерпретировала метрики, писала выводы, ограничения и защиту. Проверка: все команды запущены, `ruff`/`mypy`/`pytest` пройдены, числа сверены с артефактами, ссылки проверены. Команда исправила dependency injection, формат `/metrics`, порядок вероятностей, конфликтующие версии артефактов и ошибки в тестах. Журнал — [`ai_usage.md`](../08_ai/ai_usage.md).
 
 ## 11. Ограничения, drift и этика
 
@@ -174,7 +176,7 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 - `content` и `app` редки.
 - Модель не понимает отрицания и сложные multi-topic обращения; такие случаи уходят в manual.
 - Automation bias: интерфейс должен показывать confidence и top-3.
-- Лицензия TWCS требует уточнения; данные используются локально в учебных целях.
+- Лицензия TWCS требует уточнения; данные используются локально в учебных целях. Код проекта — MIT, автор NexPG.
 
 ## 12. Заключение
 
@@ -187,15 +189,15 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 ## 13. Воспроизводимость
 
 ```bash
-python scripts/download_data.py --config configs/data.yaml
-python scripts/build_dataset.py --config configs/data.yaml
-python scripts/validate_data.py --config configs/data.yaml
-python scripts/validate_data_ge.py
-python scripts/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
-python scripts/tune_threshold.py
-python scripts/drift_report.py
+python scripts/data/download_data.py --config configs/data.yaml
+python scripts/data/build_dataset.py --config configs/data.yaml
+python scripts/data/validate_data.py --config configs/data.yaml
+python scripts/data/validate_data_ge.py
+python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
+python scripts/train/tune_threshold.py
+python scripts/monitoring/drift_report.py
 uvicorn music_support_triage.api.app:app --port 8000
-python scripts/smoke.py
+python scripts/service/smoke.py
 ```
 
 ## 14. Роли
@@ -208,3 +210,5 @@ python scripts/smoke.py
 | Евгений Кононов | 5. Деплой | Docker, Compose, smoke, rollback |
 | Александр Аксенов | 6. Мониторинг | Метрики, алерты, drift, отчёт |
 | Вся команда | 1. Задача | TZ, таксономия, данные, защита |
+
+Состав команды из 5 человек согласован с преподавателем. Формат защиты — 5 минут выступления и 2 минуты вопросов.

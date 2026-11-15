@@ -10,7 +10,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.oxml.ns import qn
 from docx.shared import Cm, Inches, Pt, RGBColor
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "docs" / "07_report" / "report.md"
 OUT = ROOT / "docs" / "07_report" / "report.docx"
 NAVY = RGBColor(16, 42, 82)
