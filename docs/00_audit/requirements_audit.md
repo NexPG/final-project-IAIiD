@@ -15,6 +15,7 @@
 | Описание архитектуры | `docs/02_architecture/architecture.md`, `architecture_business.png`, `architecture.png` | выполнено |
 | API/контракт | `docs/02_architecture/api.md`, `openapi.json` | выполнено |
 | Браузерная demo-страница | `/`, `/demo` — HTML поверх `/v1/classify` | выполнено |
+| CI | `.github/workflows/ci.yml`: ruff, mypy, pytest | выполнено |
 | Деплой и мониторинг | `docs/05_deployment/`, `docs/06_monitoring/` | выполнено |
 | Отчёт 5–7 страниц | `docs/07_report/report.pdf`, `.docx`, `.md` — 5 страниц PDF | выполнено |
 | Презентация 10–15 слайдов | `docs/07_report/presentation.pdf`, `.pptx` — 15 слайдов | выполнено |
@@ -59,7 +60,7 @@
 | В05 | 5+ экспериментов, MLflow, вывод по параметрам | `experiments.md`, Gate 3 report | выполнено |
 | В06 | ≥5 проверок, GE, dirty copy, отчёт | `scripts/data/validate_data_ge.py --dirty`, `ge_report*.json` | выполнено |
 | В07 | 5+ model tests, robustness, edge, subgroup, behavior, adversarial | `tests/model/test_model_quality.py` | выполнено |
-| В08 | unit/integration/mock/contract | `tests/integration/test_api.py`, `tests/README.md` | выполнено (CI/CD — отклонение) |
+| В08 | unit/integration/mock/contract | `tests/integration/test_api.py`, `tests/README.md`, `.github/workflows/ci.yml` | выполнено |
 | В09 | FastAPI, Pydantic, 3+ endpoints, Swagger/TestClient | `api/app.py`, `schemas.py` | выполнено |
 | В10 | blue-green/canary/shadow, criteria, rollback | `deployment.md` | выполнено |
 | В11 | Dockerfile, Compose api+db, чек-лист | `docker/`, SQLite feedback volume | выполнено (SQLite вместо PostgreSQL) |
@@ -90,12 +91,13 @@
 17. **Не было браузерной демонстрации.** Добавлена demo-страница `/` и `/demo` на английском; один HTML-файл, без отдельного frontend-билда.
 18. **Порог автоматики был 0.85.** Снижен до 0.70; routing пересчитан: coverage 0.948, selective precision 0.979, review rate 0.052.
 19. **Лор каналов был про Twitter/чат.** Приведён к сайту, email, соцсетям и приложениям; enum каналов — `web`, `email`, `social`, `app`.
+20. **CI не было.** Добавлен GitHub Actions workflow: `ruff`, `mypy`, `pytest` на push/PR.
 
 ## 6. Осознанные отклонения
 
 | Отклонение | Причина | Компенсация |
 |---|---|---|
-| CI/CD GitHub не используется | решение команды/учебная среда | локальные `ruff`, `mypy`, `pytest`, smoke |
+| Docker deploy не автоматизирован | учебная среда | CI проверяет `ruff`/`mypy`/`pytest`; сборка и release — локально |
 | 5 человек вместо 3–4 | состав команды | роли распределены по этапам |
 | SQLite вместо PostgreSQL в Compose | учебный стенд | volume + production-маршрут PostgreSQL |
 | Evidently не обязателен | достаточно KS/PSI | `drift_report.py` + scipy |

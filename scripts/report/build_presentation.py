@@ -575,7 +575,7 @@ def slide_testing(prs: Presentation) -> None:
         add_text(slide, x, 4.6, 2.0, 0.5, value, size=22, bold=True, color=BLUE)
         add_text(slide, x, 5.12, 2.0, 0.3, label, size=10, color=MUTED)
     add_text(slide, 0.65, 6.2, 11.9, 0.35,
-             "CI/CD не используется: локальный quality gate — ruff, mypy, pytest, smoke.",
+             "CI на GitHub Actions: ruff, mypy, pytest; Docker и smoke — локально.",
              size=11, color=MUTED)
     add_footer(slide, 11)
 
@@ -826,7 +826,7 @@ SPEECH: list[tuple[str, str]] = [
         "Тестирование",
         "Тестирование: 38 тестов — unit, data, model и integration. Great Expectations 8 из 8; "
         "на испорченной копии ловит 4 нарушения. Smoke 5 из 5, load test 20 запросов в секунду без "
-        "ошибок, p95 52.72 миллисекунды в Docker. CI/CD не используем — quality gate локальный.",
+        "ошибок, p95 52.72 миллисекунды в Docker. CI на GitHub Actions проверяет ruff, mypy и pytest.",
     ),
     (
         "Деплой",

@@ -55,7 +55,7 @@
 | В06. Data validation | Пропуски, выбросы, дубли, несогласованность, schema drift; pandas + Great Expectations, ≥5 проверок, отчёт | §6.6 | data.md, GE-отчёты |
 | Данные проекта | TWCS + Bitext, 80/20 stratified by source+label; CV вместо validation | §6 | data card, manifest |
 | В07. Качество модели | Precision/recall/F1, behavioral, edge, subgroup, adversarial, 5+ pytest-тестов | §10.3 | tests, testing.md |
-| В08. Тестирование системы | Unit препроцессинга/постобработки, integration, mock, contract, CI/CD | §10.1–§10.8 | tests, local quality gate |
+| В08. Тестирование системы | Unit препроцессинга/постобработки, integration, mock, contract, CI/CD | §10.1–§10.8 | tests, GitHub Actions |
 | В09. FastAPI | REST, Pydantic, DI, `/predict`, `/healthcheck`, `/model-info`, Swagger, TestClient | §8 | api.md, src/api |
 | В10. Деплой | Blue-green, canary, A/B, feature flags, shadow, rollback, критерии и пороги | §11.3 | deployment.md |
 | В11. Docker | Dockerfile, порядок COPY, slim, Compose api+db, чек-лист | §11.1–§11.2 | Dockerfile, compose |
@@ -69,7 +69,7 @@
 
 | Требование вебинара | Решение команды | Причина | Компенсация |
 |---|---|---|---|
-| В08: GitHub Actions блокирует слияние | Не используем GitHub CI/CD | Решение команды/учебная среда | Локальный quality gate: ruff, mypy, pytest, smoke |
+| В08: GitHub Actions блокирует слияние | CI проверяет код, Docker-сборка локально | Учебная среда | Ruff, mypy, pytest в CI; smoke локально |
 | В04: уровень MLOps 2 | Целимся в уровень 1 | 5 человек, одна модель, учебный проект | MLflow, версионирование, ручной релиз |
 | В01/В06: только чистые human-метки | Используются weak-метки TWCS/Bitext, test frozen | Больше данных для NLP в учебном проекте | Ограничение явно указано в отчёте и data card |
 | В11: PostgreSQL в Compose | Допустим SQLite/volume | Упрощение учебного стенда | В production-маршруте — PostgreSQL |

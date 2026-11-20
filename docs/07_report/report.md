@@ -139,7 +139,7 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 
 **Проверки:** обязательные поля, классы/split/source, длины 10–5000, уникальность id, cross-split дубли, утечка `conversation_id`, PII. Отчёт — `data/processed/validation_report.json`. Great Expectations — **8/8** expectations на 13 427 строках.
 
-**Тесты:** **38 passed**. Покрыты очистка/PII, маппинг, стратифицированный split, дедупликация, data validation, routing, API, OpenAPI, error envelope, batch, feedback idempotency, `/metrics`, model quality (overall, per-class, robustness, edge, behavior, adversarial, subgroup). Локальный quality gate: `ruff`, `mypy`, `pytest`, smoke. **Dirty copy** намеренно ломает данные и должна быть отклонена: GE поймал 4 нарушения из 8. **Load test:** 20 RPS, 30 s, 600 запросов, 0 ошибок, p95 9.74 ms.
+**Тесты:** **38 passed**. Покрыты очистка/PII, маппинг, стратифицированный split, дедупликация, data validation, routing, API, OpenAPI, error envelope, batch, feedback idempotency, `/metrics`, model quality (overall, per-class, robustness, edge, behavior, adversarial, subgroup). Quality gate: `ruff`, `mypy`, `pytest` локально и в GitHub Actions; smoke — локально. **Dirty copy** намеренно ломает данные и должна быть отклонена: GE поймал 4 нарушения из 8. **Load test:** 20 RPS, 30 s, 600 запросов, 0 ошибок, p95 9.74 ms.
 
 **Найденная проблема:** отрицание «I don't want to cancel my subscription, I need a receipt» → `subscription`, confidence 0.647, manual_review. Это и баг качества, и корректное безопасное поведение routing. Дополнительно: `content`/`recommendations` confusion.
 
@@ -151,7 +151,7 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 - Smoke `scripts/service/smoke.py`: healthcheck, model-info, classify, batch, metrics — **5/5** на uvicorn и в Docker.
 - Docker build/up проверены: api, Prometheus и Grafana healthy.
 - Rollback: предыдущий `model.joblib` + перезапуск.
-- CI/CD на GitHub не используется: локальный quality gate и ручной release.
+- CI на GitHub Actions: `ruff`, `mypy`, `pytest`; Docker build и release — локально.
 
 ## 9. Мониторинг
 

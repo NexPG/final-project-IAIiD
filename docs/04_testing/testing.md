@@ -134,13 +134,12 @@ load test    — 20 RPS, 30 s, 600 requests, 0 errors, p95 9.74 ms
 - weak labels TWCS могут содержать шум;
 - `content` и `recommendations` редки в реальном потоке.
 
-## 8. Локальный quality gate
+## 8. Quality gate
 
-CI/CD не используется.
+GitHub Actions workflow `.github/workflows/ci.yml` запускает проверки на push/PR; те же команды можно запустить локально:
 
 ```bash
 ruff check .
-ruff format --check .
 mypy src
 pytest -q
 ```

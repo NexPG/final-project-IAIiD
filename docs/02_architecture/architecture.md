@@ -110,7 +110,7 @@ SLA: p95 ≤ 300 мс (TF-IDF), 5xx < 1%, 20 RPS на worker, batch ≤ 100. `re
 | ADR-05 | 7 классов | accepted |
 | ADR-06 | Human-in-the-loop | accepted |
 | ADR-07 | MLflow локально | accepted |
-| ADR-08 | Без GitHub CI/CD | accepted |
+| ADR-08 | GitHub Actions для quality gate; Docker/релиз локально | accepted |
 | ADR-09 | Без feature store | accepted |
 | ADR-10 | Train + StratifiedGroupKFold CV + frozen test | accepted |
 | ADR-11 | Threshold/margin по OOF train, не по test | accepted |

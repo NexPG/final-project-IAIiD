@@ -26,4 +26,4 @@ python scripts/service/smoke.py --base-url http://127.0.0.1:8000
 docker compose -f docker/docker-compose.yml down
 ```
 
-CI/CD на GitHub не используется: сборка и проверка выполняются локально.
+CI на GitHub Actions проверяет `ruff`, `mypy`, `pytest`; Docker build и smoke выполняются локально.

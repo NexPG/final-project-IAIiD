@@ -5,7 +5,7 @@
 
 ## 1. Учебный маршрут
 
-CI/CD на GitHub не используется. Запуск и проверка — локально.
+CI на GitHub Actions проверяет `ruff`, `mypy`, `pytest`. Docker build, smoke и release выполняются локально.
 
 ### venv
 

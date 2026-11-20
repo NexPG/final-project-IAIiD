@@ -1,5 +1,7 @@
 # Music Support Triage
 
+[![CI](https://github.com/NexPG/final-project-IAIiD/actions/workflows/ci.yml/badge.svg)](https://github.com/NexPG/final-project-IAIiD/actions/workflows/ci.yml)
+
 Учебный сквозной ИИ-кейс: **классификация обращений в поддержку музыкального сервиса** и маршрутизация в нужную очередь.
 
 Проект показывает полный инженерный путь: задача → архитектура → эксперименты → тестирование → деплой → мониторинг. Это не коммерческий продукт, а воспроизводимый прототип с честно описанными ограничениями.
@@ -37,6 +39,7 @@
 
 ```text
 .
+├── .github/workflows/ci.yml  # CI: ruff, mypy, pytest
 ├── configs/                  # конфигурации обучения и сервиса
 ├── data/                     # локальные данные: raw/interim/processed/feedback
 ├── docker/                   # Dockerfile и docker-compose (этап 5)
@@ -125,6 +128,19 @@ $env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 
 Grafana: `http://localhost:3000` (`admin` / `admin`), dashboard `Music Support Triage`.
 
+## CI
+
+GitHub Actions workflow [`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every
+push to `main` and on pull requests:
+
+```bash
+ruff check .
+mypy src
+pytest -q
+```
+
+Docker build, smoke and release remain local: CI checks code quality and tests, not deployment.
+
 ## Метрики
 
 | Метрика | Значение |
@@ -183,7 +199,7 @@ Train 10 713, test 2 714. Test-метки weak, поэтому overall 0.855 с�
 - Test смешивает TWCS и Bitext; overall macro-F1 выше, чем на TWCS.
 - `content` и `app` редки.
 - Нет реальной интеграции с CRM и автоматических ответов.
-- CI/CD на GitHub не используется: проверки и запуск локальные.
+- CI на GitHub Actions: `ruff`, `mypy`, `pytest` на каждый push и pull request; Docker-сборка и release — локально.
 
 ## Использование ИИ-ассистентов
 
