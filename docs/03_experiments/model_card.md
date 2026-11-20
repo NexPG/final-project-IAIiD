@@ -27,7 +27,7 @@
 | Test | 2 714 (20.2%) |
 | Источники | TWCS weak 4 558/1 174, Bitext 6 155/1 540 |
 | Метки | weak |
-| Dataset version | `sha256:42b239bc5ce519377d5709468811188feb236aced991b7bead596b9b13432980` |
+| Dataset version | `sha256:d997f61924c8ea486dba05eb5ae017252d5ad896c2872c87c44abff34ca601db` |
 
 Объединённый пул перемешан и разделён 80/20 со стратификацией по `(source, label)`. Validation не выделяется: 5-fold CV на train.
 

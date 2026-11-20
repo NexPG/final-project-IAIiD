@@ -33,7 +33,7 @@ def build_suite() -> gx.ExpectationSuite:
             column="text", min_value=10, max_value=5000
         ),
         gx.expectations.ExpectColumnValuesToBeInSet(
-            column="channel", value_set=["twitter", "app", "web", "email", "chat"]
+            column="channel", value_set=["web", "email", "social", "app"]
         ),
     ]
     for expectation in expectations:

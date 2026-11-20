@@ -38,7 +38,7 @@
 
 ![Общая схема Music Support Triage](architecture_business.png)
 
-Чистовая бизнес-схема показывает путь пользователя: приложение → API Gateway → сервис классификации (preprocessing → модель → routing) → 7 очередей. Исходный командный набросок сохранён в [`architecture_overview.png`](architecture_overview.png).
+Чистовая бизнес-схема показывает путь пользователя: сайт, email, соцсети или приложение → API Gateway → сервис классификации (preprocessing → модель → routing) → 7 очередей. Исходный командный набросок сохранён в [`architecture_overview.png`](architecture_overview.png).
 
 ### 4.2. Техническая схема
 

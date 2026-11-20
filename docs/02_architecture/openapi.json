@@ -238,11 +238,10 @@
           "channel": {
             "type": "string",
             "enum": [
-              "twitter",
-              "app",
               "web",
               "email",
-              "chat"
+              "social",
+              "app"
             ],
             "title": "Channel",
             "default": "app"

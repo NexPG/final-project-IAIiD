@@ -17,7 +17,7 @@ def make_frame() -> pd.DataFrame:
                 "source": "human",
                 "split": "train",
                 "conversation_id": f"c-{index}",
-                "channel": "twitter",
+                "channel": "social",
                 "locale": "en",
             }
         )
@@ -31,7 +31,7 @@ def make_frame() -> pd.DataFrame:
                 "source": "human",
                 "split": "validation",
                 "conversation_id": f"v-{index}",
-                "channel": "twitter",
+                "channel": "social",
                 "locale": "en",
             }
         )

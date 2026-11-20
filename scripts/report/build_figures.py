@@ -190,11 +190,11 @@ def business_architecture() -> None:
 
     ax.text(0.4, 9.65, "Music Support Triage — бизнес-архитектура", fontsize=20,
             fontweight="bold", color=INK, va="top")
-    ax.text(0.4, 9.25, "Пользователь → приложение → сервис → очередь", fontsize=11,
+    ax.text(0.4, 9.25, "Пользователь → сайт · email · соцсети · приложение → очередь", fontsize=11,
             color=MUTED, va="top")
 
     box(0.9, 7.5, 2.4, 1.0, "Пользователь")
-    box(5.1, 7.5, 4.3, 1.0, "Мобильное / Web\nприложение", "канал обращения")
+    box(5.1, 7.5, 4.3, 1.0, "Каналы обращения", "web · email · social · app")
     ax.annotate("", xy=(5.0, 8.0), xytext=(3.4, 8.0),
                 arrowprops={"arrowstyle": "<|-|>", "color": INK, "lw": 1.3})
     ax.text(4.2, 8.12, "запрос / ответ", ha="center", fontsize=8, color=MUTED)

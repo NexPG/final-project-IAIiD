@@ -33,7 +33,7 @@ SOURCES: Final[tuple[str, ...]] = (
     "external_audio",
 )
 LABEL_QUALITIES: Final[tuple[str, ...]] = ("human_verified", "weak", "synthetic")
-CHANNELS: Final[tuple[str, ...]] = ("twitter", "app", "web", "email", "chat")
+CHANNELS: Final[tuple[str, ...]] = ("web", "email", "social", "app")
 LOCALES: Final[tuple[str, ...]] = ("en", "ru", "mixed")
 
 REQUIRED_COLUMNS: Final[tuple[str, ...]] = (

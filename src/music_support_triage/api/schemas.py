@@ -6,7 +6,7 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-Channel = Literal["twitter", "app", "web", "email", "chat"]
+Channel = Literal["web", "email", "social", "app"]
 Locale = Literal["en", "ru", "mixed"]
 
 

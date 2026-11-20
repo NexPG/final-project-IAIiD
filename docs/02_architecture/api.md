@@ -45,7 +45,7 @@ Demo-страница не входит в OpenAPI-схему: это тонки
 
 - `text`: 10–5000;
 - `subject`: 0–300;
-- `channel`: `twitter`, `app`, `web`, `email`, `chat`;
+- `channel`: `web`, `email`, `social`, `app`;
 - `locale`: `en`, `ru`, `mixed`;
 - неизвестные поля запрещены (`extra=forbid`).
 

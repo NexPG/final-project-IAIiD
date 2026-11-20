@@ -76,7 +76,7 @@ stratum = source + "||" + label
 | `source` | enum | `weak_twcs`, `bitext` |
 | `split` | enum | `train`, `test` |
 | `conversation_id` | string | группа для split |
-| `channel` | enum | twitter/email |
+| `channel` | enum | web/email/social/app |
 | `locale` | enum | en |
 
 ## 6. Валидация
@@ -94,7 +94,7 @@ Great Expectations: 8 expectations, отчёт `data/processed/ge_report.json`; 
 
 ## 7. Приватность и версионирование
 
-- Публичные твиты могут содержать PII; маскирование до обучения.
+- Публичные сообщения могут содержать PII; маскирование до обучения.
 - Сырые данные не коммитятся.
 - `data/manifest.json` хранит SHA-256 источников и версию датасета.
 - `dataset_version` фиксируется в MLflow.
