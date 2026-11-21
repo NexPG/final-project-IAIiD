@@ -12,6 +12,8 @@ Expected local files (not in git):
 ```text
 data/external/
 ├── twcs/
+│   ├── raw/
+│   │   └── twcs.csv
 │   ├── dev_cases.csv
 │   └── dev_cases_pseudo_labeled.csv
 ├── bitext/

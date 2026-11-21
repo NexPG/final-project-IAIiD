@@ -107,6 +107,12 @@ python scripts/data/prepare_twcs.py
 `dev_cases_pseudo_labeled.csv`. Формат и источники описаны в
 [`data/external/README.md`](data/external/README.md).
 
+Все шаги 2–3 одной командой (нужны Kaggle credentials):
+
+```bash
+python scripts/bootstrap.py
+```
+
 ### 3. Обучение финальной модели
 
 ```bash

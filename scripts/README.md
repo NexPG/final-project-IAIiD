@@ -4,12 +4,19 @@ CLI-скрипты сгруппированы по этапам проекта. 
 
 ```text
 scripts/
+├── bootstrap.py   # one-command: download → prepare → build → train
 ├── data/          # загрузка, сборка, валидация датасета
 ├── train/         # обучение, поиск, порог, оценка
 ├── service/       # smoke, load test, OpenAPI
 ├── monitoring/    # drift-отчёт
 └── report/        # сборка DOCX/PDF, PPTX/PDF, BPMN
 ```
+
+## bootstrap
+
+`bootstrap.py` последовательно скачивает Bitext и TWCS, готовит dev-файлы, собирает
+датасет, валидирует его и обучает финальную модель без подбора гиперпараметров.
+Нужны `KAGGLE_USERNAME` и `KAGGLE_KEY`.
 
 ## data
 
