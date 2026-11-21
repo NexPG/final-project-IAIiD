@@ -90,12 +90,15 @@ data/manifest.json
 # Raw public corpora must never be committed.
 !data/external/README.md
 /models/
-/artifacts/
+/artifacts/*
+!/artifacts/model.joblib
+!/artifacts/README.md
 /mlruns/
 /mlartifacts/
 /mlflow.db
 /mlflow.db-*
 *.joblib
+!artifacts/model.joblib
 *.pkl
 *.onnx
 *.pt

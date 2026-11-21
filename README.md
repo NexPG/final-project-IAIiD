@@ -70,30 +70,45 @@
 └── README.md
 ```
 
-## Быстрый старт
+## Быстрый старт: запуск сервиса
 
-Сырые датасеты не коммитятся. Положите TWCS dev/pseudo CSV и Bitext CSV в пути из
-[`configs/data.yaml`](configs/data.yaml) (по умолчанию `data/external/twcs/` и
-`data/external/bitext/`).
+Для запуска API и demo-страницы **не нужны сырые CSV и пересборка данных**.
+В репозитории уже лежит обученный [`artifacts/model.joblib`](artifacts/model.joblib).
 
 ```bash
 python -m venv .venv
 # Windows: .venv\Scripts\activate
 # Linux/macOS: source .venv/bin/activate
-pip install -e ".[dev,ml]"
+pip install -e .
 
-python scripts/data/download_data.py --config configs/data.yaml
+uvicorn music_support_triage.api.app:app --reload
+python scripts/service/smoke.py
+```
+
+После старта открыть **http://127.0.0.1:8000/**.
+
+## Пересборка данных и модели (опционально)
+
+Этот путь нужен только для повторного обучения, а не для запуска сервиса.
+
+- **Bitext** скачивается командой:
+  ```bash
+  python scripts/data/download_data.py --fetch-bitext
+  ```
+- **TWCS dev/pseudo CSV** (`dev_cases.csv`, `dev_cases_pseudo_labeled.csv`) — производные
+  от публичного Kaggle-датасета
+  [Customer Support on Twitter](https://www.kaggle.com/datasets/thoughtvector/customer-support-on-twitter).
+  Они не входят в git из-за лицензии и возможных PII. Формат и checksums описаны в
+  [`data/external/README.md`](data/external/README.md) и
+  [`docs/01_task/data_card.md`](docs/01_task/data_card.md).
+
+Если оба TWCS-файла и Bitext уже лежат в `data/external/`, пересборка запускается так:
+
+```bash
 python scripts/data/build_dataset.py --config configs/data.yaml
 python scripts/data/validate_data_ge.py
 python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
 pytest -q
-```
-
-Запуск API:
-
-```bash
-uvicorn music_support_triage.api.app:app --reload
-python scripts/service/smoke.py
 ```
 
 ## Demo page
