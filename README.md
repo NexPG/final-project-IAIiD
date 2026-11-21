@@ -101,7 +101,11 @@ bash bootstrap.sh
 После этого:
 
 ```bash
-.venv\Scripts\activate   # Windows
+# Windows:
+.venv\Scripts\activate
+# Linux/macOS:
+# source .venv/bin/activate
+
 uvicorn music_support_triage.api.app:app --reload
 ```
 
