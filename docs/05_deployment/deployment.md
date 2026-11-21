@@ -7,6 +7,9 @@
 
 CI на GitHub Actions проверяет `ruff`, `mypy`, `pytest`. Docker build, smoke и release выполняются локально.
 
+Для запуска API и demo-страницы сырые данные не нужны: `artifacts/model.joblib` уже
+закоммичен. Датасет и переобучение — отдельный опциональный маршрут.
+
 ### venv
 
 ```bash

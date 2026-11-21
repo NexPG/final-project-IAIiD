@@ -188,6 +188,8 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 
 ## 13. Воспроизводимость
 
+Для запуска API и demo-страницы сырые данные не нужны: `artifacts/model.joblib` уже в репозитории. Команды ниже — опциональная пересборка данных и модели.
+
 ```bash
 python scripts/data/download_data.py --config configs/data.yaml
 python scripts/data/build_dataset.py --config configs/data.yaml
