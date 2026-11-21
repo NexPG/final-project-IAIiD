@@ -162,13 +162,19 @@ curl -X POST http://127.0.0.1:8000/v1/classify \
 `needs_human_review`; при confidence < 0.70 или margin < 0.05 очередь будет
 `manual_review`.
 
-Docker (после обучения модели, когда `artifacts/model.joblib` существует):
+### Docker: одна команда
 
-```bash
+Docker Compose сам скачает данные и обучит модель в одноразовом `trainer`,
+затем запустит API, Prometheus и Grafana. Нужны Kaggle credentials:
+
+```powershell
+$env:KAGGLE_USERNAME="your_username"
+$env:KAGGLE_KEY="your_api_key"
 docker compose -f docker/docker-compose.yml up --build
-# если порт 8000 занят:
-$env:API_PORT="8010"; docker compose -f docker/docker-compose.yml up --build
 ```
+
+Первый запуск долгий (TWCS ~500 МБ + обучение на CPU), повторный использует
+готовые `data/` и `artifacts/`. Если trainer упал — `docker compose ... logs trainer`.
 
 Grafana: `http://localhost:3000` (`admin` / `admin`), dashboard `Music Support Triage`.
 

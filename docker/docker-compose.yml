@@ -1,4 +1,33 @@
 services:
+  trainer:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: music-support-triage:local
+    environment:
+      KAGGLE_USERNAME: "${KAGGLE_USERNAME:-}"
+      KAGGLE_KEY: "${KAGGLE_KEY:-}"
+    volumes:
+      - ../data:/app/data
+      - ../artifacts:/app/artifacts
+      - ../configs:/app/configs:ro
+      - ../scripts:/app/scripts:ro
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        if [ ! -f data/processed/dataset.csv ]; then
+          python scripts/data/download_data.py --fetch-bitext
+          python scripts/data/download_data.py --fetch-twcs
+          python scripts/data/prepare_twcs.py
+          python scripts/data/build_dataset.py --config configs/data.yaml
+        fi
+        if [ ! -f artifacts/model.joblib ]; then
+          python scripts/train/train_final.py
+        fi
+    restart: "no"
+
   api:
     build:
       context: ..
@@ -14,6 +43,9 @@ services:
       - ../artifacts:/app/artifacts:ro
       - ../configs:/app/configs:ro
       - ../data/feedback:/app/data/feedback
+    depends_on:
+      trainer:
+        condition: service_completed_successfully
     healthcheck:
       test:
         - CMD

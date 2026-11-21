@@ -146,10 +146,11 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 ## 8. Деплой
 
 - Multi-stage `docker/Dockerfile`, slim, non-root, healthcheck.
-- `docker/docker-compose.yml`: API + Prometheus + Grafana, `API_PORT`.
+- `docker/docker-compose.yml`: `trainer` + API + Prometheus + Grafana, `API_PORT`.
+- `trainer` скачивает Bitext/TWCS, готовит данные и обучает модель; API стартует после его успешного завершения.
 - Модель и конфиги монтируются read-only; feedback — SQLite-volume.
 - Smoke `scripts/service/smoke.py`: healthcheck, model-info, classify, batch, metrics — **5/5** на uvicorn и в Docker.
-- Docker build/up проверены: api, Prometheus и Grafana healthy.
+- `docker compose config` валиден; api/Prometheus/Grafana проверены ранее, trainer-путь требует Kaggle credentials.
 - Rollback: предыдущий `model.joblib` + перезапуск.
 - CI на GitHub Actions: `ruff`, `mypy`, `pytest`; Docker build и release — локально.
 

@@ -30,7 +30,8 @@ uvicorn music_support_triage.api.app:app --reload
 
 ### Docker Compose
 
-Сначала обучите модель (см. выше), затем:
+Compose содержит одноразовый `trainer`: он сам скачивает данные и обучает модель,
+затем `api` стартует после его успешного завершения. Нужны Kaggle credentials.
 
 ```bash
 docker compose -f docker/docker-compose.yml up --build
