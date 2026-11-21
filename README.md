@@ -162,7 +162,7 @@ curl -X POST http://127.0.0.1:8000/v1/classify \
 `needs_human_review`; при confidence < 0.70 или margin < 0.05 очередь будет
 `manual_review`.
 
-### Docker: одна команда
+## Docker: одна команда
 
 Docker Compose сам скачает данные и обучит модель в одноразовом `trainer`,
 затем запустит API, Prometheus и Grafana. Нужны Kaggle credentials:

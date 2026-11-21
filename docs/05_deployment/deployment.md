@@ -128,18 +128,19 @@ Rollback:
 | Параметр | Значение |
 |---|---|
 | Image | `music-support-triage:local` |
-| Image size | 716 MB |
-| Model version | `search-logreg_word-20261114200534` |
+| Image size | 708 MB |
+| Model version | `final-logreg_word-<timestamp>` |
 | Model type | `logreg_word` |
 | Threshold | 0.70 / 0.05 |
-| Compose services | api + prometheus + grafana, все healthy |
+| Compose services | trainer (one-shot) + api + prometheus + grafana |
 | Smoke | 5/5 |
 | Docker load test | 20 RPS, 20 s, 400 requests, 0 errors, p95 52.72 ms |
 
 ## 7. Чек-лист
 
 - [x] Dockerfile собирается: `docker compose build` — успешно.
-- [x] Compose поднимает api + Prometheus + Grafana: `up -d --wait` — все healthy.
+- [x] Compose поднимает trainer + api + Prometheus + Grafana: `up -d --wait` — все healthy.
+- [x] trainer обучает модель в контейнере; api стартует после успешного завершения.
 - [x] healthcheck.
 - [x] smoke — 5/5 (uvicorn и Docker).
 - [x] модель read-only volume.

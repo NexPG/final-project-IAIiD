@@ -586,7 +586,7 @@ def slide_deploy(prs: Presentation) -> None:
                "Одна команда поднимает api, Prometheus и Grafana.")
     steps = [
         (0.7, "Dockerfile", "multi-stage · non-root"),
-        (4.35, "Image", "716 MB · healthcheck"),
+        (4.35, "Image", "708 MB · healthcheck"),
         (8.0, "Compose", "api + monitoring"),
     ]
     for x, title, subtitle in steps:
@@ -807,7 +807,7 @@ SPEECH: list[tuple[str, str]] = [
     ),
     (
         "Деплой",
-        "Деплой сделан через Docker и Compose. Dockerfile multi-stage: отдельно сборка зависимостей, отдельно runtime на python:3.12-slim. Внутри non-root пользователь, healthcheck на /healthcheck, модель и конфиги монтируются read-only. Итоговый образ — 716 МБ. Compose поднимает три сервиса: api, Prometheus и Grafana; API публикуется на 8000, Grafana на 3000. Feedback хранится в SQLite-volume и переживает перезапуск API; для учебного стенда этого достаточно, но в production был бы PostgreSQL. Rollback — взять предыдущий model.joblib и перезапустить контейнер. В production-маршруте предусмотрены registry, canary/blue-green и внешняя БД, но мы не выдаём учебный Compose за production. CD не автоматизировали: CI проверяет код, а сборка, smoke и релиз выполняются локально — так честнее для учебной среды. В production рассматривали blue-green и canary: canary лучше ловит деградацию на части трафика, blue-green быстрее откатывается; в учебном стенде достаточно перезапуска с предыдущим artifact.",
+        "Деплой сделан через Docker и Compose. Dockerfile multi-stage: отдельно сборка зависимостей, отдельно runtime на python:3.12-slim. Внутри non-root пользователь, healthcheck на /healthcheck, модель и конфиги монтируются read-only. Итоговый образ — 708 МБ. Compose поднимает три сервиса: api, Prometheus и Grafana; API публикуется на 8000, Grafana на 3000. Feedback хранится в SQLite-volume и переживает перезапуск API; для учебного стенда этого достаточно, но в production был бы PostgreSQL. Rollback — взять предыдущий model.joblib и перезапустить контейнер. В production-маршруте предусмотрены registry, canary/blue-green и внешняя БД, но мы не выдаём учебный Compose за production. CD не автоматизировали: CI проверяет код, а сборка, smoke и релиз выполняются локально — так честнее для учебной среды. В production рассматривали blue-green и canary: canary лучше ловит деградацию на части трафика, blue-green быстрее откатывается; в учебном стенде достаточно перезапуска с предыдущим artifact.",
     ),
     (
         "Мониторинг",

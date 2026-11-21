@@ -150,7 +150,8 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 - `trainer` скачивает Bitext/TWCS, готовит данные и обучает модель; API стартует после его успешного завершения.
 - Модель и конфиги монтируются read-only; feedback — SQLite-volume.
 - Smoke `scripts/service/smoke.py`: healthcheck, model-info, classify, batch, metrics — **5/5** на uvicorn и в Docker.
-- `docker compose config` валиден; api/Prometheus/Grafana проверены ранее, trainer-путь требует Kaggle credentials.
+- `docker compose config` валиден; `trainer` проверен: обучил модель в контейнере, затем api/Prometheus/Grafana healthy; smoke 5/5.
+- Для скачивания TWCS в Docker нужны `KAGGLE_USERNAME` и `KAGGLE_KEY`; Bitext качается с Hugging Face.
 - Rollback: предыдущий `model.joblib` + перезапуск.
 - CI на GitHub Actions: `ruff`, `mypy`, `pytest`; Docker build и release — локально.
 
