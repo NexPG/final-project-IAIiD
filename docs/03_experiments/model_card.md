@@ -114,4 +114,6 @@ python scripts/train/routing_report.py --threshold 0.70
 - Владелец модели: Владимир Егоров (этап 3).
 - Приёмка: вся команда; эксплуатация — этапы 5–6.
 - Код проекта — MIT, автор NexPG.
-- Датасеты TWCS и Bitext не входят в лицензию проекта.
+- TWCS — CC BY-NC-SA 4.0 (non-commercial, attribution, share-alike; commercial use — contact author).
+- Bitext — CDLA-Sharing-1.0.
+- Модель обучена на этих данных и не публикуется в репозитории; датасеты не входят в лицензию кода.

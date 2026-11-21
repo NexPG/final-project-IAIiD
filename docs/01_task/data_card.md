@@ -8,7 +8,7 @@
 
 | Источник | Лицензия | Роль | Локальный путь |
 |---|---|---|---|
-| TWCS SpotifyCares | требует уточнения | реальный домен | `data/external/twcs/` |
+| TWCS SpotifyCares | CC BY-NC-SA 4.0 (Kaggle; commercial use — contact author) | реальный домен | `data/external/twcs/` |
 | Bitext Customer Support | CDLA-Sharing-1.0 | вспомогательный домен | `data/external/bitext/` |
 
 Сырые данные не коммитятся. Checksums фиксируются в `data/manifest.json`.

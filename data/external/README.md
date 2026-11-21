@@ -53,6 +53,13 @@ python scripts/data/download_data.py --fetch-bitext
 
 Expected columns: `instruction`, `category`, `intent`.
 
+## Licenses
+
+- **TWCS** — `CC BY-NC-SA 4.0` по метаданным Kaggle: attribution, non-commercial,
+  share-alike. Для commercial use автор просит связаться. Данные не публикуются.
+- **Bitext** — `CDLA-Sharing-1.0`; условия использования и распространения —
+  в карточке датасета на Hugging Face.
+
 ## Rules
 
 - Do not commit raw tweets, customer texts or any PII.

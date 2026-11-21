@@ -163,4 +163,4 @@ pytest -q
 | R-06 | Шум weak labels | Низкое качество | Ограничение явно указано; confidence-фильтр | accepted |
 | R-07 | Дисбаланс `other` | Модель всё относит к `other` | class_weight, macro-F1, стратификация | accepted |
 | R-08 | Мало `content`/`app` | Низкий recall | class_weight, macro-F1, стратификация | open |
-| R-09 | Неясная лицензия TWCS | Юридический риск | Сырые данные локально, data card | open |
+| R-09 | Лицензия TWCS | Юридический риск | CC BY-NC-SA 4.0: non-commercial, attribution, share-alike; сырые данные локально | accepted |

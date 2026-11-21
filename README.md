@@ -239,8 +239,8 @@ Docker build, smoke and release remain local: CI checks code quality and tests, 
 
 Все источники объединены в один пул и разделены 80/20 со стратификацией по `(source, label)`:
 
-- **TWCS SpotifyCares** — 5 732 строки, реальный домен.
-- **Bitext Customer Support** — 7 695 строк, вспомогательный домен.
+- **TWCS SpotifyCares** — 5 732 строки, реальный домен. Лицензия Kaggle: `CC BY-NC-SA 4.0`, commercial use — по согласованию с автором.
+- **Bitext Customer Support** — 7 695 строк, вспомогательный домен. Лицензия: `CDLA-Sharing-1.0`.
 
 Train 10 713, test 2 714. Test-метки weak, поэтому overall 0.855 смешивает источники; на TWCS macro-F1 = 0.739. Подробно: [`docs/01_task/data_card.md`](docs/01_task/data_card.md).
 

@@ -104,4 +104,4 @@ Great Expectations: 8 expectations, отчёт `data/processed/ge_report.json`; 
 - Test-метки weak, не human-verified.
 - Overall test смешивает два источника; на TWCS macro-F1 ниже.
 - `content` и `app` редки.
-- Лицензия TWCS требует уточнения.
+- Лицензия TWCS: CC BY-NC-SA 4.0; commercial use требует контакта с автором.
