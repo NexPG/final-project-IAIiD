@@ -3,9 +3,9 @@
 This directory holds downloaded public corpora. Raw files are **not committed**
 and must stay local because of size, licensing and PII.
 
-**For running the API/demo these files are not needed:** the trained model is
-committed as [`artifacts/model.joblib`](../../artifacts/model.joblib). The files
-below are only required to rebuild the dataset or retrain the model.
+**For running the API/demo the data is not included:** run the download and
+training scripts described below; the model is generated locally as
+`artifacts/model.joblib` and stays out of git.
 
 Expected local files (not in git):
 
@@ -21,11 +21,16 @@ data/external/
 
 ## TWCS dev files
 
-`dev_cases.csv` and `dev_cases_pseudo_labeled.csv` are team-derived artifacts from
-the public Kaggle dataset
+`dev_cases.csv` and `dev_cases_pseudo_labeled.csv` are generated from the public
+Kaggle dataset
 [Customer Support on Twitter](https://www.kaggle.com/datasets/thoughtvector/customer-support-on-twitter)
-(SpotifyCares subset). They are not a single downloadable Kaggle file and are not
-redistributed because of license/PII constraints.
+(SpotifyCares subset). They are not redistributed because of license/PII
+constraints. The scripts download the official raw archive and rebuild both files:
+
+```bash
+python scripts/data/download_data.py --fetch-twcs
+python scripts/data/prepare_twcs.py
+```
 
 Expected columns:
 

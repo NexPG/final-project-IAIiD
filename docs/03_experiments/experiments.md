@@ -136,11 +136,15 @@ PSI длины = **0.003**, KS = **0.020**, p = 0.346 — распределен
 ## 11. Воспроизводимость
 
 ```bash
+python scripts/data/download_data.py --fetch-bitext
+python scripts/data/download_data.py --fetch-twcs
+python scripts/data/prepare_twcs.py
 python scripts/data/build_dataset.py --config configs/data.yaml
-python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
-python scripts/train/tune_threshold.py
+python scripts/train/train_final.py
 python scripts/train/routing_report.py --threshold 0.70
 ```
+
+`search_models.py` воспроизводит исторический поиск; для финальной модели достаточно `train_final.py`.
 
 ## 12. Ограничения
 

@@ -20,6 +20,14 @@ docker/
 
 ## Проверка
 
+Сначала обучите модель — `artifacts/model.joblib` не коммитится:
+
+```bash
+python scripts/train/train_final.py
+```
+
+Затем:
+
 ```bash
 docker compose -f docker/docker-compose.yml up -d --wait
 python scripts/service/smoke.py --base-url http://127.0.0.1:8000

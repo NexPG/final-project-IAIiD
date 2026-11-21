@@ -15,7 +15,8 @@ scripts/
 
 | Скрипт | Назначение |
 |---|---|
-| `data/download_data.py` | проверка локальных датасетов и checksums |
+| `data/download_data.py` | скачивание Bitext и raw TWCS через Kaggle API, checksums |
+| `data/prepare_twcs.py` | из raw `twcs.csv` собирает `dev_cases.csv` и pseudo-label файл |
 | `data/build_dataset.py` | объединение источников, 80/20 stratified split, manifest |
 | `data/validate_data.py` | схема, дубли, утечки, дисбаланс, PII |
 | `data/validate_data_ge.py` | Great Expectations: 8 expectations; `--dirty` проверяет отлов ошибок |
@@ -25,6 +26,7 @@ scripts/
 | Скрипт | Назначение |
 |---|---|
 | `train/search_models.py` | 5-fold StratifiedGroupKFold + HalvingRandomSearchCV, OOF threshold, bootstrap CI |
+| `train/train_final.py` | обучение финальной модели с заранее выбранными параметрами, без поиска |
 | `train/tune_threshold.py` | показать OOF threshold/margin из результатов поиска |
 | `train/train.py` | обучение выбранной конфигурации |
 | `train/evaluate.py` | метрики на frozen test |
@@ -55,14 +57,13 @@ scripts/
 ## Порядок
 
 ```bash
-python scripts/data/download_data.py --config configs/data.yaml
+python scripts/data/download_data.py --fetch-bitext
+python scripts/data/download_data.py --fetch-twcs
+python scripts/data/prepare_twcs.py
 python scripts/data/build_dataset.py --config configs/data.yaml
 python scripts/data/validate_data.py --config configs/data.yaml
 python scripts/data/validate_data_ge.py
-python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
-python scripts/train/tune_threshold.py
-python scripts/train/routing_report.py --threshold 0.70
-python scripts/train/evaluate.py --split test
+python scripts/train/train_final.py
 ```
 
 ## Правила

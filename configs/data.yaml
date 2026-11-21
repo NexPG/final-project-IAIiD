@@ -4,6 +4,7 @@
 seed: 42
 
 paths:
+  twcs_raw: data/external/twcs/raw/twcs.csv
   twcs_dev: data/external/twcs/dev_cases.csv
   twcs_pseudo: data/external/twcs/dev_cases_pseudo_labeled.csv
   bitext: data/external/bitext/bitext.csv
@@ -18,7 +19,7 @@ sampling:
   bitext_max_rows: 8000
 
 splits:
-  # One combined pool: TWCS + Bitext + synthetic.
+  # One combined pool: TWCS + Bitext.
   # 80/20 split is stratified by (source, label) simultaneously.
   test_fraction: 0.2
   validation_fraction: 0.0

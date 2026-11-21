@@ -17,6 +17,7 @@ model:
   c_value: 32.0
   # Selected by HalvingRandomSearchCV in scripts/train/search_models.py.
   use_char: false
+  sublinear_tf: false
   word_ngram: [1, 2]
   word_min_df: 2
   char_ngram: [3, 5]

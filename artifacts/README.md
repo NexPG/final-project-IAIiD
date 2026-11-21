@@ -1,10 +1,13 @@
 # Artifacts
 
-`model.joblib` — финальная модель `search-logreg_word-20261114200534`, закоммичена
-специально, чтобы сервис и Docker-демо запускались из чистого клона без сырых данных.
+`model.joblib` is generated locally by:
 
-Модель не содержит PII: это TF-IDF + LogisticRegression и метаданные обучения.
-Сырые TWCS/Bitext и промежуточные датасеты по-прежнему не коммитятся.
+```bash
+python scripts/train/train_final.py
+```
 
-Полный список метрик и ограничений — в
+It is not committed: the model is trained from the downloaded TWCS/Bitext data and
+the fixed best hyperparameters. Raw data and model artifacts stay out of git.
+
+Full metrics and limitations — in
 [`docs/03_experiments/model_card.md`](../docs/03_experiments/model_card.md).

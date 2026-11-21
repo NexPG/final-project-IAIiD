@@ -70,46 +70,64 @@
 └── README.md
 ```
 
-## Быстрый старт: запуск сервиса
+## Быстрый старт
 
-Для запуска API и demo-страницы **не нужны сырые CSV и пересборка данных**.
-В репозитории уже лежит обученный [`artifacts/model.joblib`](artifacts/model.joblib).
+Модель и сырые данные **не коммитятся**. Чистый клон сначала скачивает данные и
+обучает финальную модель скриптом — без подбора гиперпараметров, на уже выбранном
+кандидате.
+
+### 1. Окружение
 
 ```bash
 python -m venv .venv
 # Windows: .venv\Scripts\activate
 # Linux/macOS: source .venv/bin/activate
-pip install -e .
+pip install -e ".[dev]"
+```
 
+### 2. Данные
+
+```bash
+# Bitext — публичный Hugging Face
+python scripts/data/download_data.py --fetch-bitext
+
+# TWCS — официальный Kaggle API, нужен Kaggle API token
+# Windows PowerShell:
+$env:KAGGLE_USERNAME="your_username"
+$env:KAGGLE_KEY="your_api_key"
+# Linux/macOS:
+# export KAGGLE_USERNAME=your_username
+# export KAGGLE_KEY=your_api_key
+
+python scripts/data/download_data.py --fetch-twcs
+python scripts/data/prepare_twcs.py
+```
+
+`prepare_twcs.py` собирает из raw `twcs.csv` файлы `dev_cases.csv` и
+`dev_cases_pseudo_labeled.csv`. Формат и источники описаны в
+[`data/external/README.md`](data/external/README.md).
+
+### 3. Обучение финальной модели
+
+```bash
+python scripts/data/build_dataset.py --config configs/data.yaml
+python scripts/data/validate_data_ge.py
+python scripts/train/train_final.py
+pytest -q
+```
+
+`train_final.py` использует заранее выбранные параметры: TF-IDF word (1,2),
+`min_df=2`, `max_features=50000`, LogReg C=32, `class_weight=balanced`.
+Никакого поиска и подбора на этом шаге нет.
+
+### 4. Запуск API
+
+```bash
 uvicorn music_support_triage.api.app:app --reload
 python scripts/service/smoke.py
 ```
 
 После старта открыть **http://127.0.0.1:8000/**.
-
-## Пересборка данных и модели (опционально)
-
-Этот путь нужен только для повторного обучения, а не для запуска сервиса.
-
-- **Bitext** скачивается командой:
-  ```bash
-  python scripts/data/download_data.py --fetch-bitext
-  ```
-- **TWCS dev/pseudo CSV** (`dev_cases.csv`, `dev_cases_pseudo_labeled.csv`) — производные
-  от публичного Kaggle-датасета
-  [Customer Support on Twitter](https://www.kaggle.com/datasets/thoughtvector/customer-support-on-twitter).
-  Они не входят в git из-за лицензии и возможных PII. Формат и checksums описаны в
-  [`data/external/README.md`](data/external/README.md) и
-  [`docs/01_task/data_card.md`](docs/01_task/data_card.md).
-
-Если оба TWCS-файла и Bitext уже лежат в `data/external/`, пересборка запускается так:
-
-```bash
-python scripts/data/build_dataset.py --config configs/data.yaml
-python scripts/data/validate_data_ge.py
-python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
-pytest -q
-```
 
 ## Demo page
 
@@ -133,7 +151,7 @@ curl -X POST http://127.0.0.1:8000/v1/classify \
 `needs_human_review`; при confidence < 0.70 или margin < 0.05 очередь будет
 `manual_review`.
 
-Docker:
+Docker (после шага 3, когда модель обучена и `artifacts/model.joblib` существует):
 
 ```bash
 docker compose -f docker/docker-compose.yml up --build

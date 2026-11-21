@@ -13,6 +13,18 @@
 
 Сырые данные не коммитятся. Checksums фиксируются в `data/manifest.json`.
 
+Как получить данные:
+
+```bash
+python scripts/data/download_data.py --fetch-bitext
+python scripts/data/download_data.py --fetch-twcs   # нужен Kaggle API token
+python scripts/data/prepare_twcs.py
+```
+
+`prepare_twcs.py` собирает `dev_cases.csv` и `dev_cases_pseudo_labeled.csv` из raw
+Kaggle-архива. Модель обучается локально через `scripts/train/train_final.py` и
+также не коммитится.
+
 ## 2. Объём и split
 
 TWCS и Bitext объединены в один пул, перемешаны и разделены **80/20** со стратификацией одновременно по `(source, label)`.

@@ -91,14 +91,12 @@ data/manifest.json
 !data/external/README.md
 /models/
 /artifacts/*
-!/artifacts/model.joblib
 !/artifacts/README.md
 /mlruns/
 /mlartifacts/
 /mlflow.db
 /mlflow.db-*
 *.joblib
-!artifacts/model.joblib
 *.pkl
 *.onnx
 *.pt

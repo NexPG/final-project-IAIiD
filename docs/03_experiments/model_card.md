@@ -98,11 +98,16 @@ Test не использовался для выбора модели или г�
 ## 10. Воспроизводимость
 
 ```bash
+python scripts/data/download_data.py --fetch-bitext
+python scripts/data/download_data.py --fetch-twcs
+python scripts/data/prepare_twcs.py
 python scripts/data/build_dataset.py --config configs/data.yaml
-python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
-python scripts/train/tune_threshold.py
+python scripts/data/validate_data_ge.py
+python scripts/train/train_final.py
 python scripts/train/routing_report.py --threshold 0.70
 ```
+
+`train_final.py` обучает выбранного кандидата без поиска; `search_models.py` — исторический эксперимент, а не обязательный шаг.
 
 ## 11. Владение и лицензия
 

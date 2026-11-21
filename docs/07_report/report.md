@@ -188,16 +188,17 @@ Overall 0.855 смешивает источники. На реальном TWCS 
 
 ## 13. Воспроизводимость
 
-Для запуска API и demo-страницы сырые данные не нужны: `artifacts/model.joblib` уже в репозитории. Команды ниже — опциональная пересборка данных и модели.
+Модель и сырые данные не коммитятся: оба артефакта создаются скриптами. FINAL-модель обучается без подбора на заранее выбранных параметрах.
 
 ```bash
-python scripts/data/download_data.py --config configs/data.yaml
+python scripts/data/download_data.py --fetch-bitext
+# для TWCS задать KAGGLE_USERNAME/KAGGLE_KEY
+python scripts/data/download_data.py --fetch-twcs
+python scripts/data/prepare_twcs.py
 python scripts/data/build_dataset.py --config configs/data.yaml
 python scripts/data/validate_data.py --config configs/data.yaml
 python scripts/data/validate_data_ge.py
-python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
-python scripts/train/tune_threshold.py
-python scripts/train/routing_report.py --threshold 0.70
+python scripts/train/train_final.py
 python scripts/monitoring/drift_report.py
 uvicorn music_support_triage.api.app:app --port 8000
 python scripts/service/smoke.py

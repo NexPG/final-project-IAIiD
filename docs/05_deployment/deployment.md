@@ -7,21 +7,30 @@
 
 CI на GitHub Actions проверяет `ruff`, `mypy`, `pytest`. Docker build, smoke и release выполняются локально.
 
-Для запуска API и demo-страницы сырые данные не нужны: `artifacts/model.joblib` уже
-закоммичен. Датасет и переобучение — отдельный опциональный маршрут.
+Для запуска API и demo-страницы модель нужно собрать локально: `artifacts/model.joblib`
+не коммитится. Данные скачиваются скриптами с первоисточников.
 
 ### venv
 
 ```bash
 python -m venv .venv
 # Windows: .venv\Scripts\activate
-pip install -e ".[dev,ml]"
+pip install -e ".[dev]"
+
+python scripts/data/download_data.py --fetch-bitext
+# TWCS: задайте KAGGLE_USERNAME/KAGGLE_KEY, затем:
+python scripts/data/download_data.py --fetch-twcs
+python scripts/data/prepare_twcs.py
+
 python scripts/data/build_dataset.py --config configs/data.yaml
-python scripts/train/search_models.py --n-candidates 120 --factor 2 --min-resources 2000 --max-resources 8000
+python scripts/data/validate_data_ge.py
+python scripts/train/train_final.py
 uvicorn music_support_triage.api.app:app --reload
 ```
 
 ### Docker Compose
+
+Сначала обучите модель (см. выше), затем:
 
 ```bash
 docker compose -f docker/docker-compose.yml up --build
