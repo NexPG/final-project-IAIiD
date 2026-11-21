@@ -71,7 +71,8 @@
 | [`report.pdf`](07_report/report.pdf) · [`report.docx`](07_report/report.docx) | Готовый отчёт |
 | [`presentation.md`](07_report/presentation.md) | План презентации 10–15 слайдов |
 | [`presentation.pdf`](07_report/presentation.pdf) · [`presentation.pptx`](07_report/presentation.pptx) | Готовая презентация |
-| [`speech.md`](07_report/speech.md) | Речь на 5 минут по слайдам |
+| [`speech.md`](07_report/speech.md) | Полная речь для подготовки |
+| [`speech_5min.md`](07_report/speech_5min.md) | Короткая речь на 5 минут |
 
 ## 08. ИИ-ассистенты
 

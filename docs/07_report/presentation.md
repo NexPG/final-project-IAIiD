@@ -1,7 +1,7 @@
 # Презентация: Music Support Triage
 
 **Формат:** 15 слайдов, 5 минут выступления + 2 минуты вопросов.  
-**Файлы:** [`presentation.pdf`](presentation.pdf) · [`presentation.pptx`](presentation.pptx) · речь — [`speech.md`](speech.md).
+**Файлы:** [`presentation.pdf`](presentation.pdf) · [`presentation.pptx`](presentation.pptx) · речь — [`speech_5min.md`](speech_5min.md) и [`speech.md`](speech.md).
 
 Дизайн: короткие тезисы, KPI-карточки, схемы и графики; полный текст выступления — в заметках докладчика и `speech.md`.
 
