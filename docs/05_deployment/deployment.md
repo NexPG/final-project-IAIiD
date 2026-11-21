@@ -15,7 +15,7 @@ CI на GitHub Actions проверяет `ruff`, `mypy`, `pytest`. Docker build
 ```bash
 python -m venv .venv
 # Windows: .venv\Scripts\activate
-pip install -e ".[dev]"
+pip install -e ".[dev,data]"
 
 python scripts/data/download_data.py --fetch-bitext
 # TWCS: задайте KAGGLE_USERNAME/KAGGLE_KEY, затем:

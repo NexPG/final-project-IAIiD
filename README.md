@@ -40,6 +40,7 @@
 ```text
 .
 ├── .github/workflows/ci.yml  # CI: ruff, mypy, pytest
+├── bootstrap.cmd / .sh       # one-command setup
 ├── configs/                  # конфигурации обучения и сервиса
 ├── data/                     # локальные данные: raw/interim/processed/feedback
 ├── docker/                   # Dockerfile и docker-compose (этап 5)
@@ -72,61 +73,65 @@
 
 ## Быстрый старт
 
-Модель и сырые данные **не коммитятся**. Чистый клон сначала скачивает данные и
-обучает финальную модель скриптом — без подбора гиперпараметров, на уже выбранном
-кандидате.
+Модель и сырые данные **не коммитятся**. Одна команда создаёт venv, ставит
+зависимости, скачивает данные с первоисточников, собирает датасет и обучает
+финальную модель.
 
-### 1. Окружение
+Сначала задайте Kaggle API token (нужен для TWCS):
 
-```bash
-python -m venv .venv
-# Windows: .venv\Scripts\activate
-# Linux/macOS: source .venv/bin/activate
-pip install -e ".[dev]"
-```
-
-### 2. Данные
-
-```bash
-# Bitext — публичный Hugging Face
-python scripts/data/download_data.py --fetch-bitext
-
-# TWCS — официальный Kaggle API, нужен Kaggle API token
-# Windows PowerShell:
+```powershell
+# Windows PowerShell
 $env:KAGGLE_USERNAME="your_username"
 $env:KAGGLE_KEY="your_api_key"
-# Linux/macOS:
-# export KAGGLE_USERNAME=your_username
-# export KAGGLE_KEY=your_api_key
-
-python scripts/data/download_data.py --fetch-twcs
-python scripts/data/prepare_twcs.py
+# Linux/macOS: export KAGGLE_USERNAME=...; export KAGGLE_KEY=...
 ```
 
-`prepare_twcs.py` собирает из raw `twcs.csv` файлы `dev_cases.csv` и
-`dev_cases_pseudo_labeled.csv`. Формат и источники описаны в
-[`data/external/README.md`](data/external/README.md).
+Затем:
 
-Все шаги 2–3 одной командой (нужны Kaggle credentials):
+```powershell
+# Windows
+.\bootstrap.cmd
+```
+
+```bash
+# Linux/macOS
+bash bootstrap.sh
+```
+
+После этого:
+
+```bash
+.venv\Scripts\activate   # Windows
+uvicorn music_support_triage.api.app:app --reload
+```
+
+Либо одной командой без wrapper-скрипта, если зависимости уже стоят:
 
 ```bash
 python scripts/bootstrap.py
 ```
 
-### 3. Обучение финальной модели
+### Ручной маршрут (если нужен контроль по шагам)
 
 ```bash
+python -m venv .venv
+# Windows: .venv\Scripts\activate
+# Linux/macOS: source .venv/bin/activate
+pip install -e ".[dev,data]"
+
+python scripts/data/download_data.py --fetch-bitext
+python scripts/data/download_data.py --fetch-twcs
+python scripts/data/prepare_twcs.py
 python scripts/data/build_dataset.py --config configs/data.yaml
 python scripts/data/validate_data_ge.py
 python scripts/train/train_final.py
-pytest -q
 ```
 
 `train_final.py` использует заранее выбранные параметры: TF-IDF word (1,2),
 `min_df=2`, `max_features=50000`, LogReg C=32, `class_weight=balanced`.
 Никакого поиска и подбора на этом шаге нет.
 
-### 4. Запуск API
+### Запуск API
 
 ```bash
 uvicorn music_support_triage.api.app:app --reload
@@ -157,7 +162,7 @@ curl -X POST http://127.0.0.1:8000/v1/classify \
 `needs_human_review`; при confidence < 0.70 или margin < 0.05 очередь будет
 `manual_review`.
 
-Docker (после шага 3, когда модель обучена и `artifacts/model.joblib` существует):
+Docker (после обучения модели, когда `artifacts/model.joblib` существует):
 
 ```bash
 docker compose -f docker/docker-compose.yml up --build

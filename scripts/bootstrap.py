@@ -14,16 +14,28 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-PY = sys.executable
+VENV_PY = ROOT / ".venv" / ("Scripts/python.exe" if sys.platform == "win32" else "bin/python")
+PY = str(VENV_PY) if VENV_PY.exists() else sys.executable
 
 STEPS = [
     [PY, "scripts/data/download_data.py", "--fetch-bitext"],
-    [PY, "scripts/data/download_data.py", "--fetch-twcs"],
-    [PY, "scripts/data/prepare_twcs.py"],
-    [PY, "scripts/data/build_dataset.py", "--config", "configs/data.yaml"],
-    [PY, "scripts/data/validate_data_ge.py"],
-    [PY, "scripts/train/train_final.py"],
 ]
+DEV = ROOT / "data/external/twcs/dev_cases.csv"
+PSEUDO = ROOT / "data/external/twcs/dev_cases_pseudo_labeled.csv"
+if not DEV.exists() or not PSEUDO.exists():
+    STEPS.extend(
+        [
+            [PY, "scripts/data/download_data.py", "--fetch-twcs"],
+            [PY, "scripts/data/prepare_twcs.py"],
+        ]
+    )
+STEPS.extend(
+    [
+        [PY, "scripts/data/build_dataset.py", "--config", "configs/data.yaml"],
+        [PY, "scripts/data/validate_data_ge.py"],
+        [PY, "scripts/train/train_final.py"],
+    ]
+)
 
 
 def main() -> int:

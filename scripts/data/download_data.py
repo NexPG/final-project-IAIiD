@@ -115,6 +115,9 @@ def main() -> int:
             "sha256": sha256_file(path) if path.exists() else None,
         }
     print(json.dumps(inventory, indent=2))
+    if args.fetch_bitext or args.fetch_twcs:
+        # A fetch only prepares one stage; prepare_twcs.py and build_dataset.py follow.
+        return 0
     return 0 if all(item["exists"] for item in inventory.values()) else 1
 
 
